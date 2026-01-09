@@ -32,6 +32,11 @@
                 <configuration>
                     <fork>true</fork> <!-- 如果没有该配置，devtools不会生效 -->
                     <mainClass>com.oddfar.campus.CampusApplication</mainClass>
+                    <!-- JDK 21 反射访问权限配置 -->
+                    <jvmArguments>
+                        --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>

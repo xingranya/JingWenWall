@@ -35,6 +35,7 @@ export const userLoginService = (LoginData) => {
                 'Content-Type': 'application/json'
             },
             data: LoginData,  // 直接传递对象，uni.request 会自动序列化
+            timeout: 60000,  // 增加超时时间到60秒（后端调用微信接口可能较慢）
             success: function (res) {
                 console.log('微信登录响应:', res);
                 

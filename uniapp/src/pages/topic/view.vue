@@ -285,12 +285,12 @@ export default {
     async handleLike() {
       try {
         if (this.topicRecord.isLiked) {
-          await unlikeTopic(this.topicRecord.id);
+          await unlikeTopic(this.topicRecord.postId);
           this.topicRecord.isLiked = false;
           this.topicRecord.likeCount = Math.max(0, this.topicRecord.likeCount - 1);
           await uni.showToast({ title: "取消点赞成功", icon: "success" });
         } else {
-          await likeTopic(this.topicRecord.id);
+          await likeTopic(this.topicRecord.postId);
           this.topicRecord.isLiked = true;
           this.topicRecord.likeCount += 1;
           await uni.showToast({ title: "点赞成功", icon: "success" });

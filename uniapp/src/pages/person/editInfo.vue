@@ -62,7 +62,7 @@ export default {
       url: baseUrl + '/student/get/info',
       method: 'GET',
       header: {
-        token: uni.getStorageSync('token')
+        'Authorization': `Bearer ${uni.getStorageSync('token')}`
       },
       success: (res) => {
         if (res.data.code === 1) {
@@ -124,7 +124,7 @@ export default {
           filePath: this.avatarUrl,
           name: 'files',
           header: {
-            token: uni.getStorageSync('token')
+            'Authorization': `Bearer ${uni.getStorageSync('token')}`
           },
           success: (res) => {
             try {
@@ -169,7 +169,7 @@ export default {
         url: baseUrl + '/student/update/info',
         method: 'PUT',
         header: {
-          token: uni.getStorageSync('token'),
+          'Authorization': `Bearer ${uni.getStorageSync('token')}`,
           'Content-Type': 'application/json'
         },
         data: {

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.forum.mapper.ForumCommentMapper">
+
+    <resultMap id="BaseResultMap" type="com.oddfar.campus.business.forum.domain.entity.BusForumCommentEntity">
+        <id property="commentId" column="comment_id" jdbcType="BIGINT"/>
+        <result property="postId" column="post_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="parentId" column="parent_id" jdbcType="BIGINT"/>
+        <result property="toUserId" column="to_user_id" jdbcType="BIGINT"/>
+        <result property="content" column="content" jdbcType="LONGVARCHAR"/>
+        <result property="likeCount" column="like_count" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createUser" column="create_user" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="BIT"/>
+    </resultMap>
+
+    <resultMap id="CommentVoResultMap" type="com.oddfar.campus.business.forum.domain.vo.ForumCommentVO">
+        <id property="commentId" column="comment_id" jdbcType="BIGINT"/>
+        <result property="postId" column="post_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="parentId" column="parent_id" jdbcType="BIGINT"/>
+        <result property="toUserId" column="to_user_id" jdbcType="BIGINT"/>
+        <result property="content" column="content" jdbcType="LONGVARCHAR"/>
+        <result property="likeCount" column="like_count" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="toUserNickName" column="to_user_nick_name" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="selectCommentVo">
+        SELECT c.comment_id, c.post_id, c.user_id, c.parent_id, c.to_user_id,
+               c.content, c.like_count, c.status, c.create_time,
+               u.nick_name, u.avatar,
+               tu.nick_name as to_user_nick_name
+        FROM bus_forum_comment c
+        LEFT JOIN sys_user u ON c.user_id = u.user_id
+        LEFT JOIN sys_user tu ON c.to_user_id = tu.user_id
+        WHERE c.del_flag = 0
+    </sql>
+
+    <!-- 查询一级评论列表 -->
+    <select id="selectFirstLevelComments" resultMap="CommentVoResultMap">
+        <include refid="selectCommentVo"/>
+        AND c.post_id = #{postId}
+        AND c.parent_id = 0
+        AND c.status = 0
+        ORDER BY c.create_time DESC
+    </select>
+
+    <!-- 查询二级评论列表 -->
+    <select id="selectSecondLevelComments" resultMap="CommentVoResultMap">
+        <include refid="selectCommentVo"/>
+        AND c.parent_id = #{parentId}
+        AND c.status = 0
+        ORDER BY c.create_time ASC
+    </select>
+
+    <!-- 查询评论详情 -->
+    <select id="selectCommentDetail" resultMap="CommentVoResultMap">
+        <include refid="selectCommentVo"/>
+        AND c.comment_id = #{commentId}
+        LIMIT 1
+    </select>
+
+</mapper>

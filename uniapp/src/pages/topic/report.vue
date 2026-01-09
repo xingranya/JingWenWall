@@ -91,7 +91,7 @@ export default {
           method: 'POST',
           header: {
             'Content-Type': 'application/json',
-            'token': uni.getStorageSync('token'),
+            'Authorization': `Bearer ${uni.getStorageSync('token')}`
           },
           data: reportData,
           success: (res) => {

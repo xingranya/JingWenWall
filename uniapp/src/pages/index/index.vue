@@ -63,23 +63,41 @@ export default {
      * 初始化
      */
     async init() {
+      // 检查是否已有token
+      const existingToken = uni.getStorageSync('token');
+      if (existingToken) {
+        console.log('已存在token,跳过登录');
+        return;
+      }
+      
+      // 生产模式:使用微信登录
+      console.log('进行微信登录...');
       uni.login({
         provider: 'weixin',
         success: async (loginRes) => {
-          if (loginRes.errMsg === 'login:ok') {
-            console.log('-=-=-=-=loginRes-=-=-=', loginRes);
-          }
+          console.log('微信登录成功，获取 code:', loginRes.code);
           const params = {
             code: loginRes.code
           };
           try {
             await userLoginService(params);
+            console.log('后端登录成功');
+            // 登录成功后，主动调用 fetchRecords 加载话题
+            console.log('开始加载话题列表...');
+            // 使用setTimeout确保上this上下文正确，并await程序完成
+            setTimeout(() => {
+              this.fetchRecords();
+            }, 100);
           } catch (error) {
             console.error('用户登录失败:', error);
+            uni.showToast({
+              title: '登录失败,请重试',
+              icon: 'none'
+            });
           }
         },
-        fail: function (err) {
-          console.log('login fail:', err);
+        fail: (err) => {
+          console.error('微信登录失败:', err);
           uni.navigateTo({
             url: '/pages/transition/agreement'
           });
@@ -103,12 +121,33 @@ export default {
       }
       this.loadMoreStatus = 'loading';
       try {
-        const res = await getRecords(this.page, token);
-        console.log('话题列表:', res);
-        if (res && Array.isArray(res.records)) {
-          const newRecords = res.records.filter(record => !record.isDraft);
+        const res = await getRecords(this.page, 10);
+        console.log('话题列表响应:', res);
+        
+        // 检查响应是否有效
+        if (!res) {
+          console.error('话题列表响应为undefined');
+          this.loadMoreStatus = 'more';
+          await uni.showToast({title: '加载失败', icon: 'none'});
+          return;
+        }
+        
+        // 后端返回的是 { rows: [...], total: 4, ...}
+        // 需要从 rows 中提取数据
+        const records = res.rows || res.records || [];
+        let total = res.total || 0;
+        
+        // 确保 total 是数字
+        if (typeof total === 'string') {
+          total = parseInt(total, 10);
+        }
+        
+        console.log('提取的records:', records, '总数:', total);
+        
+        if (records && Array.isArray(records)) {
+          const newRecords = records.filter(record => !record.isDraft);
           if (newRecords.length === 0) {
-            if (res.records.length === 0) {
+            if (records.length === 0) {
               this.loadMoreStatus = 'noMore';
             } else {
               this.loadMoreStatus = 'more';
@@ -117,20 +156,25 @@ export default {
           } else {
             this.records = this.records.concat(newRecords);
             this.page++;
-            if (this.records.length >= res.total) {
+            if (this.records.length >= total) {
               this.loadMoreStatus = 'noMore';
             } else {
               this.loadMoreStatus = 'more';
             }
           }
         } else {
+          console.error('records 不是数组:', records);
           this.loadMoreStatus = 'more';
           await uni.showToast({title: '加载失败', icon: 'none'});
         }
       } catch (err) {
         console.error('话题列表加载失败:', err);
+        console.error('错误类型:', typeof err);
+        console.error('错误信息:', err.message || err);
+        console.error('完整错误:', err);
         this.loadMoreStatus = 'more';
-        await uni.showToast({title: '加载失败', icon: 'none'});
+        const errorMsg = err && err.message ? err.message : String(err);
+        await uni.showToast({title: '加载失败: ' + errorMsg, icon: 'none'});
       }
     },
   }

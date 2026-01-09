@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.forum.mapper.ForumPostCollectMapper">
+
+    <resultMap id="BaseResultMap" type="com.oddfar.campus.business.forum.domain.entity.BusForumPostCollectEntity">
+        <id property="collectId" column="collect_id" jdbcType="BIGINT"/>
+        <result property="postId" column="post_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createUser" column="create_user" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="BIT"/>
+    </resultMap>
+
+    <!-- 查询用户收藏的帖子ID列表 -->
+    <select id="selectCollectedPostIds" resultType="java.lang.Long">
+        SELECT post_id
+        FROM bus_forum_post_collect
+        WHERE user_id = #{userId}
+        AND del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

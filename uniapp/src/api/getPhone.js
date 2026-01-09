@@ -12,7 +12,7 @@ export const userGetPhoneService = (code) => {
             method: 'POST',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token')
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: function (res) {
                 if (res.statusCode === 200) {

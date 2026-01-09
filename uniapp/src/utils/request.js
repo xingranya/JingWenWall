@@ -2,11 +2,13 @@ import {baseUrl} from '@/utils/env'
 
 export function request({url='', params={}, method='GET'}) {
 
+    const token = uni.getStorageSync('token');
     let header = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         // 使用 Authorization 头传递 token，与后端配置一致
-        'Authorization': uni.getStorageSync('token') || ''
+        // 后端期望格式：Authorization: Bearer <token>
+        'Authorization': token ? `Bearer ${token}` : ''
     }
 
     return new Promise((resolve, reject) => {

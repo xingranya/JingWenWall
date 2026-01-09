@@ -78,18 +78,18 @@ export default {
   methods: {
     onClick(record) {
       uni.navigateTo({
-        url: `/pages/topic/view?topicId=${record.id}`,
+        url: `/pages/topic/view?topicId=${record.postId}`,
       });
     },
     async handleLike(record) {
       try {
         if (record.isLiked) {
-          await unlikeTopic(record.id);
+          await unlikeTopic(record.postId);
           record.isLiked = false;
           record.likeCount = Math.max(0, record.likeCount - 1);
           uni.showToast({ title: "取消点赞成功", icon: "success" });
         } else {
-          await likeTopic(record.id);
+          await likeTopic(record.postId);
           record.isLiked = true;
           record.likeCount += 1;
           uni.showToast({ title: "点赞成功", icon: "success" });
@@ -102,12 +102,12 @@ export default {
     async handleCollect(record) {
       try {
         if (record.isCollected) {
-          await uncollectTopic(record.id);
+          await uncollectTopic(record.postId);
           record.isCollected = false;
           record.collectCount = Math.max(0, record.collectCount - 1);
           await uni.showToast({ title: "取消收藏成功", icon: "success" });
         } else {
-          await collectTopic(record.id);
+          await collectTopic(record.postId);
           record.isCollected = true;
           record.collectCount += 1;
           await uni.showToast({ title: "收藏成功", icon: "success" });

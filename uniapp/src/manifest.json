@@ -1,6 +1,6 @@
 {
     "name" : "wall-uniapp",
-    "appid" : "__UNI__3388B50",
+    "appid" : "__UNI__3844D0E",
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -57,7 +57,7 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "wxbd9c9c99d9116c2a",
+        "appid" : "wxc56334f1f425a05f",
         "setting" : {
             "urlCheck" : false,
             "minified" : true,

@@ -1,41 +1,21 @@
 import { baseUrl } from "@/utils/env";
 
-// export const fetchComments = (topicId) => {
-//     return new Promise((resolve, reject) => {
-//         uni.request({
-//             url: `${baseUrl}/student/get/comments/${topicId}`,
-//             method: 'GET',
-//             header: {
-//                 'Content-Type': 'application/json',
-//                 'token': uni.getStorageSync('token'),
-//             },
-//             success: (res) => {
-//                 if (res.data.code === 1) {
-//                     resolve(res.data.data);
-//                 } else {
-//                     reject(res.data.msg);
-//                 }
-//             },
-//             fail: (err) => reject(err),
-//         });
-//     });
-// };
-
 /**
  * 获取评论列表
+ * 新架构：使用论坛评论API
  */
-export const fetchComments = (topicId, page, pageSize) => {
+export const fetchComments = (postId, pageNum = 1, pageSize = 10) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/get/comments/${topicId}?page=${page}&pageSize=${pageSize}`,
+            url: `${baseUrl}/api/v1/forum/comments/post/${postId}?pageNum=${pageNum}&pageSize=${pageSize}`,
             method: 'GET',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
-                    resolve(res.data.data.list);
+                if (res.data.code === 200) {
+                    resolve(res.data.data);
                 } else {
                     reject(res.data.msg);
                 }
@@ -47,19 +27,20 @@ export const fetchComments = (topicId, page, pageSize) => {
 
 /**
  * 提交评论
+ * 新架构：使用论坛发布评论API
  */
-export const submitComment = (topicId, content) => {
+export const submitComment = (postId, content) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/comment/topic/${topicId}`,
+            url: `${baseUrl}/api/v1/forum/comments`,
             method: 'POST',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
-            data: { content },
+            data: { postId, content },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '评论失败');
@@ -72,18 +53,19 @@ export const submitComment = (topicId, content) => {
 
 /**
  * 删除评论
+ * 新架构：使用论坛删除评论API
  */
 export const deleteComment = (commentId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/delete/comment/${commentId}`,
+            url: `${baseUrl}/api/v1/forum/comments/${commentId}`,
             method: 'DELETE',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '删除评论失败');
@@ -96,18 +78,19 @@ export const deleteComment = (commentId) => {
 
 /**
  * 点赞评论
+ * 新架构：使用论坛点赞评论API
  */
 export const likeComment = (commentId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/like/comment/${commentId}`,
+            url: `${baseUrl}/api/v1/forum/comments/${commentId}/like`,
             method: 'POST',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '点赞评论失败');
@@ -120,18 +103,19 @@ export const likeComment = (commentId) => {
 
 /**
  * 取消点赞评论
+ * 新架构：使用论坛取消点赞评论API
  */
 export const unlikeComment = (commentId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/unlike/comment/${commentId}`,
-            method: 'POST',
+            url: `${baseUrl}/api/v1/forum/comments/${commentId}/like`,
+            method: 'DELETE',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '取消点赞评论失败');

@@ -107,6 +107,24 @@
 			"style": {
 				"navigationBarTitleText": "关于我们"
 			}
+		},
+		{
+			"path": "pages/forum/index",
+			"style": {
+				"navigationBarTitleText": "贴吧"
+			}
+		},
+		{
+			"path": "pages/forum/detail",
+			"style": {
+				"navigationBarTitleText": "帖子详情"
+			}
+		},
+		{
+			"path": "pages/forum/publish",
+			"style": {
+				"navigationBarTitleText": "发布帖子"
+			}
 		}
 	],
 	"tabBar": {
@@ -121,12 +139,12 @@
 				"iconPath": "static/icon/home.png",
 				"selectedIconPath": "static/icon/home-active.png"
 			},
-//            {
-//                "pagePath": "pages/order/order",
-//                "text": "订单",
-//                "iconPath": "static/icon/order.png",
-//                "selectedIconPath": "static/icon/order-active.png"
-//            },
+			{
+				"pagePath": "pages/forum/index",
+				"text": "贴吧",
+				"iconPath": "static/icon/topic.png",
+				"selectedIconPath": "static/icon/topic-active.png"
+			},
             {
                 "pagePath": "pages/message/index",
                 "text": "消息",

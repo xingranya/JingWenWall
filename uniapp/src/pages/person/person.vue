@@ -60,7 +60,7 @@ export default {
   },
   data() {
     return {
-      avatarUrl: '/static/default_avatar.png',
+      avatarUrl: '/static/default_avatar.jpg',
       nickName: '飞天裤衩',
     };
   },
@@ -69,10 +69,10 @@ export default {
       url: baseUrl + '/student/get/info',
       method: 'GET',
       header: {
-        token: uni.getStorageSync('token')
+        'Authorization': `Bearer ${uni.getStorageSync('token')}`
       },
       success: (res) => {
-        if (res.data.code === 1) {
+        if (res.data.code === 200) {
           this.nickName = res.data.data.username;
           this.avatarUrl = res.data.data.avatar;
           console.log('获取用户信息成功:', res.data.data);

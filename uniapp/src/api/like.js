@@ -1,19 +1,20 @@
 import { baseUrl } from "@/utils/env";
 
 /**
- * 点赞话题
+ * 点赞帖子
+ * 新架构：使用论坛点赞API
  */
-export const likeTopic = (topicId) => {
+export const likeTopic = (postId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/like/topic/${topicId}`,
+            url: `${baseUrl}/api/v1/forum/posts/${postId}/like`,
             method: 'POST',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '点赞失败');
@@ -25,19 +26,20 @@ export const likeTopic = (topicId) => {
 };
 
 /**
- * 取消点赞话题
+ * 取消点赞帖子
+ * 新架构：使用论坛取消点赞API
  */
-export const unlikeTopic = (topicId) => {
+export const unlikeTopic = (postId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/unlike/topic/${topicId}`,
-            method: 'POST',
+            url: `${baseUrl}/api/v1/forum/posts/${postId}/like`,
+            method: 'DELETE',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '取消点赞失败');

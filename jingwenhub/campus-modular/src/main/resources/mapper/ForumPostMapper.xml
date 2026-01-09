@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.forum.mapper.ForumPostMapper">
+
+    <resultMap id="BaseResultMap" type="com.oddfar.campus.business.forum.domain.entity.BusForumPostEntity">
+        <id property="postId" column="post_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="LONGVARCHAR"/>
+        <result property="images" column="images" jdbcType="VARCHAR" 
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result property="isAnonymous" column="is_anonymous" jdbcType="TINYINT"/>
+        <result property="isDraft" column="is_draft" jdbcType="TINYINT"/>
+        <result property="viewCount" column="view_count" jdbcType="INTEGER"/>
+        <result property="likeCount" column="like_count" jdbcType="INTEGER"/>
+        <result property="commentCount" column="comment_count" jdbcType="INTEGER"/>
+        <result property="collectCount" column="collect_count" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="ip" column="ip" jdbcType="VARCHAR"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createUser" column="create_user" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateUser" column="update_user" jdbcType="BIGINT"/>
+        <result property="delFlag" column="del_flag" jdbcType="BIT"/>
+    </resultMap>
+
+    <resultMap id="PostVoResultMap" type="com.oddfar.campus.business.forum.domain.vo.ForumPostVO">
+        <id property="postId" column="post_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
+        <result property="categoryName" column="category_name" jdbcType="VARCHAR"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="LONGVARCHAR"/>
+        <result property="images" column="images" jdbcType="VARCHAR" 
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result property="isAnonymous" column="is_anonymous" jdbcType="TINYINT"/>
+        <result property="isDraft" column="is_draft" jdbcType="TINYINT"/>
+        <result property="viewCount" column="view_count" jdbcType="INTEGER"/>
+        <result property="likeCount" column="like_count" jdbcType="INTEGER"/>
+        <result property="commentCount" column="comment_count" jdbcType="INTEGER"/>
+        <result property="collectCount" column="collect_count" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="ip" column="ip" jdbcType="VARCHAR"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="selectPostVo">
+        SELECT p.post_id, p.user_id, p.category_id, p.title, p.content, p.images,
+               p.is_anonymous, p.is_draft, p.view_count, p.like_count, 
+               p.comment_count, p.collect_count, p.status, p.ip, p.address,
+               p.create_time, p.update_time,
+               CASE WHEN p.is_anonymous = 1 THEN '匿名用户' ELSE u.nick_name END as nick_name,
+               CASE WHEN p.is_anonymous = 1 THEN NULL ELSE u.avatar END as avatar,
+               c.category_name
+        FROM bus_forum_post p
+        LEFT JOIN sys_user u ON p.user_id = u.user_id
+        LEFT JOIN bus_category c ON p.category_id = c.category_id
+        WHERE p.del_flag = 0
+    </sql>
+
+    <!-- 查询帖子列表 -->
+    <select id="selectPostList" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.is_draft = 0
+        <if test="categoryId != null">
+            AND p.category_id = #{categoryId}
+        </if>
+        ORDER BY p.create_time DESC
+    </select>
+
+    <!-- 查询帖子详情 -->
+    <select id="selectPostDetail" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.post_id = #{postId}
+        LIMIT 1
+    </select>
+
+    <!-- 查询最新帖子 -->
+    <select id="selectNewestPosts" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.is_draft = 0
+        AND p.status = 0
+        ORDER BY p.create_time DESC
+    </select>
+
+    <!-- 查询热门帖子(根据点赞数和评论数) -->
+    <select id="selectHotPosts" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.is_draft = 0
+        AND p.status = 0
+        ORDER BY (p.like_count * 2 + p.comment_count + p.view_count * 0.1) DESC, p.create_time DESC
+    </select>
+
+    <!-- 查询用户发布的帖子 -->
+    <select id="selectPostsByUserId" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.user_id = #{userId}
+        AND p.is_draft = 0
+        ORDER BY p.create_time DESC
+    </select>
+
+    <!-- 查询用户收藏的帖子ID列表 -->
+    <select id="selectCollectedPostIds" resultType="java.lang.Long">
+        SELECT post_id 
+        FROM bus_forum_post_collect 
+        WHERE user_id = #{userId} 
+        AND del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据ID列表查询帖子 -->
+    <select id="selectPostsByIds" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.post_id IN
+        <foreach collection="postIds" item="postId" open="(" separator="," close=")">
+            #{postId}
+        </foreach>
+        ORDER BY p.create_time DESC
+    </select>
+
+    <!-- 更新浏览次数 -->
+    <update id="updateViewCount">
+        UPDATE bus_forum_post 
+        SET view_count = view_count + 1
+        WHERE post_id = #{postId}
+    </update>
+
+</mapper>

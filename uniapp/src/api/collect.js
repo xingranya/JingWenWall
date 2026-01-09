@@ -1,23 +1,24 @@
 import { baseUrl } from "@/utils/env";
 
 /**
- * 获取用户收藏的话题
+ * 获取用户收藏的帖子
+ * 新架构：使用论坛我收藏的帖子API
  */
-export const fetchCollectedTopics = (page = 1, pageSize = 5) => {
+export const fetchCollectedTopics = (pageNum = 1, pageSize = 10) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/get/collect?page=${page}&pageSize=${pageSize}`,
+            url: `${baseUrl}/api/v1/forum/posts/collected?pageNum=${pageNum}&pageSize=${pageSize}`,
             method: 'GET',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token')
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.data);
-                    console.log('获取收藏话题成功', res.data.data);
+                    console.log('获取收藏帖子成功', res.data.data);
                 } else {
-                    reject(new Error('获取收藏话题失败'));
+                    reject(new Error('获取收藏帖子失败'));
                 }
             },
             fail: (err) => reject(err)
@@ -26,19 +27,20 @@ export const fetchCollectedTopics = (page = 1, pageSize = 5) => {
 };
 
 /**
- * 收藏话题
+ * 收藏帖子
+ * 新架构：使用论坛收藏API
  */
-export const collectTopic = (topicId) => {
+export const collectTopic = (postId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/collect/topic/${topicId}`,
+            url: `${baseUrl}/api/v1/forum/posts/${postId}/collect`,
             method: 'POST',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '收藏失败');
@@ -50,19 +52,20 @@ export const collectTopic = (topicId) => {
 };
 
 /**
- * 取消收藏话题
+ * 取消收藏帖子
+ * 新架构：使用论坛取消收藏API
  */
-export const uncollectTopic = (topicId) => {
+export const uncollectTopic = (postId) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: `${baseUrl}/student/uncollect/topic/${topicId}`,
-            method: 'POST',
+            url: `${baseUrl}/api/v1/forum/posts/${postId}/collect`,
+            method: 'DELETE',
             header: {
                 'Content-Type': 'application/json',
-                'token': uni.getStorageSync('token'),
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 1) {
+                if (res.data.code === 200) {
                     resolve(res.data.msg);
                 } else {
                     reject(res.data.msg || '取消收藏失败');
