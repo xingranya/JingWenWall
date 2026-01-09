@@ -5,7 +5,8 @@ export function request({url='', params={}, method='GET'}) {
     let header = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        token: uni.getStorageSync('token')
+        // 使用 Authorization 头传递 token，与后端配置一致
+        'Authorization': uni.getStorageSync('token') || ''
     }
 
     return new Promise((resolve, reject) => {

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.mapper.BusStudentMapper">
+
+    <resultMap type="com.oddfar.campus.business.domain.entity.BusStudentEntity" id="BusStudentResult">
+        <id property="studentId" column="student_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="openid" column="openid"/>
+        <result property="unionid" column="unionid"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="realName" column="real_name"/>
+        <result property="college" column="college"/>
+        <result property="major" column="major"/>
+        <result property="grade" column="grade"/>
+        <result property="creditScore" column="credit_score"/>
+        <result property="balance" column="balance"/>
+        <result property="isVerified" column="is_verified"/>
+        <result property="isRunner" column="is_runner"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <!-- 关联字段 -->
+        <result property="nickName" column="nick_name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="phonenumber" column="phonenumber"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
+    <sql id="selectBusStudentVo">
+        select student_id, user_id, openid, unionid, student_no, real_name, 
+               college, major, grade, credit_score, balance, is_verified, 
+               is_runner, del_flag, create_time, update_time
+        from bus_student
+    </sql>
+
+    <!-- 根据openid查询学生信息 -->
+    <select id="selectByOpenid" parameterType="String" resultMap="BusStudentResult">
+        <include refid="selectBusStudentVo"/>
+        where openid = #{openid} and del_flag = 0
+    </select>
+
+    <!-- 根据userId查询学生信息 -->
+    <select id="selectByUserId" parameterType="Long" resultMap="BusStudentResult">
+        <include refid="selectBusStudentVo"/>
+        where user_id = #{userId} and del_flag = 0
+    </select>
+
+    <!-- 根据学号查询学生信息 -->
+    <select id="selectByStudentNo" parameterType="String" resultMap="BusStudentResult">
+        <include refid="selectBusStudentVo"/>
+        where student_no = #{studentNo} and del_flag = 0
+    </select>
+
+    <!-- 查询学生信息及关联的用户信息 -->
+    <select id="selectStudentWithUserInfo" parameterType="Long" resultMap="BusStudentResult">
+        select 
+            s.student_id, s.user_id, s.openid, s.unionid, s.student_no, s.real_name,
+            s.college, s.major, s.grade, s.credit_score, s.balance, s.is_verified,
+            s.is_runner, s.del_flag, s.create_time, s.update_time,
+            u.nick_name, u.avatar, u.phonenumber, u.user_name
+        from bus_student s
+        left join sys_user u on s.user_id = u.user_id
+        where s.student_id = #{studentId} and s.del_flag = 0
+    </select>
+
+    <!-- 根据userId查询学生信息及关联的用户信息 -->
+    <select id="selectStudentWithUserInfoByUserId" parameterType="Long" resultMap="BusStudentResult">
+        select 
+            s.student_id, s.user_id, s.openid, s.unionid, s.student_no, s.real_name,
+            s.college, s.major, s.grade, s.credit_score, s.balance, s.is_verified,
+            s.is_runner, s.del_flag, s.create_time, s.update_time,
+            u.nick_name, u.avatar, u.phonenumber, u.user_name
+        from bus_student s
+        left join sys_user u on s.user_id = u.user_id
+        where s.user_id = #{userId} and s.del_flag = 0
+    </select>
+
+    <!-- 更新学生钱包余额 -->
+    <update id="updateBalance">
+        update bus_student 
+        set balance = balance + #{amount},
+            update_time = NOW()
+        where student_id = #{studentId} and del_flag = 0
+    </update>
+
+    <!-- 更新学生信用分 -->
+    <update id="updateCreditScore">
+        update bus_student 
+        set credit_score = credit_score + #{score},
+            update_time = NOW()
+        where student_id = #{studentId} and del_flag = 0
+    </update>
+
+</mapper>
