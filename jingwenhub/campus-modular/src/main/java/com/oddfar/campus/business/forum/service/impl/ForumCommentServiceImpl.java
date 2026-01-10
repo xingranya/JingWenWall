@@ -5,8 +5,10 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.oddfar.campus.business.forum.domain.dto.ForumCommentDTO;
 import com.oddfar.campus.business.forum.domain.entity.BusForumCommentEntity;
+import com.oddfar.campus.business.forum.domain.entity.BusForumCommentLikeEntity;
 import com.oddfar.campus.business.forum.domain.entity.BusForumPostEntity;
 import com.oddfar.campus.business.forum.domain.vo.ForumCommentVO;
+import com.oddfar.campus.business.forum.mapper.ForumCommentLikeMapper;
 import com.oddfar.campus.business.forum.mapper.ForumCommentMapper;
 import com.oddfar.campus.business.forum.mapper.ForumPostMapper;
 import com.oddfar.campus.business.forum.service.ForumCommentService;
@@ -31,6 +33,9 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
     
     @Autowired
     private ForumCommentMapper commentMapper;
+    
+    @Autowired
+    private ForumCommentLikeMapper commentLikeMapper;
     
     @Autowired
     private ForumPostMapper postMapper;
@@ -100,8 +105,9 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
             throw new ServiceException("无权删除此评论");
         }
         
-        // 删除评论
-        this.removeById(commentId);
+        // 逻辑删除：设置 del_flag = 1
+        comment.setDelFlag(1);
+        this.updateById(comment);
         
         // 更新帖子评论数
         BusForumPostEntity post = postMapper.selectById(comment.getPostId());
@@ -118,9 +124,30 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
         if (comment == null) {
             throw new ServiceException("评论不存在");
         }
-        
-        // TODO: 添加点赞记录表,避免重复点赞
-        // 这里简化处理,直接增加点赞数
+                
+        Long userId = SecurityUtils.getUserId();
+                
+        // 1. 忽略逻辑删除，直接查询物理记录
+        BusForumCommentLikeEntity existLike = commentLikeMapper.selectOnePhysical(userId, commentId);
+                
+        if (existLike != null) {
+            // 这里放宽一点：只要不是 0，都执行恢复操作
+            if (existLike.getDelFlag() != null && existLike.getDelFlag() == 0) {
+                throw new ServiceException("已经点赞过了");
+            } else {
+                // 强制恢复
+                commentLikeMapper.updateDelFlag(userId, commentId, 0);
+            }
+        } else {
+            // 插入新记录
+            BusForumCommentLikeEntity likeEntity = new BusForumCommentLikeEntity();
+            likeEntity.setUserId(userId);
+            likeEntity.setCommentId(commentId);
+            likeEntity.setDelFlag(0);
+            commentLikeMapper.insert(likeEntity);
+        }
+                
+        // 更新评论点赞数
         comment.setLikeCount(comment.getLikeCount() + 1);
         this.updateById(comment);
     }
@@ -132,12 +159,20 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
         if (comment == null) {
             throw new ServiceException("评论不存在");
         }
-        
-        // TODO: 删除点赞记录
-        // 这里简化处理,直接减少点赞数
-        if (comment.getLikeCount() > 0) {
-            comment.setLikeCount(comment.getLikeCount() - 1);
-            this.updateById(comment);
+                    
+        Long userId = SecurityUtils.getUserId();
+        System.out.println("[取消点赞] userId=" + userId + ", commentId=" + commentId);
+                    
+        // 强制执行更新，不进行前置判断，确保物理状态一定会被设为 1
+        int rows = commentLikeMapper.updateDelFlag(userId, commentId, 1);
+        System.out.println("[取消点赞] 影响行数=" + rows);
+            
+        if (rows > 0) {
+            // 只有更新成功（即之前确实是点赞状态）才减少计数
+            if (comment.getLikeCount() > 0) {
+                comment.setLikeCount(comment.getLikeCount() - 1);
+                this.updateById(comment);
+            }
         }
     }
 }

@@ -144,12 +144,13 @@ import {
 	getPostComments,
 	publishComment 
 } from '@/api/forum';
+import { createEmptyForumPost } from '@/models/ForumPost';
 
 export default {
 	data() {
 		return {
 			postId: null,
-			post: null,
+			post: createEmptyForumPost(),
 			commentList: [],
 			commentText: '',
 			showCommentDialog: false,
@@ -289,7 +290,9 @@ export default {
 		// 格式化时间
 		formatTime(time) {
 			if (!time) return '';
-			const date = new Date(time);
+			// iOS 兼容性处理：将 YYYY-MM-DD 替换为 YYYY/MM/DD
+			const safeTime = typeof time === 'string' ? time.replace(/-/g, '/') : time;
+			const date = new Date(safeTime);
 			return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 		}
 	}

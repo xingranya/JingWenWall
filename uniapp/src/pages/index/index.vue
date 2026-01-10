@@ -109,69 +109,52 @@ export default {
      * 获取话题列表
      */
     async fetchRecords() {
+      // 1. 基础状态检查
+      if (this.loadMoreStatus === 'loading' || this.loadMoreStatus === 'noMore') {
+        return;
+      }
+      
       const token = uni.getStorageSync('token');
-      if(!token) {
-        await uni.navigateTo({
-          url: '/pages/transition/agreement'
-        });
+      if (!token) {
+        console.warn('Token缺失，重定向到协议页');
+        uni.navigateTo({ url: '/pages/transition/agreement' });
         return;
       }
-      if (this.loadMoreStatus === 'noMore') {
-        return;
-      }
+
       this.loadMoreStatus = 'loading';
+      console.log(`[首页加载] 开始获取第 ${this.page} 页数据`);
+
       try {
+        // 2. 调用 API (已通过 handlePageResult 封装)
         const res = await getRecords(this.page, 10);
-        console.log('话题列表响应:', res);
+        console.log('[首页加载] API响应:', res);
         
-        // 检查响应是否有效
-        if (!res) {
-          console.error('话题列表响应为undefined');
-          this.loadMoreStatus = 'more';
-          await uni.showToast({title: '加载失败', icon: 'none'});
-          return;
-        }
+        const records = res.rows || [];
+        const total = Number(res.total || 0);
         
-        // 后端返回的是 { rows: [...], total: 4, ...}
-        // 需要从 rows 中提取数据
-        const records = res.rows || res.records || [];
-        let total = res.total || 0;
+        // 3. 过滤并处理数据
+        // 过滤草稿
+        const validRecords = records.filter(item => item && !item.isDraft);
         
-        // 确保 total 是数字
-        if (typeof total === 'string') {
-          total = parseInt(total, 10);
-        }
-        
-        console.log('提取的records:', records, '总数:', total);
-        
-        if (records && Array.isArray(records)) {
-          const newRecords = records.filter(record => !record.isDraft);
-          if (newRecords.length === 0) {
-            if (records.length === 0) {
-              this.loadMoreStatus = 'noMore';
-            } else {
-              this.loadMoreStatus = 'more';
-              this.page++;
-            }
+        if (validRecords.length > 0) {
+          // 合并数据
+          this.records = [...this.records, ...validRecords];
+          
+          // 更新分页状态
+          if (this.records.length >= total || records.length < 10) {
+            this.loadMoreStatus = 'noMore';
           } else {
-            this.records = this.records.concat(newRecords);
+            this.loadMoreStatus = 'more';
             this.page++;
-            if (this.records.length >= total) {
-              this.loadMoreStatus = 'noMore';
-            } else {
-              this.loadMoreStatus = 'more';
-            }
           }
         } else {
-          console.error('records 不是数组:', records);
-          this.loadMoreStatus = 'more';
-          await uni.showToast({title: '加载失败', icon: 'none'});
+          this.loadMoreStatus = 'noMore';
         }
+        
+        console.log(`[首页加载] 成功合并 ${validRecords.length} 条数据，当前总计 ${this.records.length} 条`);
+
       } catch (err) {
-        console.error('话题列表加载失败:', err);
-        console.error('错误类型:', typeof err);
-        console.error('错误信息:', err.message || err);
-        console.error('完整错误:', err);
+        console.error('[首页加载] 异常:', err);
         this.loadMoreStatus = 'more';
         const errorMsg = err && err.message ? err.message : String(err);
         await uni.showToast({title: '加载失败: ' + errorMsg, icon: 'none'});

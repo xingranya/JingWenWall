@@ -209,7 +209,9 @@ export default {
 		// 格式化时间
 		formatTime(time) {
 			if (!time) return '';
-			const date = new Date(time);
+			// iOS 兼容性处理：将 YYYY-MM-DD 替换为 YYYY/MM/DD
+			const safeTime = typeof time === 'string' ? time.replace(/-/g, '/') : time;
+			const date = new Date(safeTime);
 			const now = new Date();
 			const diff = now - date;
 			

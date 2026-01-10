@@ -168,6 +168,7 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, ContentEntity
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteContentById(Long contentId) {
         ContentEntity contentEntity = contentMapper.selectById(contentId);
         if (contentEntity == null) {
@@ -178,8 +179,9 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, ContentEntity
 
         //墙的文件处理
 
-        //删除墙
-        contentMapper.deleteById(contentId);
+        //逻辑删除信息墙
+        contentEntity.setDelFlag(1);
+        contentMapper.updateById(contentEntity);
     }
 
     @Override

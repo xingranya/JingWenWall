@@ -1,8 +1,10 @@
 import { baseUrl } from "@/utils/env";
+import { handlePageResult } from "@/utils/api-helper";
 
 /**
  * 获取评论列表
  * 新架构：使用论坛评论API
+ * 后端PageResult返回格式：{code: 200, msg: "success", rows: [...], total: N}
  */
 export const fetchComments = (postId, pageNum = 1, pageSize = 10) => {
     return new Promise((resolve, reject) => {
@@ -14,13 +16,16 @@ export const fetchComments = (postId, pageNum = 1, pageSize = 10) => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 200) {
-                    resolve(res.data.data);
-                } else {
-                    reject(res.data.msg);
+                try {
+                    resolve(handlePageResult(res));
+                } catch (err) {
+                    reject(err.message);
                 }
             },
-            fail: (err) => reject(err),
+            fail: (err) => {
+                console.error('[评论接口失败]', err);
+                reject('网络请求失败，请检查网络连接');
+            },
         });
     });
 };

@@ -165,7 +165,9 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
             throw new ServiceException("无权删除此帖子");
         }
         
-        this.removeById(postId);
+        // 逻辑删除：设置 del_flag = 1
+        entity.setDelFlag(1);
+        this.updateById(entity);
     }
     
     @Override
@@ -173,24 +175,28 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     public void likePost(Long postId) {
         Long userId = SecurityUtils.getUserId();
         
-        // 检查是否已点赞（只查询未删除的）
-        LambdaQueryWrapper<BusForumPostLikeEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BusForumPostLikeEntity::getUserId, userId)
-               .eq(BusForumPostLikeEntity::getPostId, postId)
-               .eq(BusForumPostLikeEntity::getDelFlag, 0);  // 只查询未删除的
+        // 1. 忽略逻辑删除，直接查询物理记录（确保能找回已删除的记录，规避唯一索引冲突）
+        BusForumPostLikeEntity existLike = likeMapper.selectOnePhysical(userId, postId);
         
-        if (likeMapper.selectCount(wrapper) > 0) {
-            throw new ServiceException("已经点赞过了");
+        if (existLike != null) {
+            // 如果记录存在且 del_flag 为 0 (未删除)，说明是真的重复点赞
+            if (existLike.getDelFlag() != null && existLike.getDelFlag() == 0) {
+                throw new ServiceException("已经点赞过了");
+            } else {
+                // 如果记录存在但 del_flag 为 1 (已删除)，则将其恢复
+                existLike.setDelFlag(0);
+                likeMapper.updateById(existLike);
+            }
+        } else {
+            // 2. 如果物理表完全没有记录，则执行插入
+            BusForumPostLikeEntity likeEntity = new BusForumPostLikeEntity();
+            likeEntity.setUserId(userId);
+            likeEntity.setPostId(postId);
+            likeEntity.setDelFlag(0);
+            likeMapper.insert(likeEntity);
         }
         
-        // 添加点赞记录
-        BusForumPostLikeEntity likeEntity = new BusForumPostLikeEntity();
-        likeEntity.setUserId(userId);
-        likeEntity.setPostId(postId);
-        likeEntity.setDelFlag(0);  // 下檇标记为未删除
-        likeMapper.insert(likeEntity);
-        
-        // 更新帖子点赞数
+        // 3. 更新帖子点赞数
         BusForumPostEntity post = this.getById(postId);
         if (post != null) {
             post.setLikeCount(post.getLikeCount() + 1);
@@ -203,15 +209,15 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     public void unlikePost(Long postId) {
         Long userId = SecurityUtils.getUserId();
         
-        // 查找点赞记录
+        // 查找点赞记录（只查未删除的）
         LambdaQueryWrapper<BusForumPostLikeEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BusForumPostLikeEntity::getUserId, userId)
                .eq(BusForumPostLikeEntity::getPostId, postId)
-               .eq(BusForumPostLikeEntity::getDelFlag, 0);  // 只查询未删除的
+               .eq(BusForumPostLikeEntity::getDelFlag, 0);
         
         BusForumPostLikeEntity likeEntity = likeMapper.selectOne(wrapper);
         if (likeEntity != null) {
-            // 逐辑删除：设置 del_flag = 1
+            // 设置 del_flag = 1
             likeEntity.setDelFlag(1);
             likeMapper.updateById(likeEntity);
             
@@ -334,7 +340,8 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     private boolean checkUserLike(Long userId, Long postId) {
         LambdaQueryWrapper<BusForumPostLikeEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BusForumPostLikeEntity::getUserId, userId)
-               .eq(BusForumPostLikeEntity::getPostId, postId);
+               .eq(BusForumPostLikeEntity::getPostId, postId)
+               .eq(BusForumPostLikeEntity::getDelFlag, 0);  // 仅查询未删除的记录
         return likeMapper.selectCount(wrapper) > 0;
     }
     
@@ -344,7 +351,8 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     private boolean checkUserCollect(Long userId, Long postId) {
         LambdaQueryWrapper<BusForumPostCollectEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BusForumPostCollectEntity::getUserId, userId)
-               .eq(BusForumPostCollectEntity::getPostId, postId);
+               .eq(BusForumPostCollectEntity::getPostId, postId)
+               .eq(BusForumPostCollectEntity::getDelFlag, 0);  // 仅查询未删除的记录
         return collectMapper.selectCount(wrapper) > 0;
     }
 }

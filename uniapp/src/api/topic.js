@@ -1,4 +1,5 @@
 import { baseUrl } from "@/utils/env";
+import { handlePageResult } from "@/utils/api-helper";
 
 /**
  * 获取最新帖子列表（分页）
@@ -6,53 +7,21 @@ import { baseUrl } from "@/utils/env";
  */
 export const getRecords = (pageNum = 1, pageSize = 10) => {
     return new Promise((resolve, reject) => {
-        console.log(`开始调用getRecords, pageNum=${pageNum}, pageSize=${pageSize}`);
-        const token = uni.getStorageSync('token');
-        console.log(`当前 token:`, token ? '存在' : '不存在');
-        
         uni.request({
             url: `${baseUrl}/api/v1/forum/posts/newest?pageNum=${pageNum}&pageSize=${pageSize}`,
             method: 'GET',
             header: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
-            timeout: 30000,  // 增加超时时间到30秒
             success: (res) => {
-                console.log('getRecords 响应:', res);
-                console.log('statusCode:', res.statusCode);
-                console.log('data:', res.data);
-                
-                // 先检查响应是否有效
-                if (!res || !res.data) {
-                    console.error('响应无效: res 或 res.data 为 null/undefined');
-                    reject('响应无效');
-                    return;
-                }
-                
-                // 检查 HTTP 状态码
-                if (res.statusCode === 200) {
-                    // 检查业务状态码
-                    if (res.data.code === 200) {
-                        console.log('获取话题列表成功:', res.data);
-                        // 直接返回 res.data，它已经包含了 rows 和 total
-                        resolve(res.data);
-                    } else {
-                        console.error('业务报错, code:', res.data.code, 'msg:', res.data.msg);
-                        reject(res.data.msg || '加载失败');
-                    }
-                } else {
-                    console.error('HTTP错误, statusCode:', res.statusCode);
-                    reject(`HTTP错误: ${res.statusCode}`);
+                try {
+                    resolve(handlePageResult(res));
+                } catch (err) {
+                    reject(err.message);
                 }
             },
-            fail: (err) => {
-                console.error('getRecords 请求失败:', err);
-                reject(err);
-            },
-            complete: () => {
-                console.log('getRecords 请求完成');
-            }
+            fail: (err) => reject(err),
         });
     });
 };
@@ -148,6 +117,7 @@ export const uploadTopic = (data) => {
 /**
  * 获取我发布的帖子
  * 新架构：使用论坛我的帖子API
+ * 后端PageResult返回格式：{code: 200, msg: "success", rows: [...], total: N}
  */
 export const getPublishedPosts = (pageNum = 1, pageSize = 10) => {
     return new Promise((resolve, reject) => {
@@ -159,13 +129,16 @@ export const getPublishedPosts = (pageNum = 1, pageSize = 10) => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 200) {
-                    resolve(res.data.data);
-                } else {
-                    reject(new Error('Failed to fetch published posts'));
+                try {
+                    resolve(handlePageResult(res));
+                } catch (err) {
+                    reject(err.message);
                 }
             },
-            fail: (err) => reject(err)
+            fail: (err) => {
+                console.error('[我的帖子接口失败]', err);
+                reject('网络请求失败，请检查网络连接');
+            }
         });
     });
 };

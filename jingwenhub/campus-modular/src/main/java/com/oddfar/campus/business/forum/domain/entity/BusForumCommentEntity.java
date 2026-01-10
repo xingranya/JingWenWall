@@ -1,18 +1,21 @@
 package com.oddfar.campus.business.forum.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.oddfar.campus.common.domain.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 贴吧评论实体
  */
 @Data
 @TableName("bus_forum_comment")
-@EqualsAndHashCode(callSuper = true)
-public class BusForumCommentEntity extends BaseEntity {
+public class BusForumCommentEntity implements Serializable {
     
+    private static final long serialVersionUID = 1L;
+
     @TableId(value = "comment_id", type = IdType.ASSIGN_ID)
     private Long commentId;
     
@@ -25,6 +28,9 @@ public class BusForumCommentEntity extends BaseEntity {
     /** 父评论ID (0表示一级评论) */
     private Long parentId;
     
+    /** 根评论ID (用于聚合显示) */
+    private Long rootId;
+
     /** 回复目标用户ID (二级评论时使用) */
     private Long toUserId;
     
@@ -34,8 +40,28 @@ public class BusForumCommentEntity extends BaseEntity {
     /** 点赞数 */
     private Integer likeCount;
     
+    /** IP地址 */
+    private String ip;
+    
+    /** 地理位置 */
+    private String address;
+    
     /** 状态 (0-正常, 1-禁用) */
     private Integer status;
+
+    /** 删除标志 (0-正常, 1-删除) */
+    @TableLogic
+    private Integer delFlag;
+
+    /** 创建时间 */
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
+
+    /** 更新时间 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updateTime;
     
     // ========== 非数据库字段 ==========
     

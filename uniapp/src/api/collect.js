@@ -1,8 +1,10 @@
 import { baseUrl } from "@/utils/env";
+import { handlePageResult } from "@/utils/api-helper";
 
 /**
  * 获取用户收藏的帖子
  * 新架构：使用论坛我收藏的帖子API
+ * 后端PageResult返回格式：{code: 200, msg: "success", rows: [...], total: N}
  */
 export const fetchCollectedTopics = (pageNum = 1, pageSize = 10) => {
     return new Promise((resolve, reject) => {
@@ -14,14 +16,16 @@ export const fetchCollectedTopics = (pageNum = 1, pageSize = 10) => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 200) {
-                    resolve(res.data.data);
-                    console.log('获取收藏帖子成功', res.data.data);
-                } else {
-                    reject(new Error('获取收藏帖子失败'));
+                try {
+                    resolve(handlePageResult(res));
+                } catch (err) {
+                    reject(err.message);
                 }
             },
-            fail: (err) => reject(err)
+            fail: (err) => {
+                console.error('[收藏列表接口失败]', err);
+                reject('网络请求失败，请检查网络连接');
+            }
         });
     });
 };

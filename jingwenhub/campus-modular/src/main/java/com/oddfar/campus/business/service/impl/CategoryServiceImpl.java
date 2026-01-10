@@ -13,6 +13,7 @@ import com.oddfar.campus.common.exception.ServiceException;
 import com.oddfar.campus.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -94,6 +95,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteCategoryById(Long categoryId) {
 
         CategoryEntity categoryEntity = selectCategoryById(categoryId);
@@ -108,7 +110,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
         if (StringUtils.equals(UserConstants.YES, categoryEntity.getType())) {
             throw new ServiceException(String.format("内置参数【%1$s】不能删除 ", categoryEntity.getCategoryName()));
         }
-        categoryMapper.deleteById(categoryId);
+        // 逻辑删除：设置 del_flag = 1
+        categoryEntity.setDelFlag(1);
+        categoryMapper.updateById(categoryEntity);
     }
 
     @Override

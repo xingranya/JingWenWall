@@ -1,23 +1,24 @@
 <template>
   <view>
     <uni-card
-        v-if="topicRecord"
+        v-if="topicRecord && topicRecord.postId"
         :isFull="true"
-        :title="topicRecord.username"
-        :sub-title="topicRecord.updatedAt"
-        :thumbnail="topicRecord.avatar"
+        :title="topicRecord.nickName || '匿名用户'"
+        :sub-title="topicRecord.createTime"
+        :thumbnail="formatImageUrl(topicRecord.avatar)"
         class="card-container"
         @click.stop
+        @error="topicRecord.avatar = '/static/images/default-avatar.png'"
     >
       <uni-icons @click="showActionSheet" type="more" size="24" class="three-dots-icon"></uni-icons>
       <view v-if="topicRecord.content" class="content">
         <text>{{ topicRecord.content }}</text>
       </view>
-      <view v-if="topicRecord.imgURLs && topicRecord.imgURLs.length" class="image-grid">
+      <view v-if="topicRecord.images && topicRecord.images.length" class="image-grid">
         <image
-            v-for="(imgURL, index) in topicRecord.imgURLs"
+            v-for="(imgURL, index) in topicRecord.images"
             :key="index"
-            :src="imgURL"
+            :src="formatImageUrl(imgURL)"
             class="grid-image"
             mode="aspectFill"
         />
@@ -53,16 +54,17 @@
     </uni-card>
 
     <!-- 评论展示区域 -->
-    <view v-if="comments.length" class="comments-section">
+    <view v-if="comments && comments.length" class="comments-section">
       <uni-card
           v-for="(comment, index) in comments"
-          :key="comment.id"
+          :key="comment.commentId"
           :isFull="true"
-          :title="comment.username"
-          :sub-title="comment.createdAt"
-          :thumbnail="comment.avatar"
+          :title="comment.nickName || '匿名用户'"
+          :sub-title="comment.createTime"
+          :thumbnail="formatImageUrl(comment.avatar)"
           class="comment-card"
           @click.stop
+          @error="comment.avatar = '/static/images/default-avatar.png'"
       >
         <!-- 评论内容 -->
         <view v-if="comment.content" class="comment-text">
@@ -108,7 +110,6 @@ import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
 import uniLoadMore from '@dcloudio/uni-ui/lib/uni-load-more/uni-load-more.vue';
 import uniEasyinput from '@dcloudio/uni-ui/lib/uni-easyinput/uni-easyinput.vue';
-import View from '@/pages/topic/view.vue';
 
 import { deleteTopic, fetchTopic } from "@/api/topic";
 
@@ -123,10 +124,11 @@ import {
 import {likeTopic, unlikeTopic} from "@/api/like";
 import {collectTopic, uncollectTopic} from "@/api/collect";
 import {getCurrentUserInfo} from "@/api/user";
+import { baseUrl } from "@/utils/env";
+import { createEmptyForumPost } from "@/models/ForumPost";
 
 export default {
   components: {
-    View,
     uniCard,
     uniIcons,
     uniPopup,
@@ -135,11 +137,11 @@ export default {
   },
   data() {
     return {
-      topicRecord: null,
+      topicRecord: createEmptyForumPost(),
       userInfoMap: {},
       isLiked: false,
       isCollected: false,
-      commentContent: "",
+      commentContent: "", // 确保在这里正确初始化
       comments: [],
       loadMoreStatus: 'more',
       currentUserId: '',
@@ -186,9 +188,13 @@ export default {
       try {
         const res = await fetchComments(this.topicId, this.page, this.pageSize);
         console.log('请求结果:', res);
-        if (res.length > 0) {
-          this.comments = this.comments.concat(res);
-          if (res.length < this.pageSize) {
+        
+        // 关键修复：后端返回的是 PageResult 结构，包含 rows 字段
+        const commentList = res.rows || res.records || [];
+        
+        if (commentList && commentList.length > 0) {
+          this.comments = this.comments.concat(commentList);
+          if (commentList.length < this.pageSize) {
             this.loadMoreStatus = 'noMore';
           } else {
             this.loadMoreStatus = 'more';
@@ -205,10 +211,26 @@ export default {
     },
 
     /**
+     * 格式化图片URL，确保包含baseUrl
+     */
+    formatImageUrl(url) {
+      if (!url || typeof url !== 'string') return '/static/images/default-avatar.png'; // 增加默认头像回退
+      if (url.startsWith('http') || url.startsWith('https') || url.startsWith('data:')) {
+        return url;
+      }
+      // 如果是 /profile 开头的相对路径
+      if (url.startsWith('/profile') || url.startsWith('profile')) {
+        const path = url.startsWith('/') ? url : '/' + url;
+        return `${baseUrl}${path}`;
+      }
+      // 其他情况（可能是脏数据或相对路径）
+      return url;
+    },
+    /**
      * 显示操作菜单
      */
     showActionSheet() {
-      const isAuthor = this.currentUserId === this.topicRecord.authorID;
+      const isAuthor = String(this.currentUserId) === String(this.topicRecord.userId);
       const itemList = isAuthor ? ['删除', '举报', '取消'] : ['举报', '取消'];
 
       uni.showActionSheet({
@@ -243,7 +265,7 @@ export default {
             this.deleteCommentAction(comment);
           } else if ((isAuthor && res.tapIndex === 1) || (!isAuthor && res.tapIndex === 0)) {
             uni.navigateTo({
-              url: `/pages/topic/report?topicId=${this.topicRecord.id}&commentId=${comment.id}`,
+              url: `/pages/topic/report?topicId=${this.topicRecord.id}&commentId=${comment.commentId}`,
             });
           }
         },
@@ -266,7 +288,7 @@ export default {
      */
     async deleteTopic() {
       try {
-        await deleteTopic(this.topicRecord.id);
+        await deleteTopic(this.topicRecord.postId);
         await uni.showToast({ title: '删除成功', icon: 'success' });
         setTimeout(() => {
           uni.reLaunch({
@@ -307,12 +329,12 @@ export default {
     async handleCollect() {
       try {
         if (this.topicRecord.isCollected) {
-          await uncollectTopic(this.topicRecord.id);
+          await uncollectTopic(this.topicRecord.postId);
           this.topicRecord.isCollected = false;
           this.topicRecord.collectCount = Math.max(0, this.topicRecord.collectCount - 1);
           await uni.showToast({ title: "取消收藏成功", icon: "success" });
         } else {
-          await collectTopic(this.topicRecord.id);
+          await collectTopic(this.topicRecord.postId);
           this.topicRecord.isCollected = true;
           this.topicRecord.collectCount += 1;
           await uni.showToast({ title: "收藏成功", icon: "success" });
@@ -332,7 +354,7 @@ export default {
         return;
       }
       try {
-        await submitComment(this.topicRecord.id, this.commentContent);
+        await submitComment(this.topicRecord.postId, this.commentContent);
         await uni.showToast({ title: "评论成功", icon: "success" });
         await this.refreshComments();
         this.commentContent = "";
@@ -348,9 +370,10 @@ export default {
      */
     async refreshComments() {
       try {
-        console.log("刷新评论列表", this.topicRecord.id);
-        this.topicRecord = await fetchTopic(this.topicRecord.id);
-        this.comments = await fetchComments(this.topicRecord.id, 1, this.pageSize);
+        console.log("刷新评论列表", this.topicRecord.postId);
+        this.topicRecord = await fetchTopic(this.topicRecord.postId);
+        const res = await fetchComments(this.topicRecord.postId, 1, this.pageSize);
+        this.comments = res.rows || res.records || [];
       } catch (error) {
         console.error("刷新评论失败:", error);
         await uni.showToast({title: "刷新评论失败", icon: "none"});
@@ -394,12 +417,12 @@ export default {
     async toggleCommentLike(comment) {
       try {
         if (comment.isLiked) {
-          await unlikeComment(comment.id);
+          await unlikeComment(comment.commentId);
           comment.isLiked = false;
           comment.likeCount = Math.max(0, comment.likeCount - 1);
           await uni.showToast({ title: "取消点赞成功", icon: "success" });
         } else {
-          await likeComment(comment.id);
+          await likeComment(comment.commentId);
           comment.isLiked = true;
           comment.likeCount += 1;
           await uni.showToast({ title: "点赞成功", icon: "success" });
