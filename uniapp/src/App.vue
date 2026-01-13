@@ -1,8 +1,8 @@
 <script>
 export default {
   onLaunch: function () {
-    uni.removeStorageSync('token')
     console.log('App Launch')
+    uni.hideTabBar()
   },
   onShow: function () {
     console.log('App Show')

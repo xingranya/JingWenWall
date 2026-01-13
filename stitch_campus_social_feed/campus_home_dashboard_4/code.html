@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Marketplace Item Creation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007fff",
+              "background-light": "#f2f4f7",
+              "background-dark": "#000000",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+                'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-[#121212] text-[#0c141d] dark:text-white font-display antialiased pb-20 selection:bg-primary/30">
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-[#1e2329]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800 transition-all duration-300">
+<div class="flex items-center justify-between px-4 h-[54px] max-w-md mx-auto">
+<button class="text-[16px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+                取消
+            </button>
+<h1 class="text-[17px] font-bold text-slate-900 dark:text-white">发布闲置</h1>
+<button class="px-5 py-1.5 bg-primary hover:bg-blue-600 text-white text-[14px] font-bold rounded-full shadow-sm shadow-primary/30 transition-all active:scale-95">
+                发布
+            </button>
+</div>
+</header>
+<main class="w-full max-w-md mx-auto pt-6 flex flex-col gap-6">
+<section class="px-5">
+<div class="bg-white dark:bg-[#1e2329] rounded-3xl p-5 shadow-subtle border border-slate-100 dark:border-slate-800/50">
+<div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+<button class="shrink-0 w-24 h-24 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-primary/50 hover:text-primary transition-all duration-300 group">
+<span class="material-symbols-outlined text-[32px] group-hover:scale-110 transition-transform">add_a_photo</span>
+<span class="text-[11px] font-bold">添加图片</span>
+</button>
+<div class="relative shrink-0 w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 bg-cover bg-center overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm group" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDjse20NnLsGp8bTNdggR4z_U8zqQCTzMhO1K1ttH6MB_CEaLQpM4ywfw2Wq9Vj1av9_LpJrjo3wWRIAG6A3wRuIw4qGnZKjY1U1Z9Pmb4LVt3lnzqJWsR__PUJlFIRXba4MdGzhj212_uXJX7eOvPSDbY1VF2a48JRCc706boWHtn9BYQRwQ5vCuKBOsOn5_VsaPV1eUUmTVimUTKo81BUmkQltR5k7PuwmHvbIet8mOe0gOG4e0alsYvpY5PF-WpruueSzN58qgtA')">
+<div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+<button class="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 hover:bg-red-500 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm py-0.5 text-center">
+<span class="text-[9px] font-bold text-white uppercase">主图</span>
+</div>
+</div>
+</div>
+<p class="mt-3 text-[12px] font-medium text-slate-400 dark:text-slate-500 pl-1 flex items-center gap-1.5">
+<span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                    最多上传 9 张图片，首图将作为封面
+                </p>
+</div>
+</section>
+<section class="px-5">
+<div class="bg-white dark:bg-[#1e2329] rounded-3xl shadow-subtle border border-slate-100 dark:border-slate-800/50 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+<div class="p-5">
+<input class="w-full bg-transparent border-none p-0 text-[18px] font-bold text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:ring-0" placeholder="商品名称" type="text"/>
+</div>
+<div class="p-5 relative">
+<textarea class="w-full bg-transparent border-none p-0 text-[16px] leading-relaxed text-slate-700 dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:ring-0 resize-none" placeholder="描述一下你的宝贝...
+品牌型号、入手渠道、转手原因等" rows="5"></textarea>
+<div class="flex items-center gap-2 mt-4 overflow-x-auto hide-scrollbar">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary hover:bg-blue-50 dark:hover:bg-slate-700 transition-all">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                             添加位置
+                        </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary hover:bg-blue-50 dark:hover:bg-slate-700 transition-all">
+<span class="material-symbols-outlined text-[14px]">tag</span>
+                             添加话题
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<section class="px-5">
+<div class="bg-white dark:bg-[#1e2329] rounded-3xl p-5 shadow-subtle border border-slate-100 dark:border-slate-800/50 flex flex-col gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">verified</span>
+<label class="text-[15px] font-bold text-slate-900 dark:text-white">成色</label>
+</div>
+<div class="grid grid-cols-4 gap-2.5">
+<label class="cursor-pointer group">
+<input checked="" class="peer sr-only" name="condition" type="radio"/>
+<div class="h-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[12px] font-bold text-slate-500 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md transition-all group-hover:border-primary/50">
+                             全新
+                         </div>
+</label>
+<label class="cursor-pointer group">
+<input class="peer sr-only" name="condition" type="radio"/>
+<div class="h-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[12px] font-bold text-slate-500 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md transition-all group-hover:border-primary/50">
+                             几乎全新
+                         </div>
+</label>
+<label class="cursor-pointer group">
+<input class="peer sr-only" name="condition" type="radio"/>
+<div class="h-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[12px] font-bold text-slate-500 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md transition-all group-hover:border-primary/50">
+                             成色良好
+                         </div>
+</label>
+<label class="cursor-pointer group">
+<input class="peer sr-only" name="condition" type="radio"/>
+<div class="h-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[12px] font-bold text-slate-500 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md transition-all group-hover:border-primary/50">
+                             一般
+                         </div>
+</label>
+</div>
+</div>
+</section>
+<section class="px-5">
+<div class="bg-white dark:bg-[#1e2329] rounded-3xl p-5 shadow-subtle border border-slate-100 dark:border-slate-800/50">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500">
+<span class="material-symbols-outlined text-[20px]">currency_yen</span>
+</div>
+<span class="text-[15px] font-bold text-slate-900 dark:text-white">价格</span>
+</div>
+<div class="flex items-center relative">
+<span class="text-orange-500 text-xl font-bold mr-1 translate-y-0.5">¥</span>
+<input class="w-36 text-right text-[26px] font-extrabold text-orange-500 bg-transparent border-none p-0 focus:ring-0 placeholder:text-slate-200 dark:placeholder:text-slate-700" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<span class="text-[12px] font-medium text-slate-400">包含运费</span>
+<div class="flex items-center gap-2">
+<label class="inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="relative w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="mt-4 px-2 flex items-start gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[16px] mt-0.5">info</span>
+<p class="text-[11px] leading-snug text-slate-400">
+                    发布即表示您同意 <a class="text-primary hover:underline" href="#">闲置交易规则</a>。请勿发布违禁品，所有交易请在平台内完成。
+                </p>
+</div>
+</section>
+</main>
+
+</body></html>

@@ -1,9 +1,9 @@
 <template>
   <div class="about-page">
     <p class="description">
-      👋 你好，我们是宁波诺丁汉大学计算机爱好者协会！<br /><br />
+      👋 你好，我是星苒<br /><br />
       欢迎来到我们的应用！我们致力于提供最好的服务和体验。<br /><br />
-      这个小程序由Pleasure1234独立开发，xuanzhi33提供技术支持
+      这个小程序由xingranya开发
     </p>
   </div>
 </template>

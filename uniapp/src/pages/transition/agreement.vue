@@ -1,120 +1,168 @@
 <template>
-  <view class="privacy-modal">
-    <view class="privacy-content">
-      <text class="title">隐私权政策提示</text>
-      <view class="text-container">
-        <text>
-          请您在使用CPU Wall服务前点击
-          <text url="https://blog.yiming1234.cn">《服务使用协议》</text>
-          <text url="https://blog.yiming1234.cn">《隐私与个人信息保护政策》</text>与
-          并仔细阅读。如您同意以上全部内容，请点击同意并开始使用我们的服务。如果您不同意，您将无法使用我们的小程序。
-        </text>
+  <view class="agreement-container">
+    <view class="modal-card glass-effect">
+      <view class="modal-header">
+        <text class="title">服务与隐私协议</text>
       </view>
-      <view class="checkbox-container">
-<!--        <uni-data-checkbox :value="false" class="checkbox" />-->
-        <text class="checkbox-text">本人已年满14岁，可自行授权个人信息处理</text>
-      </view>
-      <view class="button-container">
-        <button class="btn disagree" @click="handleDisagree">不同意</button>
-        <button class="btn agree" @click="handleAgree">同意</button>
+      
+      <scroll-view scroll-y class="content-scroll">
+        <view class="text-content">
+          <text class="paragraph">
+            欢迎使用 荆文Wall！在您使用本服务之前，请仔细阅读
+            <text class="link" @click="openLink('service')">《用户服务协议》</text>
+            和
+            <text class="link" @click="openLink('privacy')">《隐私政策》</text>
+            。
+          </text>
+          <text class="paragraph">
+            我们要特别向您说明：
+          </text>
+          <text class="paragraph">
+            1. 为了向您提供更优质的服务，我们需要收集您的部分个人信息。
+            2. 我们承诺严格按照法律法规要求，采取相应的安全保护措施，保护您的个人信息安全。
+          </text>
+          <text class="paragraph">
+            如您同意以上协议内容，请点击“我已阅读并同意”开始使用我们的服务。
+          </text>
+        </view>
+      </scroll-view>
+      
+      <view class="footer-actions">
+        <button class="btn-secondary cancel-btn" @click="handleDisagree">不同意</button>
+        <button class="btn-primary confirm-btn" @click="handleAgree">我已阅读并同意</button>
       </view>
     </view>
   </view>
 </template>
 
-<script setup>
-const handleDisagree = () => {
-  console.log('User disagreed');
-  uni.exitMiniProgram({
-    success: function() {
-      console.log('退出小程序成功');
+<script>
+export default {
+  methods: {
+    handleDisagree() {
+      // 退出小程序
+      uni.exitMiniProgram({
+        success: () => console.log('退出成功'),
+        fail: (err) => console.error('退出失败', err)
+      });
     },
-    fail: function(err) {
-      console.log('退出小程序失败', err);
+    
+    handleAgree() {
+      // 存储同意状态
+      uni.setStorageSync('hasAgreedPrivacy', true);
+      // 跳转首页
+      uni.reLaunch({
+        url: '/pages/index/index'
+      });
+    },
+    
+    openLink(type) {
+      // 打开 Webview 或 弹窗显示详情
+      const url = type === 'service' 
+        ? 'https://blog.yiming1234.cn' 
+        : 'https://blog.yiming1234.cn';
+        
+      // 简单处理：复制链接或提示
+      uni.setClipboardData({
+        data: url,
+        success: () => {
+          uni.showToast({ title: '链接已复制', icon: 'none' });
+        }
+      });
     }
-  })
-};
-
-const handleAgree = () => {
-  console.log('User agreed');
-  uni.reLaunch({
-    url: '/pages/index/index'
-  })
+  }
 };
 </script>
 
-<style scoped>
-.privacy-modal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+<style lang="scss" scoped>
+@import '@/static/css/theme.scss';
+
+.agreement-container {
   height: 100vh;
-  background-color: #f5ebd6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5); // 遮罩层背景
+  padding: 40rpx;
 }
 
-.privacy-content {
-  background-color: #fff;
-  border-radius: 24px;
-  padding: 20px;
-  width: 70%;
-  max-width: 400px;
-  height: auto;
+.modal-card {
+  width: 100%;
+  max-width: 600rpx;
+  background-color: $background-light;
+  border-radius: $radius-xl;
+  padding: 40rpx;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  box-shadow: $shadow-card;
 }
 
-.title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 15px;
+.modal-header {
+  margin-bottom: 32rpx;
   text-align: center;
+  
+  .title {
+    font-size: 36rpx;
+    font-weight: 700;
+    color: $text-primary-light;
+  }
 }
 
-.text-container {
-  text-align: left;
-  margin-bottom: 20px;
-  line-height: 1.5;
+.content-scroll {
+  max-height: 600rpx;
+  margin-bottom: 40rpx;
 }
 
-.checkbox-container {
+.text-content {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 24rpx;
 }
 
-.checkbox {
-  margin-right: 10px;
-  border-radius: 50%;
+.paragraph {
+  font-size: $font-base;
+  color: $text-secondary-light;
+  line-height: 1.6;
 }
 
-.checkbox-text {
-  font-size: 14px;
+.link {
+  color: $primary;
+  font-weight: 500;
+  display: inline;
 }
 
-.button-container {
+.footer-actions {
   display: flex;
-  justify-content: center;
-  gap: 20px; /* 按钮间距 */
-  width: 100%;
+  gap: 24rpx;
 }
 
-.btn {
-  width: 30%;
-  padding: 10px;
-  border-radius: 50px;
-  font-size: 14px;
-  text-align: center;
+.cancel-btn {
+  flex: 1;
+  background-color: $surface-light;
+  color: $text-secondary-light;
+  border: none;
 }
 
-.disagree {
-  background-color: #e0e0e0;
-  color: #000;
+.confirm-btn {
+  flex: 1.5;
 }
 
-.agree {
-  background-color: #4a90e2;
-  color: #fff;
+// 深色模式
+@media (prefers-color-scheme: dark) {
+  .modal-card {
+    background-color: $card-dark;
+  }
+  
+  .title {
+    color: $text-primary-dark;
+  }
+  
+  .paragraph {
+    color: $text-secondary-dark;
+  }
+  
+  .cancel-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: $text-primary-dark;
+  }
 }
 </style>

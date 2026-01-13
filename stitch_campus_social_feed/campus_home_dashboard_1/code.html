@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Home Dashboard Unified (ZH)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007fff",
+              "background-light": "#ffffff",
+              "background-dark": "#16191d",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+                'subtle': '0 4px 24px -6px rgba(0, 0, 0, 0.08)',
+                'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0c141d] dark:text-white font-display antialiased pb-28 selection:bg-primary/30">
+<header class="sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md transition-all duration-300">
+<div class="flex items-center justify-between px-5 py-4">
+<div class="relative group cursor-pointer">
+<div class="h-10 w-10 rounded-full bg-slate-200 bg-cover bg-center border-2 border-white dark:border-slate-700 shadow-sm" data-alt="Student profile portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBMbr5NJF0p8XTl_GoF4YGJ8pN-IZ9cu_gS7sxx-KqGcBISNgh6Zx-vnXM6KQhRcqxnRU9MnviTK8877rIQWF39jiYsOMB_Q_7TZB2b-m1N8gL0jhe-prt8F-T4bafq-6DBes1gBkXd8xY-8zOwnVlMQWdCONnSiSHOh7BIHsOf2RNbHR6gNc5uhhvjeniQ-NmJUZIo_LXqfTtBF8J94sO9oYAIPSq_rDZxcbrLAQ2O4Dy2czZSI8HMvhgdAD5gbmv__kUiMu7h6x9F')"></div>
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-background-dark"></div>
+</div>
+<button class="flex items-center justify-center h-10 w-10 rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative group">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">notifications</span>
+<span class="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 shadow-sm ring-2 ring-white dark:ring-background-dark"></span>
+</button>
+</div>
+</header>
+<main class="w-full max-w-md mx-auto">
+<section class="px-5 pb-8 pt-2">
+<h1 class="text-[34px] font-extrabold tracking-tight text-[#0c141d] dark:text-white leading-[1.1]">
+                早上好，<br/>
+<span class="text-primary">莎拉</span>
+</h1>
+</section>
+<section class="mb-10 pl-5">
+<div class="flex gap-4 overflow-x-auto pb-4 pr-5 hide-scrollbar snap-x snap-mandatory">
+<button class="flex flex-col items-center gap-2.5 min-w-[76px] snap-start group focus:outline-none">
+<div class="h-[76px] w-[76px] rounded-[24px] bg-blue-50/80 dark:bg-slate-800 flex items-center justify-center text-primary border border-transparent group-hover:border-primary/20 group-hover:bg-blue-100/80 dark:group-hover:bg-slate-700 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] transition-transform group-hover:scale-110 group-active:scale-95" style="font-variation-settings: 'wght' 300;">check_circle</span>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 tracking-wide">跑腿</span>
+</button>
+<button class="flex flex-col items-center gap-2.5 min-w-[76px] snap-start group focus:outline-none">
+<div class="h-[76px] w-[76px] rounded-[24px] bg-blue-50/80 dark:bg-slate-800 flex items-center justify-center text-primary border border-transparent group-hover:border-primary/20 group-hover:bg-blue-100/80 dark:group-hover:bg-slate-700 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] transition-transform group-hover:scale-110 group-active:scale-95" style="font-variation-settings: 'wght' 300;">shopping_bag</span>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 tracking-wide">二手</span>
+</button>
+<button class="flex flex-col items-center gap-2.5 min-w-[76px] snap-start group focus:outline-none">
+<div class="h-[76px] w-[76px] rounded-[24px] bg-blue-50/80 dark:bg-slate-800 flex items-center justify-center text-primary border border-transparent group-hover:border-primary/20 group-hover:bg-blue-100/80 dark:group-hover:bg-slate-700 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] transition-transform group-hover:scale-110 group-active:scale-95" style="font-variation-settings: 'wght' 300;">local_library</span>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 tracking-wide">图书馆</span>
+</button>
+<button class="flex flex-col items-center gap-2.5 min-w-[76px] snap-start group focus:outline-none">
+<div class="h-[76px] w-[76px] rounded-[24px] bg-blue-50/80 dark:bg-slate-800 flex items-center justify-center text-primary border border-transparent group-hover:border-primary/20 group-hover:bg-blue-100/80 dark:group-hover:bg-slate-700 transition-all duration-300">
+<span class="material-symbols-outlined text-[32px] transition-transform group-hover:scale-110 group-active:scale-95" style="font-variation-settings: 'wght' 300;">groups</span>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 tracking-wide">社团</span>
+</button>
+<button class="flex flex-col items-center gap-2.5 min-w-[76px] snap-start group focus:outline-none opacity-50">
+<div class="h-[76px] w-[76px] rounded-[24px] bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 border border-transparent transition-all duration-300">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'wght' 300;">more_horiz</span>
+</div>
+<span class="text-xs font-semibold text-slate-600 dark:text-slate-300 tracking-wide">更多</span>
+</button>
+</div>
+</section>
+<section class="flex items-end justify-between px-5 mb-5">
+<h2 class="text-[22px] font-bold tracking-tight text-[#0c141d] dark:text-white leading-none">校园精选</h2>
+<a class="text-primary text-sm font-semibold hover:opacity-70 transition-opacity" href="#">查看全部</a>
+</section>
+<section class="flex flex-col gap-6 px-5">
+<article class="group rounded-3xl bg-white dark:bg-[#1e2329] p-4 shadow-subtle border border-slate-100 dark:border-slate-700/50 hover:shadow-lg transition-all duration-300">
+<div class="relative w-full aspect-[4/3] rounded-2xl bg-slate-100 dark:bg-slate-800 bg-cover bg-center mb-4 overflow-hidden shadow-inner" data-alt="Vintage road bicycle leaning against a brick wall" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDjse20NnLsGp8bTNdggR4z_U8zqQCTzMhO1K1ttH6MB_CEaLQpM4ywfw2Wq9Vj1av9_LpJrjo3wWRIAG6A3wRuIw4qGnZKjY1U1Z9Pmb4LVt3lnzqJWsR__PUJlFIRXba4MdGzhj212_uXJX7eOvPSDbY1VF2a48JRCc706boWHtn9BYQRwQ5vCuKBOsOn5_VsaPV1eUUmTVimUTKo81BUmkQltR5k7PuwmHvbIet8mOe0gOG4e0alsYvpY5PF-WpruueSzN58qgtA')">
+<div class="absolute top-3 left-3 bg-white/95 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sell</span>
+                        二手市场
+                    </div>
+<button class="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">bookmark_border</span>
+</button>
+</div>
+<div class="flex justify-between items-start mb-2 px-1">
+<div>
+<h3 class="font-bold text-lg leading-tight mb-1 text-slate-900 dark:text-white group-hover:text-primary transition-colors">公路车出售</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">成色完美，基本没骑过。</p>
+</div>
+<span class="text-lg font-bold text-primary bg-primary/10 px-2 py-1 rounded-lg">¥150</span>
+</div>
+<div class="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 px-1">
+<div class="h-8 w-8 rounded-full bg-slate-200 bg-cover ring-2 ring-white dark:ring-[#1e2329]" data-alt="Seller avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAnho7YiYKlzbeDAAwmn2lyJwRhj2SZLUZuenR28YJJEs2v1EZoQGKP3JGf2NjPXWFzungHTKKlSNBtdWTQgqcmBtmN40sht3m6WEG_mboOfgxmD_yRKg-wtd9_vrtaiM1zoBXyDEPVGsggIvE182rOa5yQwPBSeB1RqBZlUqJZ0U-jnZYKjH7VM27dA7uz64Xk8tY1bsostxps-ATYGefXxHF8gTBk8g045cEMACJxkXenv9iSbqLeQoA8f87WHpBva9aALCvWHDeM')"></div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">迈克·汤普森</span>
+<span class="text-[10px] text-slate-400">计算机科学 • 2小时前</span>
+</div>
+<button class="ml-auto text-primary text-xs font-bold hover:underline">私信</button>
+</div>
+</article>
+<article class="rounded-3xl bg-white dark:bg-[#1e2329] p-6 shadow-subtle border border-slate-100 dark:border-slate-700/50">
+<div class="flex items-center gap-3 mb-4">
+<div class="h-10 w-10 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">JD</div>
+<div>
+<h4 class="font-bold text-sm text-slate-900 dark:text-white">杰西卡</h4>
+<div class="flex items-center gap-1.5 text-xs text-slate-500">
+<span class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 font-medium">生物 101</span>
+<span>• 14分钟前</span>
+</div>
+</div>
+</div>
+<p class="text-[15px] leading-relaxed mb-5 font-medium text-slate-800 dark:text-slate-200">
+                    求昨天讲座的笔记！iPad中途没电了，错过了细胞分裂那部分 😭
+                </p>
+<div class="flex items-center gap-6 text-slate-500 dark:text-slate-400">
+<button class="flex items-center gap-2 hover:text-red-500 transition-colors group">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">favorite</span>
+<span class="text-xs font-semibold">24</span>
+</button>
+<button class="flex items-center gap-2 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">chat_bubble</span>
+<span class="text-xs font-semibold">15 评论</span>
+</button>
+<button class="flex items-center gap-2 ml-auto hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">ios_share</span>
+</button>
+</div>
+</article>
+<article class="rounded-3xl bg-white dark:bg-[#1e2329] p-4 shadow-subtle border border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
+<div class="flex gap-4 items-center">
+<div class="relative w-24 h-24 rounded-2xl bg-cover bg-center shrink-0 overflow-hidden shadow-sm" data-alt="Outdoor music festival stage at night" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDS5d2PbfD39QATYgN9vt7S2fXFfecnCbFy8VT3xs_uY24074rbp5JOfUzzc69LagonnvkbHTO1Cb-FrhJi0X15VLvxjjUNr1V6jw3z80PEw39Uur4RXXWwmQGyCeRA5LOCgbIdIhNZJyD335ZEoRoLG2xvHJ4ugEnl_ftyyGYp_ZDdKlffnKt3TNNIV4E16eB25_Iwzwkcft2as_otcAEYQg_wUW8tiHbizKcL7PV5jlf0HFYzgmNGsM1oV5uNWRfALGr5tBI5pUqY')">
+<div class="absolute inset-0 bg-primary/10"></div>
+<div class="absolute bottom-0 w-full bg-black/60 backdrop-blur-sm py-1 text-center">
+<span class="text-[10px] font-bold text-white uppercase">周五 24</span>
+</div>
+</div>
+<div class="flex flex-col justify-center flex-1 py-1">
+<span class="text-xs font-bold text-primary uppercase tracking-wide mb-1 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                            即将开始
+                        </span>
+<h3 class="font-bold text-lg leading-tight mb-2 text-slate-900 dark:text-white">春季狂欢节阵容公布</h3>
+<div class="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                             中心草坪 • 20:00
+                        </div>
+</div>
+<button class="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</button>
+</div>
+</article>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#16191d]/85 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700/60 pb-8 pt-3 px-6 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<button class="flex flex-col items-center gap-1.5 text-primary w-16 group">
+<div class="relative">
+<span class="material-symbols-outlined text-[26px] fill-current" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></span>
+</div>
+<span class="text-[10px] font-bold">首页</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-16 transition-colors group">
+<span class="material-symbols-outlined text-[26px] group-hover:-translate-y-0.5 transition-transform duration-300">dashboard</span>
+<span class="text-[10px] font-medium">广场</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-16 transition-colors group">
+<div class="relative">
+<span class="material-symbols-outlined text-[26px] group-hover:-translate-y-0.5 transition-transform duration-300">explore</span>
+<span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 border border-white dark:border-background-dark"></span>
+</div>
+<span class="text-[10px] font-medium">发现</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 w-16 transition-colors group">
+<span class="material-symbols-outlined text-[26px] group-hover:-translate-y-0.5 transition-transform duration-300">person</span>
+<span class="text-[10px] font-medium">我的</span>
+</button>
+</div>
+</nav>
+
+</body></html>

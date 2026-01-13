@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Errand Request Post Creation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007fff",
+              "background-light": "#ffffff",
+              "background-dark": "#16191d",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+                'subtle': '0 4px 24px -6px rgba(0, 0, 0, 0.08)',
+                'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0c141d] dark:text-white font-display antialiased pb-10 selection:bg-primary/30">
+<header class="sticky top-0 z-40 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 transition-all duration-300">
+<div class="flex items-center justify-between px-4 py-3">
+<button class="text-[17px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium transition-colors px-2">
+                取消
+            </button>
+<h1 class="text-[17px] font-bold text-slate-900 dark:text-white absolute left-1/2 -translate-x-1/2">
+                发布求助
+            </h1>
+<button class="px-5 py-1.5 bg-primary hover:bg-blue-600 text-white text-[15px] font-bold rounded-full transition-colors shadow-sm shadow-blue-200 dark:shadow-none">
+                发布
+            </button>
+</div>
+</header>
+<main class="w-full max-w-md mx-auto pt-6">
+<section class="px-6 mb-8">
+<div class="relative">
+<textarea class="w-full h-40 bg-transparent text-xl leading-relaxed text-slate-800 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-600 border-none focus:ring-0 p-0 resize-none font-medium" placeholder="我想找人帮我..."></textarea>
+</div>
+</section>
+<section class="mb-8">
+<h3 class="px-6 text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">选择分类</h3>
+<div class="flex gap-3 overflow-x-auto px-6 pb-2 hide-scrollbar snap-x">
+<label class="snap-start relative group cursor-pointer">
+<input checked="" class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 transition-all peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary peer-checked:shadow-md peer-checked:shadow-blue-200 dark:peer-checked:shadow-none">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+<span class="text-sm font-bold whitespace-nowrap">代取快递</span>
+</div>
+</label>
+<label class="snap-start relative group cursor-pointer">
+<input class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 transition-all peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary peer-checked:shadow-md peer-checked:shadow-blue-200 dark:peer-checked:shadow-none">
+<span class="material-symbols-outlined text-[20px]">lunch_dining</span>
+<span class="text-sm font-bold whitespace-nowrap">食堂带饭</span>
+</div>
+</label>
+<label class="snap-start relative group cursor-pointer">
+<input class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 transition-all peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary peer-checked:shadow-md peer-checked:shadow-blue-200 dark:peer-checked:shadow-none">
+<span class="material-symbols-outlined text-[20px]">print</span>
+<span class="text-sm font-bold whitespace-nowrap">打印服务</span>
+</div>
+</label>
+<label class="snap-start relative group cursor-pointer">
+<input class="peer sr-only" name="category" type="radio"/>
+<div class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 transition-all peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary peer-checked:shadow-md peer-checked:shadow-blue-200 dark:peer-checked:shadow-none">
+<span class="material-symbols-outlined text-[20px]">package_2</span>
+<span class="text-sm font-bold whitespace-nowrap">代送物品</span>
+</div>
+</label>
+</div>
+</section>
+<section class="px-6 mb-8">
+<div class="bg-white dark:bg-[#1e2329] border border-slate-100 dark:border-slate-700/50 rounded-3xl p-1 shadow-subtle flex items-center">
+<div class="bg-orange-50 dark:bg-orange-900/10 rounded-2xl h-14 w-14 flex items-center justify-center shrink-0 ml-1">
+<span class="material-symbols-outlined text-orange-500 text-[28px]">savings</span>
+</div>
+<div class="flex-1 flex items-center justify-between px-4">
+<label class="font-bold text-slate-700 dark:text-slate-200 text-base">赏金</label>
+<div class="flex items-center">
+<span class="text-orange-500 font-extrabold text-2xl mr-1">¥</span>
+<input class="w-24 bg-transparent border-none text-right font-extrabold text-3xl text-orange-500 focus:ring-0 placeholder-slate-200 dark:placeholder-slate-700 p-0" placeholder="0" type="number" value="5"/>
+</div>
+</div>
+</div>
+<p class="text-xs text-slate-400 mt-2 px-2 text-right">建议 ¥5 - ¥15，接单更快哦</p>
+</section>
+<section class="px-6">
+<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">添加图片 (可选)</h3>
+<div class="flex gap-4">
+<button class="h-24 w-24 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-300 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-500 hover:text-slate-400 dark:hover:text-slate-400 transition-all">
+<span class="material-symbols-outlined text-[32px]">add_a_photo</span>
+</button>
+</div>
+</section>
+</main>
+
+</body></html>

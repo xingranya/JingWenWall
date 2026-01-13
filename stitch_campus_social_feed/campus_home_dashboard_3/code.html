@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Social Post Creation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007fff",
+              "background-light": "#ffffff",
+              "background-dark": "#16191d",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+                'subtle': '0 4px 24px -6px rgba(0, 0, 0, 0.08)',
+                'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0c141d] dark:text-white font-display antialiased selection:bg-primary/30 flex flex-col h-[100dvh] overflow-hidden">
+<header class="flex-none px-4 py-3 bg-white/95 dark:bg-[#16191d]/95 backdrop-blur-md flex items-center justify-between border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50">
+<button class="text-[17px] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors font-medium">取消</button>
+<h1 class="text-[17px] font-bold">发布动态</h1>
+<button class="bg-primary hover:bg-primary/90 text-white text-[15px] font-semibold px-5 py-1.5 rounded-full shadow-lg shadow-primary/20 transition-all transform active:scale-95">发表</button>
+</header>
+<main class="flex-1 overflow-y-auto w-full max-w-md mx-auto bg-white dark:bg-[#16191d]">
+<div class="px-5 pt-6 pb-4">
+<textarea class="w-full min-h-[140px] text-[17px] leading-relaxed bg-transparent border-none outline-none focus:ring-0 placeholder:text-slate-400/80 resize-none p-0 text-[#0c141d] dark:text-white" placeholder="分享你的校园生活..."></textarea>
+</div>
+<div class="px-5 pb-8">
+<div class="grid grid-cols-3 gap-3">
+<div class="relative aspect-square rounded-xl overflow-hidden group shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDS5d2PbfD39QATYgN9vt7S2fXFfecnCbFy8VT3xs_uY24074rbp5JOfUzzc69LagonnvkbHTO1Cb-FrhJi0X15VLvxjjUNr1V6jw3z80PEw39Uur4RXXWwmQGyCeRA5LOCgbIdIhNZJyD335ZEoRoLG2xvHJ4ugEnl_ftyyGYp_ZDdKlffnKt3TNNIV4E16eB25_Iwzwkcft2as_otcAEYQg_wUW8tiHbizKcL7PV5jlf0HFYzgmNGsM1oV5uNWRfALGr5tBI5pUqY')"></div>
+<button class="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+<button class="aspect-square rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-primary/50 hover:text-primary transition-all group">
+<span class="material-symbols-outlined text-[32px] mb-1 group-hover:scale-110 transition-transform">add_a_photo</span>
+<span class="text-[10px] font-medium">1/9</span>
+</button>
+</div>
+</div>
+<div class="h-2 bg-slate-50 dark:bg-[#0c1015] border-y border-slate-100 dark:border-slate-800/50"></div>
+<div class="px-5 py-2">
+<div class="py-5 border-b border-slate-100 dark:border-slate-800/60">
+<div class="flex items-center gap-2 mb-4">
+<div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-slate-800 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">category</span>
+</div>
+<span class="font-bold text-[16px]">选择板块</span>
+<span class="text-red-500 text-sm">*</span>
+</div>
+<div class="flex flex-wrap gap-3">
+<label class="relative cursor-pointer group select-none">
+<input checked="" class="peer sr-only" name="section" type="radio"/>
+<div class="px-4 py-2 rounded-xl border border-primary bg-primary/5 dark:bg-primary/10 text-primary font-semibold text-[14px] transition-all shadow-sm ring-1 ring-primary/20 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">school</span>
+                        校园生活
+                    </div>
+</label>
+<label class="relative cursor-pointer group select-none">
+<input class="peer sr-only" name="section" type="radio"/>
+<div class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium text-[14px] transition-all hover:bg-slate-50 dark:hover:bg-slate-700 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary peer-checked:ring-1 peer-checked:ring-primary/20 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+                        表白墙
+                    </div>
+</label>
+<label class="relative cursor-pointer group select-none">
+<input class="peer sr-only" name="section" type="radio"/>
+<div class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium text-[14px] transition-all hover:bg-slate-50 dark:hover:bg-slate-700 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary peer-checked:ring-1 peer-checked:ring-primary/20 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">search</span>
+                        失物招领
+                    </div>
+</label>
+</div>
+</div>
+<button class="w-full flex items-center justify-between py-5 border-b border-slate-100 dark:border-slate-800/60 group">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:text-primary group-hover:bg-blue-50 dark:group-hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+</div>
+<span class="font-bold text-[16px] text-slate-900 dark:text-white">所在位置</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
+<span class="text-sm">添加位置</span>
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</button>
+<div class="flex items-center justify-between py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</div>
+<div class="flex flex-col items-start">
+<span class="font-bold text-[16px]">匿名发布</span>
+<span class="text-[12px] text-slate-400 mt-0.5">你的身份将对外隐藏</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-[51px] h-[31px] bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[27px] after:w-[27px] after:shadow-sm after:transition-all dark:border-gray-600 peer-checked:bg-primary border-2 border-transparent"></div>
+</label>
+</div>
+</div>
+</main>
+
+</body></html>

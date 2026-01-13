@@ -1,0 +1,263 @@
+/**
+ * 全局主题样式变量
+ * 参考 HTML 模板 TailwindCSS 设计规范
+ */
+
+// ==================== 颜色变量 ====================
+// 主色调
+$primary: #007fff;
+$primary-light: rgba(0, 127, 255, 0.1);
+$primary-content: #ffffff;
+
+// 强调色
+$accent-orange: #ff9500;
+$accent-pink: #ff2d55;
+$accent-green: #34c759;
+$accent-purple: #af52de;
+
+// 浅色模式背景
+$background-light: #ffffff;
+$background-dim: #f7f9fc;
+$surface-light: #f8f9fa;
+
+// 深色模式背景
+$background-dark: #1b1b1d;
+$card-dark: #262629;
+$surface-dark: #2d333b;
+
+// 文字颜色
+$text-primary-light: #0c141d;
+$text-secondary-light: #64748b;
+$text-tertiary-light: #94a3b8;
+
+$text-primary-dark: #ffffff;
+$text-secondary-dark: #94a3b8;
+$text-tertiary-dark: #64748b;
+
+// 边框颜色
+$border-light: #e2e8f0;
+$border-dark: #334155;
+
+// ==================== 圆角变量 ====================
+$radius-sm: 8rpx;
+$radius-default: 16rpx;
+$radius-lg: 24rpx;
+$radius-xl: 32rpx;
+$radius-2xl: 40rpx;
+$radius-3xl: 48rpx;
+$radius-full: 9999rpx;
+
+// ==================== 阴影变量 ====================
+$shadow-soft: 0 4rpx 30rpx -6rpx rgba(0, 0, 0, 0.05);
+$shadow-subtle: 0 8rpx 48rpx 0 rgba(31, 38, 135, 0.07);
+$shadow-card: 0 4rpx 24rpx -8rpx rgba(0, 0, 0, 0.08);
+$shadow-nav: 0 -8rpx 40rpx -4rpx rgba(0, 0, 0, 0.03);
+$shadow-glow: 0 8rpx 40rpx -4rpx rgba(0, 127, 255, 0.3);
+
+// ==================== 间距变量 ====================
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-md: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 48rpx;
+$spacing-2xl: 64rpx;
+
+// ==================== 字体大小 ====================
+$font-xs: 20rpx;
+$font-sm: 24rpx;
+$font-base: 28rpx;
+$font-lg: 32rpx;
+$font-xl: 36rpx;
+$font-2xl: 44rpx;
+$font-3xl: 56rpx;
+
+// ==================== 公共样式类 ====================
+
+// 毛玻璃效果
+.glass-effect {
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+}
+
+// 卡片基础样式
+.card {
+  background-color: $background-light;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  border: 2rpx solid $border-light;
+  padding: $spacing-lg;
+}
+
+// 按钮基础样式
+.btn-primary {
+  background-color: $primary;
+  color: $primary-content;
+  border-radius: $radius-full;
+  padding: $spacing-sm $spacing-lg;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+}
+
+.btn-secondary {
+  background-color: $surface-light;
+  color: $text-primary-light;
+  border-radius: $radius-full;
+  padding: $spacing-sm $spacing-lg;
+  border: 2rpx solid $border-light;
+  font-weight: 500;
+
+  &:active {
+    background-color: darken($surface-light, 5%);
+  }
+}
+
+// 标签样式
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-default;
+  font-size: $font-xs;
+  font-weight: 600;
+}
+
+.tag-primary {
+  background-color: $primary-light;
+  color: $primary;
+}
+
+.tag-orange {
+  background-color: rgba(255, 149, 0, 0.1);
+  color: $accent-orange;
+}
+
+.tag-pink {
+  background-color: rgba(255, 45, 85, 0.1);
+  color: $accent-pink;
+}
+
+.tag-green {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: $accent-green;
+}
+
+// 隐藏滚动条
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 文字截断
+.line-clamp-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+// 弹性布局辅助
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+// 头像样式
+.avatar-sm {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-md {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-lg {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-xl {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// 图标按钮
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background-color: $surface-light;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+    background-color: darken($surface-light, 5%);
+  }
+}
+
+// 分割线
+.divider {
+  height: 2rpx;
+  background-color: $border-light;
+  margin: $spacing-md 0;
+}
+
+// 安全区域底部
+.safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}

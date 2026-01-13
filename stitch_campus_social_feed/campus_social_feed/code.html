@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Compact Discover Feed (ZH)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007fff",
+                        "accent-orange": "#FF9500",
+                        "background-light": "#ffffff",
+                        "background-dim": "#F7F9FC",
+                        "background-dark": "#1b1b1d",
+                        "card-dark": "#262629",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans SC", "sans-serif"],
+                        "sans": ["Inter", "Noto Sans SC", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 4px 20px -2px rgba(0, 127, 255, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;scrollbar-width: none;}
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dim dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
+<div class="relative min-h-screen w-full flex flex-col max-w-md mx-auto bg-background-dim dark:bg-background-dark shadow-2xl overflow-hidden border-x border-slate-100 dark:border-slate-800">
+<header class="sticky top-0 z-40 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
+<div class="h-2 w-full"></div>
+<div class="px-4 py-2">
+<div class="group flex w-full items-center gap-2 rounded-xl bg-slate-100 dark:bg-card-dark px-3 py-2.5 border border-transparent focus-within:bg-white dark:focus-within:bg-black focus-within:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+<input class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:ring-0 focus:outline-none" placeholder="搜索..." type="text"/>
+</div>
+</div>
+<div class="flex gap-2 px-4 py-2 overflow-x-auto no-scrollbar scroll-smooth">
+<button class="flex shrink-0 items-center justify-center rounded-full bg-slate-900 dark:bg-white px-4 py-1.5 transition-transform active:scale-95 shadow-sm">
+<span class="text-white dark:text-black text-xs font-bold">推荐</span>
+</button>
+<button class="flex shrink-0 items-center justify-center rounded-full bg-white dark:bg-card-dark px-4 py-1.5 border border-slate-200 dark:border-slate-700 transition-colors active:bg-slate-50 dark:active:bg-slate-700">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">热榜</span>
+</button>
+<button class="flex shrink-0 items-center justify-center rounded-full bg-white dark:bg-card-dark px-4 py-1.5 border border-slate-200 dark:border-slate-700 transition-colors active:bg-slate-50 dark:active:bg-slate-700">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">表白墙</span>
+</button>
+<button class="flex shrink-0 items-center justify-center rounded-full bg-white dark:bg-card-dark px-4 py-1.5 border border-slate-200 dark:border-slate-700 transition-colors active:bg-slate-50 dark:active:bg-slate-700">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">失物招领</span>
+</button>
+<button class="flex shrink-0 items-center justify-center rounded-full bg-white dark:bg-card-dark px-4 py-1.5 border border-slate-200 dark:border-slate-700 transition-colors active:bg-slate-50 dark:active:bg-slate-700">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">闲置</span>
+</button>
+</div>
+</header>
+<main class="flex-1 pb-28 px-3 pt-3 space-y-3">
+<section class="rounded-2xl bg-white dark:bg-card-dark p-3 shadow-soft border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-3 z-10">
+<span class="bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg">每日精选</span>
+</div>
+<div class="flex gap-4 items-center">
+<div class="w-1/3 aspect-[3/4] rounded-xl overflow-hidden shrink-0 relative bg-slate-200">
+<img alt="Music festival crowd" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9ey2T5dja4XFhGAU_NSs3tGVgJo60XUvh9_ouize7CBk-HzYiVyQc7p764Q1s84i6vd057XxDH7iS56D0l9euZYlk3pjNej2FjXhzhvLh7-iiGHR9hUqiOGicaTO3L638-jQl2xcbC32HKsmj8xWwo_miZnAD1idAGq6OQlrrTEmEdkfyTrtS8_y28YSjcgoTDHbBrl531B6ZiaWUciDbpziEmGS7bCtn0LpZaaQrYKdbC_rUVsjQi6THq3pFB0IOaHi3xxHQVjEP"/>
+</div>
+<div class="flex flex-col justify-between h-full py-1 flex-1">
+<div>
+<div class="flex items-center gap-2 mb-1.5">
+<img alt="Avatar" class="w-5 h-5 rounded-full border border-slate-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdibKjbQUMIbg_LKT3FLn6nSkknp72w92lnAwfeYo76iB4Msnw1MXbiua3vSTiwlTxbtTw5aBmle1Zvdq2X2ec2zrCibCt31MgbggbsWks7T1cV3-v_HiZ95vcarJrbyjdczUrse_B5yExY26eEFvnIdnAaWBbglNOh3-cEjchgo0r52cfDHBTJfeH4G7TzuBnV822jpu0UPSmCymTp30bOMTf8qGBVFtR0Raiyvh7m0Gf9C1CEOl5vFsEnI8CexU8ttt1mswaQkKb"/>
+<span class="text-xs text-slate-500 dark:text-slate-400">校学生会</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-2">校园音乐节今晚在操场震撼开幕！🎸</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">准备好你的荧光棒了吗？今晚7点，我们在南操场不见不散！现场还有神秘嘉宾...</p>
+</div>
+<div class="flex items-center gap-4 mt-3">
+<div class="flex items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined text-[16px]">favorite</span>
+<span class="text-xs font-medium">1.2k</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+<span class="text-xs font-medium">328</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-2 px-1">
+<h2 class="text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-rose-500 text-[18px]">local_fire_department</span>
+            热榜
+        </h2>
+<span class="text-xs text-slate-400">更多</span>
+</div>
+<div class="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+<div class="w-[280px] shrink-0 bg-white dark:bg-card-dark p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">期末复习周，大家都在图书馆里卷到几点？</h3>
+<span class="text-rose-500 font-bold text-xs shrink-0">TOP 1</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-500">
+<div class="flex items-center gap-1">
+<span class="text-primary font-medium">#校园生活</span>
+<span>•</span>
+<span>2.3w 热度</span>
+</div>
+</div>
+</div>
+<div class="w-[280px] shrink-0 bg-white dark:bg-card-dark p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">食堂二楼新开的麻辣香锅测评，真的绝了！</h3>
+<span class="text-rose-500 font-bold text-xs shrink-0">TOP 2</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-500">
+<div class="flex items-center gap-1">
+<span class="text-accent-orange font-medium">#美食探店</span>
+<span>•</span>
+<span>1.8w 热度</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-2 px-1">
+<h2 class="text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-pink-500 text-[18px]">favorite</span>
+            表白墙
+        </h2>
+<span class="text-xs text-slate-400">更多</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-gradient-to-br from-pink-50 to-white dark:from-slate-800 dark:to-card-dark p-3 rounded-xl border border-pink-100 dark:border-slate-700">
+<p class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 line-clamp-3">
+                “那个在图书馆三楼靠窗位置穿白色毛衣的男生，你认真看书的样子真的很帅...”
+            </p>
+<div class="flex justify-between items-center mt-auto">
+<span class="text-[10px] text-pink-400 font-medium">刚刚</span>
+<span class="text-[10px] bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded">捞人</span>
+</div>
+</div>
+<div class="bg-gradient-to-br from-purple-50 to-white dark:from-slate-800 dark:to-card-dark p-3 rounded-xl border border-purple-100 dark:border-slate-700">
+<p class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 line-clamp-3">
+                “有没有人组队寒假去哈尔滨旅游呀？目前缺2人，男女不限！”
+            </p>
+<div class="flex justify-between items-center mt-auto">
+<span class="text-[10px] text-purple-400 font-medium">15分钟前</span>
+<span class="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded">组队</span>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-2 px-1">
+<h2 class="text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-green-500 text-[18px]">storefront</span>
+            闲置交易
+        </h2>
+<span class="text-xs text-slate-400">更多</span>
+</div>
+<div class="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+<div class="shrink-0 w-32 bg-white dark:bg-card-dark rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+<div class="aspect-square bg-slate-100 relative">
+<img alt="Textbooks" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCt3tBMF9dwCQNtXwItZy_GQOrqG4XGfKrLUBrRe5sFV8_r4SBspUvSLZiZG30gPyZ3jZFd4Ga7gMhVDLdmtEjjwFhRNeVgSggI8QR9LddccW-pB2MWsOehXPUe5oG8DwDX7UM_H7d779LRcQyTm8yk-xWoOL26FZmH4wjB3GRwkpfKH1BftS-ilVnK1lbqHGrT12ps_KRPuu1wpmZCGUCs5kIC5VgAXKyNn39-8TOQTVlj3MWZTXvCawcaKIsz30Xe5af1GEJRDx5"/>
+<div class="absolute bottom-1 left-1 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-white text-[10px] font-bold">¥30</div>
+</div>
+<div class="p-2">
+<h3 class="text-xs font-medium truncate text-slate-900 dark:text-slate-100">微积分教材99新</h3>
+<p class="text-[10px] text-slate-400 mt-0.5">数学系 • 张伟</p>
+</div>
+</div>
+<div class="shrink-0 w-32 bg-white dark:bg-card-dark rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+<div class="aspect-square bg-slate-100 relative">
+<img alt="Headphones" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATeZtXjGhQyeHZVeDxuj4teXIjmNNiyFqwAOPA2R1rQflHmfOReaCdEJXhuFjKYOvvud1SXU3UEG5qqxb7-rPw3pmtIFIDgtR9dsYdwTwxo4FNKEMUbLYY0bYGNvNcK3Tu2K5u91ZU_sb1QHTCIdTLdYppooFWYZJamcpjs5yK543o6D3LhgzXWw1tDOiTkii1F5fg6GribN2evWSRPUwACdMWVD0RiPPuo34-3BwxBMsCRC3c4w17HhkFCbtv4x275A1u0f6DS1ap"/>
+<div class="absolute bottom-1 left-1 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-white text-[10px] font-bold">¥150</div>
+</div>
+<div class="p-2">
+<h3 class="text-xs font-medium truncate text-slate-900 dark:text-slate-100">全新蓝牙耳机</h3>
+<p class="text-[10px] text-slate-400 mt-0.5">信工院 • 李明</p>
+</div>
+</div>
+<div class="shrink-0 w-32 bg-white dark:bg-card-dark rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+<div class="aspect-square bg-slate-100 relative">
+<img alt="Keyboard" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKC7wBv9tY178H4UQMbgNx0WuMvD8jRs0NORAd-A9N7pHVV6yGZuFxZE132wn4fhOECn0TMQdJVziG2Fe35D6yYSBD4VFZqp1Ycc__MFDufie8aF_aHF8ZA2TCB0ZfL77nGFZlsdog8A4ONjxw4Kha6zKIckQeKvSaFImCnDqRdE4qZghBp0VIw_1kwohpewUmUOGccd4dgdJA6edb3Rlb9Niwf5mtIXu0bhaOnwFKn8AkCWJg1pEq31WSFyPRKv7_0eYkr9kZnyJt"/>
+<div class="absolute bottom-1 left-1 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-white text-[10px] font-bold">¥200</div>
+</div>
+<div class="p-2">
+<h3 class="text-xs font-medium truncate text-slate-900 dark:text-slate-100">机械键盘青轴</h3>
+<p class="text-[10px] text-slate-400 mt-0.5">计科 • 王强</p>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-white dark:bg-card-dark rounded-xl p-3 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-blue-500 text-[18px]">search_off</span>
+            失物招领
+        </h2>
+<span class="text-xs text-slate-400">查看全部</span>
+</div>
+<div class="space-y-3">
+<div class="flex gap-3 items-center">
+<div class="w-10 h-10 shrink-0 bg-slate-100 rounded-lg overflow-hidden">
+<img alt="Keys" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDX-BfJ1KReSmJMyP2HZlyuvqDXuntfvk42ubVkt61Rtkxk4DovQaHuV-lH9zkSSu0itFmeepETbmYx6NJs1UnIETle56q_QfVOzIvVD5K6T0hm9QJcf10zb4uJYhjMIsIzobm2oi3tE3uiw-TtcUrinhKcZ0ulW9J-f3YOHneqMO630U6TEUEJMwY1NN0Sji4QfUaxKicDsFF8us6jKLdeDrUUkpZxcVVNUKafalWuLuGLzd7rjFauEbd8igmSVP9-wPWrGO_CdRXl"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-0.5">
+<span class="text-[10px] px-1 rounded bg-red-100 text-red-600 font-bold">招领</span>
+<h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">在健身房捡到钥匙一串</h3>
+</div>
+<p class="text-[10px] text-slate-400 truncate">位置：北区健身房门口 • 15分钟前</p>
+</div>
+<button class="shrink-0 text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded font-medium text-slate-600 dark:text-slate-300">联系</button>
+</div>
+<div class="flex gap-3 items-center">
+<div class="w-10 h-10 shrink-0 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400 text-lg">wallet</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-0.5">
+<span class="text-[10px] px-1 rounded bg-orange-100 text-orange-600 font-bold">寻物</span>
+<h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">食堂遗失棕色钱包</h3>
+</div>
+<p class="text-[10px] text-slate-400 truncate">位置：二食堂二楼 • 40分钟前</p>
+</div>
+<button class="shrink-0 text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded font-medium text-slate-600 dark:text-slate-300">线索</button>
+</div>
+</div>
+</section>
+<div class="py-4 flex flex-col items-center justify-center text-center opacity-50">
+<span class="text-xs text-slate-400">· 到底啦 ·</span>
+</div>
+</main>
+<div class="fixed bottom-24 right-4 z-50">
+<button class="flex items-center justify-center w-12 h-12 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black shadow-lg hover:shadow-xl active:scale-95 transition-all duration-300 group">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</button>
+</div>
+<nav class="fixed bottom-0 w-full max-w-md z-50 bg-white/90 dark:bg-card-dark/90 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 pb-safe">
+<div class="flex justify-around items-center h-16 px-2">
+<a class="flex flex-col items-center gap-1 w-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">home</span>
+<span class="text-[10px] font-medium">首页</span>
+</a>
+<a class="flex flex-col items-center gap-1 w-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">storefront</span>
+<span class="text-[10px] font-medium">广场</span>
+</a>
+<a class="flex flex-col items-center gap-1 w-full text-slate-900 dark:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="text-[10px] font-medium">发现</span>
+</a>
+<a class="flex flex-col items-center gap-1 w-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">person</span>
+<span class="text-[10px] font-medium">我的</span>
+</a>
+</div>
+<div class="h-4 w-full"></div>
+</nav>
+</div>
+<script>
+        document.querySelectorAll('.material-symbols-outlined').forEach(icon => {
+            if(icon.innerText === 'favorite') {
+                icon.parentElement.addEventListener('click', () => {
+                    if (icon.classList.contains('text-rose-500')) {
+                        icon.classList.remove('text-rose-500', 'fill-current');
+                        icon.style.fontVariationSettings = "'FILL' 0";
+                    } else {
+                        icon.classList.add('text-rose-500', 'fill-current');
+                        icon.style.fontVariationSettings = "'FILL' 1";
+                    }
+                });
+            }
+        });
+    </script>
+
+</body></html>
