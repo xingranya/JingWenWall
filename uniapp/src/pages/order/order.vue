@@ -67,8 +67,7 @@ import TabBar from '@/components/TabBar.vue';
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 import uniLoadMore from '@dcloudio/uni-ui/lib/uni-load-more/uni-load-more.vue';
 
-// API (假设有对应 API，暂时 Mock 或复用现有)
-// import { getErrandOrders, acceptOrder } from '@/api/order';
+import { getErrandList } from '@/api/errand.js';
 
 export default {
   components: {
@@ -85,30 +84,7 @@ export default {
       pageSize: 10,
       loadMoreStatus: 'more',
       isRefreshing: false,
-      
-      // Mock Data
-      mockOrders: [
-        {
-          id: 1,
-          nickName: '王同学',
-          avatar: '/static/default_avatar.jpg',
-          createTime: new Date().getTime() - 300000,
-          location: '西区宿舍',
-          goodsDesc: '求带一份黄焖鸡米饭，微辣，西区食堂二楼那家。送到3号楼楼下即可，谢谢！',
-          totalFee: '5.00',
-          typeStr: '食堂带饭'
-        },
-        {
-          id: 2,
-          nickName: '李学霸',
-          avatar: '/static/default_avatar.jpg',
-          createTime: new Date().getTime() - 720000,
-          location: '图书馆',
-          goodsDesc: '急需帮忙打印一份实验报告，大概15页，黑白双面。我在图书馆正门等。',
-          totalFee: '3.00',
-          typeStr: '打印服务'
-        }
-      ]
+      categoryId: 6 // 假设跑腿是 6
     };
   },
   onLoad() {
@@ -119,24 +95,47 @@ export default {
       if (this.loadMoreStatus === 'loading') return;
       this.loadMoreStatus = 'loading';
       
-      // 模拟请求延迟
-      setTimeout(() => {
+      try {
+        const res = await getErrandList({
+            categoryId: this.categoryId,
+            pageNum: this.page,
+            pageSize: this.pageSize
+        });
+        
+        console.log('API Response:', res);
+        
+        if (!res) {
+          throw new Error('API response is empty');
+        }
+
+        // Support both res.rows (flattened) and res.data.rows (standard R structure)
+        const rows = res.rows || (res.data && res.data.rows) || [];
+
+        const list = rows.map(item => {
+            return {
+                ...item,
+                params: item.params || {} 
+            };
+        });
+        
         if (this.isRefreshing) {
-          this.orderList = [...this.mockOrders];
-          this.isRefreshing = false;
+            this.orderList = list;
+            this.isRefreshing = false;
         } else {
-          this.orderList = [...this.orderList, ...this.mockOrders];
+            this.orderList = [...this.orderList, ...list];
         }
         
-        // 模拟数据不够
-        if (this.page > 1) {
-             this.loadMoreStatus = 'noMore';
+        if (list.length < this.pageSize) {
+            this.loadMoreStatus = 'noMore';
         } else {
-             this.loadMoreStatus = 'more';
-             this.page++;
+            this.loadMoreStatus = 'more';
+            this.page++;
         }
-        
-      }, 500);
+      } catch (err) {
+        console.error(err);
+        this.loadMoreStatus = 'more'; // 失败重置，允许重试
+        if (this.isRefreshing) this.isRefreshing = false;
+      }
     },
     
     onRefresh() {
@@ -152,19 +151,28 @@ export default {
     },
     
     handleServiceClick(item) {
-      // 携带类型跳转发布或筛选
+      if (item.type === 'market') {
+          uni.navigateTo({
+              url: '/pages/market/index'
+          });
+          return;
+      }
+      // 其他类型可以带参数跳转到发布页或者筛选列表
+      // 目前演示为筛选
       uni.showToast({
-        title: `选择了${item.label}`,
+        title: `筛选：${item.label}`,
         icon: 'none'
       });
+      // TODO: 实现筛选逻辑 this.filterType = item.type; this.loadData();
     },
     
     handleAccept(order) {
       uni.showModal({
         title: '接单确认',
-        content: '确定要接下这个订单吗？完成后将获得佣金。',
+        content: '确定要接下这个订单吗？',
         success: (res) => {
           if (res.confirm) {
+            // TODO: 调用接单API
              uni.showToast({
                title: '抢单成功',
                icon: 'success'
@@ -175,22 +183,15 @@ export default {
     },
     
     goToDetail(order) {
+      // 详情页暂未创建，或复用 forum/detail
       uni.navigateTo({
-        url: `/pages/order/detail?id=${order.id}`
+        url: `/pages/forum/detail?id=${order.contentId}`
       });
     },
     
     goToPublish() {
-      // 之前的发布页路径是 pages/order/order (在 pages.json 中被重用)，
-      // 但现在 pages/order/order 变成了列表页。
-      // 需要确认是否有独立的发布页。
-      // 根据 pages.json，'pages/order/order' 原来 title 是 '发布订单'。
-      // 现在的设计将 'pages/order/order' 改为了列表页。
-      // 我们需要一个新的发布页，或者复用原来的逻辑但拆分路由。
-      // 假设暂时跳转到一个未创建的发布页，或弹窗。
-      uni.showToast({
-        title: '发布功能开发中',
-        icon: 'none'
+      uni.navigateTo({
+        url: '/pages/order/publish'
       });
     },
     

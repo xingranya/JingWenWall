@@ -23,15 +23,24 @@
         <text class="no-content-text">暂无内容</text>
       </view>
     </view>
+    
+    <!-- 自定义底部导航栏 -->
+    <TabBar :current="2" />
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue';
+<script>
+import TabBar from '@/components/TabBar.vue';
 
-// 模拟清除未读的函数
-const clearUnread = () => {
-  console.log('未读消息已清除');
+export default {
+  components: {
+    TabBar
+  },
+  methods: {
+    clearUnread() {
+      console.log('未读消息已清除');
+    }
+  }
 };
 </script>
 

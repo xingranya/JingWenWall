@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 
 @Data
 public class ContentVo {
@@ -68,9 +69,21 @@ public class ContentVo {
      */
     private String remark;
 
-//    private SysUserEntity userEntity;
+    /** 价格/赏金 */
+    private BigDecimal price;
 
-//    private CategoryEntity category;
+    /** 位置/目的地 */
+    private String location;
+
+    /** 类型标签 */
+    private String typeTag;
+
+    /** 状态标签 */
+    private String statusTag;
+
+    // private SysUserEntity userEntity;
+
+    // private CategoryEntity category;
 
     private List<ContentTagEntity> tags;
 
@@ -79,10 +92,8 @@ public class ContentVo {
 
     private Map<String, Object> params;
 
-    public Map<String, Object> getParams()
-    {
-        if (params == null)
-        {
+    public Map<String, Object> getParams() {
+        if (params == null) {
             params = new HashMap<>();
         }
         return params;

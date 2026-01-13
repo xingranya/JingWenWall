@@ -32,14 +32,18 @@ export const getRecords = (pageNum = 1, pageSize = 10) => {
  */
 export const uploadSingleFile = (filePath) => {
     return new Promise((resolve, reject) => {
+        const token = uni.getStorageSync('token');
+        console.log('上传文件，当前 token:', token ? token.substring(0, 20) + '...' : '无');
+        
         uni.uploadFile({
             url: `${baseUrl}/campus/imageUpload`,
             filePath: filePath,
             name: 'file',
             header: {
-                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                'Authorization': `Bearer ${token}`
             },
             success: (res) => {
+                console.log('上传响应:', res);
                 try {
                     const responseData = JSON.parse(res.data);
                     if (responseData.code === 200) {

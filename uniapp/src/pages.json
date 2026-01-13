@@ -69,7 +69,27 @@
         {
             "path": "pages/order/order",
             "style": {
-                "navigationBarTitleText": "发布订单"
+                "navigationBarTitleText": "校园跑腿",
+                "enablePullDownRefresh": true
+            }
+        },
+        {
+            "path": "pages/order/publish",
+            "style": {
+                "navigationBarTitleText": "发布跑腿"
+            }
+        },
+        {
+            "path": "pages/market/index",
+            "style": {
+                "navigationBarTitleText": "二手市场",
+                "enablePullDownRefresh": true
+            }
+        },
+        {
+            "path": "pages/market/publish",
+            "style": {
+                "navigationBarTitleText": "发布闲置"
             }
         },
         {
@@ -128,10 +148,11 @@
 		}
 	],
 	"tabBar": {
-		"color": "#000000",
-		"selectedColor": "#000000",
+		"custom": true,
+		"color": "#94a3b8",
+		"selectedColor": "#007fff",
 		"backgroundColor": "#ffffff",
-		"borderStyle": "black",
+		"borderStyle": "white",
 		"list": [
 			{
 				"pagePath": "pages/index/index",
@@ -141,16 +162,16 @@
 			},
 			{
 				"pagePath": "pages/forum/index",
-				"text": "贴吧",
+				"text": "广场",
 				"iconPath": "static/icon/topic.png",
 				"selectedIconPath": "static/icon/topic-active.png"
 			},
-            {
-                "pagePath": "pages/message/index",
-                "text": "消息",
-                "iconPath": "static/icon/message.png",
-                "selectedIconPath": "static/icon/message-active.png"
-            },
+			{
+				"pagePath": "pages/message/index",
+				"text": "消息",
+				"iconPath": "static/icon/message.png",
+				"selectedIconPath": "static/icon/message-active.png"
+			},
 			{
 				"pagePath": "pages/person/person",
 				"text": "我的",

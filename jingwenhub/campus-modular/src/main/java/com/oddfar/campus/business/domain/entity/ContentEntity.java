@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * content内容表
@@ -75,6 +76,18 @@ public class ContentEntity extends BaseEntity {
      * 备注
      */
     private String remark;
+
+    /** 价格/赏金 */
+    private BigDecimal price;
+
+    /** 位置/目的地 */
+    private String location;
+
+    /** 类型标签 */
+    private String typeTag;
+
+    /** 状态标签 */
+    private String statusTag;
 
     /**
      * 文件URL列表

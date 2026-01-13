@@ -36,6 +36,8 @@
 </template>
 
 <script>
+import { baseUrl } from '@/utils/env';
+
 export default {
   methods: {
     handleDisagree() {
@@ -49,9 +51,75 @@ export default {
     handleAgree() {
       // 存储同意状态
       uni.setStorageSync('hasAgreedPrivacy', true);
-      // 跳转首页
-      uni.reLaunch({
-        url: '/pages/index/index'
+      
+      // 执行微信登录
+      uni.showLoading({ title: '登录中...' });
+      uni.login({
+        provider: 'weixin',
+        success: (loginRes) => {
+          console.log('获取到微信 code:', loginRes.code);
+          
+          // 调用后端登录接口
+          uni.request({
+            url: baseUrl + '/api/v1/wx/auth/login',
+            method: 'POST',
+            header: { 'Content-Type': 'application/json' },
+            data: { code: loginRes.code },
+            success: (res) => {
+              uni.hideLoading();
+              console.log('登录响应:', res);
+              
+              if (res.statusCode === 200 && res.data.code === 200) {
+                const token = res.data.data?.token;
+                const studentInfo = res.data.data?.studentInfo;
+                
+                if (token) {
+                  console.log('登录成功，token:', token);
+                  uni.setStorageSync('token', token);
+                  
+                  // 保存用户信息
+                  if (studentInfo) {
+                    uni.setStorageSync('userInfo', JSON.stringify(studentInfo));
+                    uni.setStorageSync('isStudentVerified', true);
+                  }
+                  
+                  uni.showToast({ title: '登录成功', icon: 'success' });
+                  
+                  // 根据是否有学生信息决定跳转
+                  setTimeout(() => {
+                    if (studentInfo && studentInfo.studentNo) {
+                      // 老用户，已有学生信息，跳转首页
+                      console.log('已认证用户，跳转首页');
+                      uni.reLaunch({ url: '/pages/index/index' });
+                    } else {
+                      // 新用户，需要完成学生认证
+                      console.log('新用户，跳转认证页面');
+                      uni.reLaunch({ url: '/pages/person/authentication' });
+                    }
+                  }, 500);
+                } else {
+                  uni.showToast({ title: '获取token失败', icon: 'none' });
+                  uni.reLaunch({ url: '/pages/index/index' });
+                }
+              } else {
+                uni.showToast({ title: res.data.msg || '登录失败', icon: 'none' });
+                uni.reLaunch({ url: '/pages/index/index' });
+              }
+            },
+            fail: (error) => {
+              uni.hideLoading();
+              console.error('登录请求失败:', error);
+              uni.showToast({ title: '网络错误', icon: 'none' });
+              uni.reLaunch({ url: '/pages/index/index' });
+            }
+          });
+        },
+        fail: (error) => {
+          uni.hideLoading();
+          console.error('微信登录失败:', error);
+          uni.showToast({ title: '微信登录失败', icon: 'none' });
+          uni.reLaunch({ url: '/pages/index/index' });
+        }
       });
     },
     

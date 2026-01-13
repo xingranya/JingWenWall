@@ -40,27 +40,27 @@ export default {
       entryList: [
         {
           label: '跑腿',
-          icon: 'checkbox',
+          icon: 'paperplane', // changed to paperplane for errand
           color: '#007fff',
           path: '/pages/order/order'
         },
         {
           label: '二手',
           icon: 'shop',
-          color: '#007fff',
-          path: '/pages/topic/type?type=secondhand'
+          color: '#ff9500', // changed color to distinguish
+          path: '/pages/market/index'
         },
         {
           label: '图书馆',
-          icon: 'book',
+          icon: 'list', // changed from 'book' (invalid) to 'list'
           color: '#007fff',
-          path: '/pages/topic/type?type=library'
+          path: '' // Temporarily disable until implemented
         },
         {
           label: '社团',
           icon: 'contact',
           color: '#007fff',
-          path: '/pages/topic/type?type=club'
+          path: '' // Temporarily disable until implemented
         },
         {
           label: '更多',

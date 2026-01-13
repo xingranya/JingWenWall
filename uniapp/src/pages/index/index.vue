@@ -71,7 +71,7 @@
     <!-- 7. 悬浮按钮 (发布) -->
     <FabComponent />
     
-    <!-- 8. 底部导航栏 -->
+    <!-- 8. 自定义底部导航栏 -->
     <TabBar :current="0" />
   </view>
 </template>

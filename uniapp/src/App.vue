@@ -2,7 +2,7 @@
 export default {
   onLaunch: function () {
     console.log('App Launch')
-    uni.hideTabBar()
+    // 使用 custom: true 自定义 tabBar，原生 tabBar 会自动隐藏
   },
   onShow: function () {
     console.log('App Show')

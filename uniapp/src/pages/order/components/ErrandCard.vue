@@ -7,28 +7,28 @@
     <!-- 头部：发布者信息和价格 -->
     <view class="card-header">
       <view class="user-row">
-        <image class="avatar-md" :src="order.avatar || '/static/default_avatar.jpg'" mode="aspectFill" />
+        <image class="avatar-md" :src="(order.params && order.params.avatar) || '/static/default_avatar.jpg'" mode="aspectFill" />
         <view class="user-meta">
-          <text class="user-name">{{ order.nickName || '匿名同学' }}</text>
+          <text class="user-name">{{ (order.params && order.params.nickName) || '匿名同学' }}</text>
           <text class="post-info">{{ formatTime(order.createTime) }} · {{ order.location || '未知位置' }}</text>
         </view>
       </view>
       <view class="price-badge">
         <text class="currency">¥</text>
-        <text class="amount">{{ order.totalFee || '0.00' }}</text>
+        <text class="amount">{{ order.price || '0.00' }}</text>
       </view>
     </view>
     
     <!-- 内容描述 -->
     <view class="card-body">
-      <text class="order-desc line-clamp-3">{{ order.content || order.goodsDesc }}</text>
+      <text class="order-desc line-clamp-3">{{ order.content }}</text>
     </view>
     
     <!-- 底部：标签和操作按钮 -->
     <view class="card-footer">
       <view class="tags">
         <view class="tag tag-orange">
-          <text class="tag-label">{{ order.typeStr || '跑腿' }}</text>
+          <text class="tag-label">{{ order.typeTag || '跑腿' }}</text>
         </view>
       </view>
       

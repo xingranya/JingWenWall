@@ -6,8 +6,8 @@ campus:
   version: 1.1.7
 
 server:
-  port: 8160
-
+  port: 8001
+  address: 0.0.0.0
 
 spring:
   application:
@@ -106,4 +106,3 @@ wechat:
     appId: wxc56334f1f425a05f
     # 小程序 AppSecret (需替换为实际值)
     appSecret: c5e4a048b701be66b35ac4e1e8d4b075
-

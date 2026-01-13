@@ -56,8 +56,8 @@ e:\wxxcx\JingWenWall\
 - **协议**：HTTP/HTTPS
 - **数据格式**：JSON
 - **字符编码**：UTF-8
-- **后端端口**：8160
-- **开发环境地址**：`http://localhost:8160`
+- **后端端口**：8001
+- **开发环境地址**：`http://localhost:8001`
 
 ---
 
@@ -70,36 +70,37 @@ e:\wxxcx\JingWenWall\
 **文件位置**：`uniapp/src/utils/request.js`
 
 ```javascript
-export function request({url='', params={}, method='GET'}) {
-    const token = uni.getStorageSync('token');
-    let header = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-    }
-    
-    return new Promise((resolve, reject) => {
-        uni.request({
-            url: baseUrl + url,
-            data: params,
-            header: header,
-            method: method,
-            success: (res) => {
-                if (res.data.code === 200 || res.data.code === 1) {
-                    resolve(res.data)
-                } else {
-                    reject(res.data)
-                }
-            },
-            fail: (err) => reject(err)
-        });
-    })
+export function request({ url = "", params = {}, method = "GET" }) {
+  const token = uni.getStorageSync("token");
+  let header = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : "",
+  };
+
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: baseUrl + url,
+      data: params,
+      header: header,
+      method: method,
+      success: (res) => {
+        if (res.data.code === 200 || res.data.code === 1) {
+          resolve(res.data);
+        } else {
+          reject(res.data);
+        }
+      },
+      fail: (err) => reject(err),
+    });
+  });
 }
 ```
 
 #### 响应格式规范
 
 **成功响应**：
+
 ```json
 {
   "code": 200,
@@ -109,6 +110,7 @@ export function request({url='', params={}, method='GET'}) {
 ```
 
 **失败响应**：
+
 ```json
 {
   "code": 401,
@@ -120,11 +122,15 @@ export function request({url='', params={}, method='GET'}) {
 ### 2.2 跨域配置
 
 #### 开发环境
+
 在微信开发者工具中关闭域名校验：
+
 - 详情 → 本地设置 → 勾选 **"不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书"**
 
 #### 生产环境
+
 在微信公众平台配置服务器域名：
+
 - 登录 [微信公众平台](https://mp.weixin.qq.com)
 - 开发管理 → 开发设置 → 服务器域名
 - request 合法域名：添加后端生产域名
@@ -139,32 +145,31 @@ export function request({url='', params={}, method='GET'}) {
  */
 
 // 开发环境 - 后端服务地址
-const DEV_BASE_URL = 'http://localhost:8160'
+const DEV_BASE_URL = "http://localhost:8001";
 
 // 生产环境 - 后端服务地址
-const PROD_BASE_URL = 'https://your-production-domain.com'
+const PROD_BASE_URL = "https://your-production-domain.com";
 
 // 根据环境自动选择
-const baseUrl = process.env.NODE_ENV === 'development' 
-    ? DEV_BASE_URL 
-    : PROD_BASE_URL
+const baseUrl =
+  process.env.NODE_ENV === "development" ? DEV_BASE_URL : PROD_BASE_URL;
 
 // 腾讯地图 API Key
-const mapkey = 'RSNBZ-3ABW4-MF3UK-FMCJP-JC4YT-RUFTR'
+const mapkey = "RSNBZ-3ABW4-MF3UK-FMCJP-JC4YT-RUFTR";
 
-export { baseUrl, mapkey }
+export { baseUrl, mapkey };
 ```
 
 ### 2.4 核心接口路径
 
-| 功能 | 方法 | 路径 | 说明 |
-|-----|------|------|------|
-| 微信登录 | POST | `/api/v1/wx/auth/login` | 需传递微信 code |
-| 获取话题列表 | GET | `/student/get/topic?page=1&pageSize=10` | 需认证 |
-| 获取用户信息 | GET | `/student/get/info` | 需认证 |
-| 获取当前用户信息 | GET | `/student/get/currentUserInfo` | 需认证 |
-| 上传文件 | POST | `/student/common/upload` | 需认证 |
-| 发布话题 | POST | `/student/post/topic` | 需认证 |
+| 功能             | 方法 | 路径                                    | 说明            |
+| ---------------- | ---- | --------------------------------------- | --------------- |
+| 微信登录         | POST | `/api/v1/wx/auth/login`                 | 需传递微信 code |
+| 获取话题列表     | GET  | `/student/get/topic?page=1&pageSize=10` | 需认证          |
+| 获取用户信息     | GET  | `/student/get/info`                     | 需认证          |
+| 获取当前用户信息 | GET  | `/student/get/currentUserInfo`          | 需认证          |
+| 上传文件         | POST | `/student/common/upload`                | 需认证          |
+| 发布话题         | POST | `/student/post/topic`                   | 需认证          |
 
 ---
 
@@ -232,12 +237,12 @@ header: {
 
 ### 3.4 认证相关文件
 
-| 文件 | 说明 |
-|-----|------|
-| `jingwenhub/campus-framework/src/main/java/com/oddfar/campus/framework/web/service/TokenService.java` | Token 服务类 |
+| 文件                                                                                                                      | 说明           |
+| ------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `jingwenhub/campus-framework/src/main/java/com/oddfar/campus/framework/web/service/TokenService.java`                     | Token 服务类   |
 | `jingwenhub/campus-framework/src/main/java/com/oddfar/campus/framework/security/filter/JwtAuthenticationTokenFilter.java` | JWT 认证过滤器 |
-| `uniapp/src/api/login.js` | 前端登录 API |
-| `uniapp/src/utils/request.js` | 请求拦截器 |
+| `uniapp/src/api/login.js`                                                                                                 | 前端登录 API   |
+| `uniapp/src/utils/request.js`                                                                                             | 请求拦截器     |
 
 ---
 
@@ -246,9 +251,11 @@ header: {
 ### 4.1 前后端接口架构迁移 ✅ 已完成（2026-01-09）
 
 #### 迁移背景
+
 后端已升级为新的论坛系统架构（`/api/v1/forum/`），但前端仍使用旧的 `/student/` 路径，导致接口调用失败。
 
 #### 迁移范围
+
 **共修复 5 个 API 文件，60+ 处接口路径变更**：
 
 **1. topic.js（话题/帖子）**
@@ -292,20 +299,24 @@ header: {
 | `/student/get/currentUserInfo` | `/student/get/info` | GET | 获取当前用户信息 |
 
 #### 重要变更
+
 1. **参数名变更**：
-   - `topicId` → `postId`（帖子ID）
+
+   - `topicId` → `postId`（帖子 ID）
    - `page` → `pageNum`（页码参数）
    - 统一使用 RESTful 风格路径参数
 
 2. **响应码变更**：
+
    - 旧版本：`code: 1` 表示成功
    - 新版本：`code: 200` 表示成功
 
-3. **HTTP方法规范化**：
+3. **HTTP 方法规范化**：
    - 取消操作统一使用 `DELETE` 方法（旧版本多数使用 `POST`）
    - 符合 RESTful API 设计规范
 
 #### 迁移优势
+
 - ✅ 接口路径更清晰，符合 RESTful 规范
 - ✅ 后端统一管理，易于维护和扩展
 - ✅ 支持更多论坛功能（如草稿、分类浏览等）
@@ -316,20 +327,25 @@ header: {
 ### 4.2 认证失败问题 ✅ 已修复（2026-01-09）
 
 #### 问题现象
+
 - 话题列表加载失败，提示"加载失败"
 - 获取用户信息失败，返回 401 认证失败
 - 控制台报错：`请求访问：/student/get/info，认证失败，无法访问系统资源`
 
 #### 根本原因
+
 前端多处使用了错误的 token 传递方式，与后端期望的 `Authorization: Bearer <token>` 格式不匹配。
 
 #### 修复范围
+
 **共修复 9 个文件，40+ 处修改**：
 
 **核心工具**：
+
 - `uniapp/src/utils/request.js`
 
-**API 文件**（7个）：
+**API 文件**（7 个）：
+
 - `uniapp/src/api/topic.js` - 10 处修改
 - `uniapp/src/api/user.js` - 1 处修改
 - `uniapp/src/api/collect.js` - 3 处修改
@@ -338,13 +354,16 @@ header: {
 - `uniapp/src/api/forum.js` - 15 处修改
 - `uniapp/src/api/getPhone.js` - 1 处修改
 
-**页面文件**（3个）：
+**页面文件**（3 个）：
+
 - `uniapp/src/pages/person/person.vue` - 1 处修改
 - `uniapp/src/pages/person/editInfo.vue` - 3 处修改
 - `uniapp/src/pages/topic/report.vue` - 1 处修改
 
 #### 修复方案
+
 将所有请求头统一修改为标准格式：
+
 ```javascript
 'Authorization': `Bearer ${uni.getStorageSync('token')}`
 ```
@@ -352,17 +371,22 @@ header: {
 ### 4.2 Lombok 兼容性问题 ✅ 已修复
 
 #### 问题现象
+
 编译时报错：
+
 ```
-java.lang.NoSuchFieldError: Class com.sun.tools.javac.tree.JCTree$JCImport 
+java.lang.NoSuchFieldError: Class com.sun.tools.javac.tree.JCTree$JCImport
 does not have member field 'com.sun.tools.javac.tree.JCTree qualid'
 ```
 
 #### 根本原因
+
 Lombok 1.18.20 不兼容 JDK 21
 
 #### 解决方案
+
 在 `jingwenhub/pom.xml` 中升级 Lombok 版本：
+
 ```xml
 <properties>
     <lombok.version>1.18.30</lombok.version>
@@ -372,15 +396,18 @@ Lombok 1.18.20 不兼容 JDK 21
 ### 4.3 Redis 连接失败 ⚠️ 常见问题
 
 #### 问题现象
+
 ```
 RedisConnectionException: Unable to connect to 127.0.0.1:6379
 Caused by: java.net.ConnectException: Connection refused
 ```
 
 #### 根本原因
+
 Redis 服务未启动
 
 #### 解决方案
+
 ```bash
 # Windows 启动 Redis
 redis-server --service-start
@@ -393,30 +420,37 @@ redis-cli ping
 ### 4.4 微信登录接口路径错误 ✅ 已修复
 
 #### 问题现象
+
 登录时返回 401 认证失败
 
 #### 根本原因
+
 使用了旧的登录接口路径 `/student/login/login`
 
 #### 解决方案
+
 在 `uniapp/src/api/login.js` 中更新接口路径：
+
 ```javascript
 // ❌ 错误的旧接口
 // url: baseUrl + '/student/login/login'
 
 // ✅ 正确的新接口
-url: baseUrl + '/api/v1/wx/auth/login'
+url: baseUrl + "/api/v1/wx/auth/login";
 ```
 
 ### 4.5 env.js 文件缺失 ✅ 已修复
 
 #### 问题现象
+
 ```
 Cannot find module 'E:/wxxcx/JingWenWall/uniapp/src/utils/env'
 ```
 
 #### 解决方案
+
 已创建 `uniapp/src/utils/env.js` 配置文件，包含：
+
 - `baseUrl` - 后端服务地址
 - `mapkey` - 腾讯地图 API Key
 
@@ -426,15 +460,15 @@ Cannot find module 'E:/wxxcx/JingWenWall/uniapp/src/utils/env'
 
 ### 5.1 必需环境
 
-| 软件 | 版本要求 | 说明 |
-|------|---------|------|
-| **JDK** | 21.0.8+ | Java 开发环境 |
-| **Maven** | 3.6.0+ | 项目构建工具 |
-| **MySQL** | 5.7+ / 8.0+ | 数据库 |
-| **Redis** | 5.0+ | 缓存服务 |
-| **Node.js** | 16.0+ | 前端运行环境 |
-| **pnpm** | 8.0+ | Node 包管理器 |
-| **微信开发者工具** | 最新稳定版 | 小程序调试工具 |
+| 软件               | 版本要求    | 说明           |
+| ------------------ | ----------- | -------------- |
+| **JDK**            | 21.0.8+     | Java 开发环境  |
+| **Maven**          | 3.6.0+      | 项目构建工具   |
+| **MySQL**          | 5.7+ / 8.0+ | 数据库         |
+| **Redis**          | 5.0+        | 缓存服务       |
+| **Node.js**        | 16.0+       | 前端运行环境   |
+| **pnpm**           | 8.0+        | Node 包管理器  |
+| **微信开发者工具** | 最新稳定版  | 小程序调试工具 |
 
 ### 5.2 后端环境搭建
 
@@ -462,9 +496,9 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/jingwen_campus?characterEncoding=utf-8&useSSL=true&serverTimezone=GMT%2B8
     username: root
-    password: YOUR_PASSWORD  # ⚠️ 修改为你的 MySQL 密码
+    password: YOUR_PASSWORD # ⚠️ 修改为你的 MySQL 密码
 
-# Redis 配置
+  # Redis 配置
   redis:
     host: 127.0.0.1
     port: 6379
@@ -473,8 +507,8 @@ spring:
 # 微信小程序配置
 wechat:
   mini:
-    appId: YOUR_APPID      # ⚠️ 替换为你的小程序 AppID
-    appSecret: YOUR_SECRET  # ⚠️ 替换为你的小程序 AppSecret
+    appId: YOUR_APPID # ⚠️ 替换为你的小程序 AppID
+    appSecret: YOUR_SECRET # ⚠️ 替换为你的小程序 AppSecret
 ```
 
 #### 步骤 3：Maven 依赖安装
@@ -496,8 +530,9 @@ mvn spring-boot:run
 ```
 
 **验证启动成功**：
+
 - 控制台输出：`Started CampusApplication in X.XXX seconds`
-- 访问 Swagger：http://localhost:8160/swagger-ui.html
+- 访问 Swagger：http://localhost:8001/swagger-ui.html
 
 ### 5.3 前端环境搭建
 
@@ -516,6 +551,7 @@ pnpm run dev:mp-weixin
 ```
 
 **预期输出**：
+
 ```
 DONE  Build complete. Watching for changes...
 运行方式：打开 微信开发者工具, 导入 dist\dev\mp-weixin 运行。
@@ -534,6 +570,7 @@ DONE  Build complete. Watching for changes...
 **数据库名称**：`jingwen_campus`
 
 **核心表说明**：
+
 - `sys_user` - 系统用户表
 - `sys_role` - 角色表
 - `sys_menu` - 菜单权限表
@@ -643,13 +680,13 @@ uniapp/
 
 ### 6.3 关键配置文件位置
 
-| 类型 | 文件路径 | 说明 |
-|-----|---------|------|
-| 后端主配置 | `jingwenhub/campus-modular/src/main/resources/application.yml` | 数据库、Redis、微信、Token 配置 |
-| 前端环境配置 | `uniapp/src/utils/env.js` | baseUrl、mapkey |
-| 前端页面配置 | `uniapp/src/pages.json` | 页面路由、tabBar 配置 |
-| 前端应用配置 | `uniapp/src/manifest.json` | 小程序 AppID、权限配置 |
-| Maven 配置 | `jingwenhub/pom.xml` | 依赖版本管理 |
+| 类型         | 文件路径                                                       | 说明                            |
+| ------------ | -------------------------------------------------------------- | ------------------------------- |
+| 后端主配置   | `jingwenhub/campus-modular/src/main/resources/application.yml` | 数据库、Redis、微信、Token 配置 |
+| 前端环境配置 | `uniapp/src/utils/env.js`                                      | baseUrl、mapkey                 |
+| 前端页面配置 | `uniapp/src/pages.json`                                        | 页面路由、tabBar 配置           |
+| 前端应用配置 | `uniapp/src/manifest.json`                                     | 小程序 AppID、权限配置          |
+| Maven 配置   | `jingwenhub/pom.xml`                                           | 依赖版本管理                    |
 
 ---
 
@@ -657,26 +694,26 @@ uniapp/
 
 ### 7.1 后端技术
 
-| 技术 | 版本 | 用途 |
-|-----|------|------|
-| Spring Boot | 2.5.14 | 应用框架 |
-| MyBatis-Plus | 3.4.3 | ORM 框架 |
-| MySQL | 8.0+ | 数据库 |
-| Redis | 5.0+ | 缓存 |
-| JWT | - | Token 认证 |
-| Lombok | 1.18.30 | 代码简化 |
-| Swagger | 3.0.0 | API 文档 |
-| Hutool | 5.7.20 | 工具类库 |
+| 技术         | 版本    | 用途       |
+| ------------ | ------- | ---------- |
+| Spring Boot  | 2.5.14  | 应用框架   |
+| MyBatis-Plus | 3.4.3   | ORM 框架   |
+| MySQL        | 8.0+    | 数据库     |
+| Redis        | 5.0+    | 缓存       |
+| JWT          | -       | Token 认证 |
+| Lombok       | 1.18.30 | 代码简化   |
+| Swagger      | 3.0.0   | API 文档   |
+| Hutool       | 5.7.20  | 工具类库   |
 
 ### 7.2 前端技术
 
-| 技术 | 版本 | 用途 |
-|-----|------|------|
-| uni-app | - | 跨平台框架 |
-| Vue 3 | 3.x | 前端框架 |
-| pnpm | 8.x | 包管理器 |
-| Vite | - | 构建工具 |
-| uni-ui | - | UI 组件库 |
+| 技术    | 版本 | 用途       |
+| ------- | ---- | ---------- |
+| uni-app | -    | 跨平台框架 |
+| Vue 3   | 3.x  | 前端框架   |
+| pnpm    | 8.x  | 包管理器   |
+| Vite    | -    | 构建工具   |
+| uni-ui  | -    | UI 组件库  |
 
 ---
 
@@ -687,11 +724,9 @@ uniapp/
 - [ ] **完善用户信息编辑功能**
   - 头像上传优化
   - 字段验证加强
-  
 - [ ] **实现图片压缩上传**
   - 前端压缩图片大小
   - 优化上传速度
-  
 - [ ] **添加请求失败重试机制**
   - 网络异常自动重试
   - 超时处理优化
@@ -701,11 +736,9 @@ uniapp/
 - [ ] **优化话题列表加载性能**
   - 实现虚拟列表
   - 图片懒加载
-  
 - [ ] **实现下拉刷新和上拉加载**
   - 首页下拉刷新
   - 滚动加载更多
-  
 - [ ] **添加骨架屏 loading 效果**
   - 提升用户体验
   - 减少白屏时间
@@ -715,11 +748,9 @@ uniapp/
 - [ ] **完善错误提示文案**
   - 统一错误提示
   - 友好的错误信息
-  
 - [ ] **添加埋点统计**
   - 用户行为分析
   - 性能监控
-  
 - [ ] **优化代码注释**
   - 补充函数注释
   - 完善文档说明
@@ -745,11 +776,13 @@ uniapp/
 ### 9.2 调试技巧
 
 #### 后端调试
+
 - 查看控制台日志
-- 访问 Swagger：http://localhost:8160/swagger-ui.html
+- 访问 Swagger：http://localhost:8001/swagger-ui.html
 - 使用 Postman 测试接口
 
 #### 前端调试
+
 - 微信开发者工具 - 调试器 - Console（查看日志）
 - 微信开发者工具 - 调试器 - Network（查看网络请求）
 - 微信开发者工具 - 调试器 - Storage（查看本地存储）
@@ -772,13 +805,14 @@ pnpm run dev:mp-weixin               # 编译微信小程序
 ## 10. 参考文档
 
 - **详细启动指南**：`启动指南.md`（800+ 行）
-- **API 文档**：http://localhost:8160/swagger-ui.html
+- **API 文档**：http://localhost:8001/swagger-ui.html
 - **uni-app 官方文档**：https://uniapp.dcloud.net.cn/
 - **Spring Boot 官方文档**：https://spring.io/projects/spring-boot
 
 ---
 
 **文档更新记录**：
+
 - 2026-01-09：创建文档，记录认证问题修复方案
 - 2026-01-09：补充项目结构和技术栈说明
 

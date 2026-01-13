@@ -88,7 +88,7 @@
         
         <div class="form-group">
             <label>后端地址:</label>
-            <input type="text" id="baseUrl" value="http://localhost:8160" placeholder="http://localhost:8160">
+            <input type="text" id="baseUrl" value="http://localhost:8001" placeholder="http://localhost:8001">
         </div>
         
         <div class="form-group">
@@ -211,7 +211,7 @@
             } catch (error) {
                 console.error('获取token失败:', error);
                 resultDiv.className = 'result error';
-                resultDiv.innerHTML = `<h3>获取失败</h3><p>${error.message}</p><p style="margin-top:10px;color:#999;font-size:12px;">请检查:<br/>1. 后端是否正在运行(http://localhost:8160)<br/>2. 用户名和密码是否正确<br/>3. 验证码是否正确<br/>4. 浏览器控制台查看详细错误信息</p>`;
+                resultDiv.innerHTML = `<h3>获取失败</h3><p>${error.message}</p><p style="margin-top:10px;color:#999;font-size:12px;">请检查:<br/>1. 后端是否正在运行(http://localhost:8001)<br/>2. 用户名和密码是否正确<br/>3. 验证码是否正确<br/>4. 浏览器控制台查看详细错误信息</p>`;
                 resultDiv.style.display = 'block';
             }
         }

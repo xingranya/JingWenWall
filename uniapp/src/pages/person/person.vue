@@ -43,7 +43,7 @@
       <view class="safe-bottom-spacer"></view>
     </scroll-view>
     
-    <!-- 底部导航 -->
+    <!-- 自定义底部导航栏 -->
     <TabBar :current="3" />
   </view>
 </template>
@@ -53,6 +53,7 @@ import ProfileHeader from './components/ProfileHeader.vue';
 import StatsCard from './components/StatsCard.vue';
 import ServiceList from './components/ServiceList.vue';
 import TabBar from '@/components/TabBar.vue';
+import { baseUrl } from '@/utils/env';
 
 // import { useUserStore } from '@/stores/user'; // 假设已迁移或直接使用 storage
 
@@ -98,17 +99,23 @@ export default {
   methods: {
     checkLoginStatus() {
       const token = uni.getStorageSync('token');
+      console.log('检查登录状态 - token:', token ? '存在' : '不存在');
       this.isLoggedIn = !!token;
       
       if (this.isLoggedIn) {
         const info = uni.getStorageSync('userInfo');
+        console.log('读取用户信息:', info);
+        
         if (info) {
           try {
-            const parsed = JSON.parse(info);
+            // 尝试解析 JSON，如果已经是对象则直接使用
+            const parsed = typeof info === 'string' ? JSON.parse(info) : info;
+            console.log('解析后的用户信息:', parsed);
+            
             this.userInfo = {
-                nickName: parsed.nickName || parsed.username || '同学',
+                nickName: parsed.nickName || parsed.username || parsed.studentNo || '同学',
                 avatar: parsed.avatar || '/static/default_avatar.jpg',
-                deptName: parsed.deptName || '已认证用户'
+                deptName: parsed.deptName || parsed.college || '已认证用户'
             };
             // 模拟数据
             this.userStats = {
@@ -118,8 +125,15 @@ export default {
                 balance: '128.50'
             };
           } catch (e) {
-            console.error(e);
+            console.error('解析用户信息失败:', e);
+            // 即使解析失败也显示已登录状态
+            this.userInfo = { nickName: '同学', avatar: '/static/default_avatar.jpg', deptName: '已认证用户' };
           }
+        } else {
+          // 没有用户信息但有 token，显示默认信息
+          console.log('没有 userInfo 但有 token，显示默认信息');
+          this.userInfo = { nickName: '同学', avatar: '/static/default_avatar.jpg', deptName: '已认证用户' };
+          this.userStats = { posts: 0, following: 0, followers: 0, balance: '0.00' };
         }
       } else {
         this.userInfo = { nickName: '未登录', avatar: '', deptName: '点击登录解锁功能' };
@@ -139,21 +153,57 @@ export default {
        uni.showLoading({ title: '登录中...' });
        uni.login({
          provider: 'weixin',
-         success: (res) => {
-           // Mock Login Success
-           uni.hideLoading();
-           uni.setStorageSync('token', 'mock-token');
-           uni.setStorageSync('userInfo', JSON.stringify({
-             nickName: '微信用户',
-             avatar: 'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132',
-             deptName: '计算机学院'
-           }));
-           this.checkLoginStatus();
-           uni.showToast({ title: '登录成功', icon: 'success' });
+         success: (loginRes) => {
+           console.log('获取到微信 code:', loginRes.code);
+           
+           // 调用后端登录接口
+           uni.request({
+             url: baseUrl + '/api/v1/wx/auth/login',
+             method: 'POST',
+             header: { 'Content-Type': 'application/json' },
+             data: { code: loginRes.code },
+             success: (res) => {
+               uni.hideLoading();
+               console.log('登录响应:', res);
+               
+               if (res.statusCode === 200 && res.data.code === 200) {
+                 const token = res.data.data?.token;
+                 if (token) {
+                   console.log('登录成功，token:', token);
+                   uni.setStorageSync('token', token);
+                   
+                   // 保存用户信息
+                   if (res.data.data?.studentInfo) {
+                     uni.setStorageSync('userInfo', JSON.stringify(res.data.data.studentInfo));
+                   }
+                   
+                   uni.showToast({ title: '登录成功', icon: 'success' });
+                   
+                   // 延迟刷新页面以确保状态更新
+                   setTimeout(() => {
+                     this.checkLoginStatus();
+                     // 强制刷新当前页面
+                     this.$forceUpdate && this.$forceUpdate();
+                   }, 300);
+                 } else {
+                   console.error('后端未返回token');
+                   uni.showToast({ title: '获取token失败', icon: 'none' });
+                 }
+               } else {
+                 uni.showToast({ title: res.data.msg || '登录失败', icon: 'none' });
+               }
+             },
+             fail: (error) => {
+               uni.hideLoading();
+               console.error('登录请求失败:', error);
+               uni.showToast({ title: '网络错误', icon: 'none' });
+             }
+           });
          },
-         fail: () => {
+         fail: (error) => {
            uni.hideLoading();
-           uni.showToast({ title: '登录失败', icon: 'none' });
+           console.error('微信登录失败:', error);
+           uni.showToast({ title: '微信登录失败', icon: 'none' });
          }
        });
     },

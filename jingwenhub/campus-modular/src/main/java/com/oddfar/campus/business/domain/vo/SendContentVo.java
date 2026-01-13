@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * 发表信息墙信息vo
@@ -26,19 +27,31 @@ public class SendContentVo {
     @Size(min = 0, max = 500, message = "内容长度不能超过500个字符")
     private String content;
 
+    /** 价格/赏金 */
+    private BigDecimal price;
+
+    /** 位置/目的地 */
+    private String location;
+
+    /** 类型标签 */
+    private String typeTag;
+
+    /** 状态标签 */
+    private String statusTag;
+
     /**
      * 0不匿名，1匿名
      */
-    @Min(value = 0,message = "匿名参数错误")
-    @Max(value = 1,message = "匿名参数错误")
+    @Min(value = 0, message = "匿名参数错误")
+    @Max(value = 1, message = "匿名参数错误")
     @NotNull(message = "匿名参数不能为空")
     private Integer isAnonymous;
 
     /**
      * 类型：0文字,1图片,2视频
      */
-    @Min(value = 0,message = "类型参数错误")
-    @Max(value = 2,message = "类型参数错误")
+    @Min(value = 0, message = "类型参数错误")
+    @Max(value = 2, message = "类型参数错误")
     @NotNull(message = "类型参数不能为空")
     private Integer type;
 

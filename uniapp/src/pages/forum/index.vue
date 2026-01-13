@@ -62,8 +62,8 @@
       </view>
     </view>
     
-    <!-- 底部导航 -->
-    <TabBar :current="2" />
+    <!-- 自定义底部导航栏 -->
+    <TabBar :current="1" />
   </view>
 </template>
 
@@ -301,11 +301,11 @@ export default {
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background-color: $text-primary-light;
+  background-color: #007AFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8rpx 32rpx rgba(0, 122, 255, 0.4);
   transition: all 0.2s ease;
   
   &:active {
@@ -328,11 +328,8 @@ export default {
   }
   
   .fab-btn {
-    background-color: #ffffff;
-    
-    ::v-deep .uni-icons {
-      color: #000000 !important;
-    }
+    background-color: #0A84FF;
+    box-shadow: 0 8rpx 32rpx rgba(10, 132, 255, 0.4);
   }
 }
 </style>

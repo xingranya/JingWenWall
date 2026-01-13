@@ -15,6 +15,10 @@
         <result property="loveCount" column="love_count" jdbcType="BIGINT"/>
         <result property="isAnonymous" column="is_anonymous" jdbcType="TINYINT"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="price" column="price" jdbcType="DECIMAL"/>
+        <result property="location" column="location" jdbcType="VARCHAR"/>
+        <result property="typeTag" column="type_tag" jdbcType="VARCHAR"/>
+        <result property="statusTag" column="status_tag" jdbcType="VARCHAR"/>
         <result property="delFlag" column="del_flag" jdbcType="BIT"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
         <result property="createUser" column="create_user" jdbcType="BIGINT"/>
@@ -34,6 +38,10 @@
         <result property="loveCount" column="love_count" jdbcType="BIGINT"/>
         <result property="isAnonymous" column="is_anonymous" jdbcType="TINYINT"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="price" column="price" jdbcType="DECIMAL"/>
+        <result property="location" column="location" jdbcType="VARCHAR"/>
+        <result property="typeTag" column="type_tag" jdbcType="VARCHAR"/>
+        <result property="statusTag" column="status_tag" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
         <association property="params" javaType="java.util.Map" >
             <result property="userId" column="user_id"/>
@@ -74,6 +82,10 @@
                c.love_count,
                c.is_anonymous,
                c.remark,
+               c.price,
+               c.location,
+               c.type_tag,
+               c.status_tag,
                c.del_flag,
                c.create_time,
                c.create_user,

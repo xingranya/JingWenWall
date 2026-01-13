@@ -45,7 +45,8 @@ export default {
         const data = await getPublishedPosts(this.page, 5);
         console.log('请求结果:', data);
 
-        let newRecords = data.records;
+        // 兼容不同的数据结构 (records 或 rows)
+        let newRecords = data.records || data.rows || [];
         newRecords = newRecords.filter(record => !record.isDraft);
 
         if (newRecords.length === 0) {
