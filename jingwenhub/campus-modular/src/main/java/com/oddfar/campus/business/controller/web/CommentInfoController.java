@@ -21,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/campus")
 @ApiResource(name = "评论api", appCode = "campus", resBizType = ResBizTypeEnum.BUSINESS)
+@SuppressWarnings("unchecked")
 public class CommentInfoController {
     @Autowired
     private CommentService commentService;
