@@ -4,7 +4,6 @@ import com.oddfar.campus.business.domain.entity.BusStudentEntity;
 import com.oddfar.campus.business.service.BusStudentService;
 import com.oddfar.campus.common.annotation.ApiResource;
 import com.oddfar.campus.common.domain.R;
-import com.oddfar.campus.common.domain.entity.SysUserEntity;
 import com.oddfar.campus.common.enums.ResBizTypeEnum;
 import com.oddfar.campus.common.utils.SecurityUtils;
 import io.swagger.annotations.Api;

@@ -16,7 +16,7 @@ import java.util.Date;
  *
  * @author ruoyi
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "deprecation"})
 public class ReflectUtils {
     private static final String SETTER_PREFIX = "set";
 

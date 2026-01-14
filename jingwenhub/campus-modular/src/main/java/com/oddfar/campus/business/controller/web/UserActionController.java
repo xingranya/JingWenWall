@@ -2,7 +2,6 @@ package com.oddfar.campus.business.controller.web;
 
 import com.oddfar.campus.business.service.CampusFileService;
 import com.oddfar.campus.business.service.ContentLoveService;
-import com.oddfar.campus.business.service.ContentService;
 import com.oddfar.campus.common.annotation.ApiResource;
 import com.oddfar.campus.common.domain.R;
 import com.oddfar.campus.common.enums.ResBizTypeEnum;
@@ -22,8 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 @ApiResource(name = "用户操作api", appCode = "campus", resBizType = ResBizTypeEnum.BUSINESS)
 public class UserActionController {
 
-    @Autowired
-    private ContentService contentService;
     @Autowired
     private ContentLoveService contentLoveService;
     @Autowired

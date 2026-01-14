@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -81,7 +82,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BindException.class)
     public R handleBindException(BindException e) {
         log.error(e.getMessage(), e);
-        String message = e.getAllErrors().get(0).getDefaultMessage();
+        String message;
+        FieldError fieldError = e.getBindingResult().getFieldError();
+        if (fieldError != null) {
+            message = fieldError.getDefaultMessage();
+        } else {
+            message = e.getAllErrors().isEmpty() ? "参数绑定错误" : e.getAllErrors().get(0).getDefaultMessage();
+        }
         return R.error(message);
     }
 
@@ -91,7 +98,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
-        String message = e.getBindingResult().getFieldError().getDefaultMessage();
+        String message;
+        FieldError fieldError = e.getBindingResult().getFieldError();
+        if (fieldError != null) {
+            message = fieldError.getDefaultMessage();
+        } else {
+            message = "参数校验失败";
+        }
         return R.error(message);
     }
 

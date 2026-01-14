@@ -40,7 +40,7 @@ public interface SysUserRoleMapper extends BaseMapperX<SysUserRoleEntity> {
     default int deleteUserRoleInfos(@Param("roleId") Long roleId, @Param("userIds") Long[] userIds) {
         return delete(new QueryWrapper<SysUserRoleEntity>()
                 .eq("role_id" , roleId)
-                .in("user_id" , userIds));
+                .in("user_id" , (Object[]) userIds));
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.oddfar.campus.framework.config;
 
 import com.oddfar.campus.framework.security.filter.JwtAuthenticationTokenFilter;
+import com.oddfar.campus.framework.security.handle.AccessDeniedHandlerImpl;
 import com.oddfar.campus.framework.security.handle.AuthenticationEntryPointImpl;
 import com.oddfar.campus.framework.security.handle.LogoutSuccessHandlerImpl;
 import com.oddfar.campus.framework.security.properties.PermitAllUrlProperties;
@@ -39,6 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AuthenticationEntryPointImpl unauthorizedHandler;
 
+    /**
+     * 认证失败处理类
+     */
+    @Autowired
+    private AccessDeniedHandlerImpl accessDeniedHandler;
 
     /**
      * 退出处理类
@@ -102,7 +108,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // CSRF禁用，因为不使用session
                 .csrf().disable()
                 // 认证失败处理类
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                .accessDeniedHandler(accessDeniedHandler).and()
                 // 基于token，所以不需要session
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 // 过滤请求

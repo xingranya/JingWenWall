@@ -61,10 +61,16 @@ public class MailServiceImpl implements MailServiceApi {
         params.put("url", url);
 
         String template = ConfigContext.me().selectConfigByKey("campus.mail.bindTemplate", String.class);
+        if (template == null) {
+            template = "用户：#{[userName]}，绑定链接：#{[url]}，有效期：#{[expiration]}分钟";
+        }
 
         ExpressionParser parser = new SpelExpressionParser();
         TemplateParserContext parserContext = new TemplateParserContext();
         String content = parser.parseExpression(template, parserContext).getValue(params, String.class);
+        if (content == null) {
+            content = "";
+        }
 
         // 存入到redis 邮箱、验证码、时间、单位
         redisCache.setCacheObject(getCheckKey(registerBody.getEmail()), registerBody.getEmail(),
@@ -116,7 +122,7 @@ public class MailServiceImpl implements MailServiceApi {
      * @param params
      * @return
      */
-    public static String processTemplate(String template, Map params) {
+    public static String processTemplate(String template, Map<String, Object> params) {
         StringBuffer sb = new StringBuffer();
         Matcher m = Pattern.compile("\\$\\{\\w+\\}").matcher(template);
         while (m.find()) {

@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 @TableName("sys_role_menu")
 public class SysRoleMenuEntity  {
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**

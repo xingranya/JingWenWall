@@ -69,7 +69,7 @@ public class CommentInfoController {
         PageUtils.startPage(5);
         List<CommentVo> commentVos = commentService.selectOwnComment();
         //封装分页数据
-        PageResult pageResult = PageUtils.getPageResult(commentVos);
+        PageResult<CommentVo> pageResult = PageUtils.getPageResult(commentVos);
         return R.ok().put(pageResult);
     }
 

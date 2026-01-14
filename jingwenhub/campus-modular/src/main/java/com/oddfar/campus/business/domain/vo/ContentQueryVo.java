@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ContentQueryVo {
-    private static final long serialVersionUID = 1L;
-
     /**
      * 内容id
      */

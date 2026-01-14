@@ -28,6 +28,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@SuppressWarnings("null")
 public class ErrandRunnerServiceImpl extends ServiceImpl<ErrandRunnerMapper, BusErrandRunnerEntity>
         implements ErrandRunnerService {
 

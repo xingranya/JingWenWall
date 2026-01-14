@@ -16,7 +16,6 @@ import com.oddfar.campus.framework.api.mail.MailSendContext;
 import com.oddfar.campus.framework.api.sysconfig.ConfigContext;
 import com.oddfar.campus.framework.mapper.SysUserMapper;
 import com.oddfar.campus.framework.service.SysUserService;
-import com.oddfar.campus.framework.web.service.TokenService;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionParser;
@@ -32,8 +31,6 @@ import java.util.concurrent.TimeUnit;
 public class UserPwdResetServiceImpl implements UserPwdResetService {
 
     @Autowired
-    private TokenService tokenService;
-    @Autowired
     private SysUserService userService;
     @Autowired
     private RedisCache redisCache;
@@ -48,6 +45,9 @@ public class UserPwdResetServiceImpl implements UserPwdResetService {
 
         String template = ConfigContext.me().selectConfigByKey("campus.mail.sendPwdTemplate", String.class
                 , "您的验证码为：#{[random]}，有效期为10分钟");
+        if (template == null) {
+            template = "您的验证码为：#{[random]}，有效期为10分钟";
+        }
 
         Map<String, Object> params = new HashMap<>();
         String random = RandomStringUtils.randomNumeric(6);
@@ -56,6 +56,9 @@ public class UserPwdResetServiceImpl implements UserPwdResetService {
         ExpressionParser parser = new SpelExpressionParser();
         TemplateParserContext parserContext = new TemplateParserContext();
         String content = parser.parseExpression(template, parserContext).getValue(params, String.class);
+        if (content == null) {
+            content = "";
+        }
         // 发送邮件
         MailSendContext.me().sendQQMail(CollUtil.newArrayList(email),
                 "重置密码验证码", content, true);
@@ -79,7 +82,6 @@ public class UserPwdResetServiceImpl implements UserPwdResetService {
         if (userService.resetUserPwd(user.getUserName(), SecurityUtils.encryptPassword(password)) > 0) {
             //删除code
             redisCache.deleteObject(getCheckKey(email));
-            //TODO 下线：踢出此用户登录的所有会话
 
         }
 

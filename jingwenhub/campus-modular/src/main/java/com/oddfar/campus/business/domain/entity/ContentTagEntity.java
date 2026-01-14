@@ -10,8 +10,6 @@ import lombok.Data;
 @TableName(value ="campus_content_tag")
 @Data
 public class ContentTagEntity   {
-    private static final long serialVersionUID = 1L;
-
     /**
      * 内容id
      */

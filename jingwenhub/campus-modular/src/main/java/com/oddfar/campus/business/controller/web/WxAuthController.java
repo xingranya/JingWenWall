@@ -53,7 +53,6 @@ public class WxAuthController {
     @ApiOperation("获取当前用户信息")
     @GetMapping("/userInfo")
     public R getUserInfo() {
-        Long userId = SecurityUtils.getUserId();
         // 返回当前登录用户的详细信息
         return R.ok(SecurityUtils.getLoginUser());
     }
@@ -64,7 +63,6 @@ public class WxAuthController {
     @ApiOperation("检查文本内容安全性")
     @PostMapping("/checkText")
     public R checkText(@RequestParam String content, @RequestParam(defaultValue = "3") int scene) {
-        Long userId = SecurityUtils.getUserId();
         // 需要获取用户的openid，这里简化处理
         boolean safe = wxAuthService.checkTextContent(content, "", scene);
         return R.ok(safe);

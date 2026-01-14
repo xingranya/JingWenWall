@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.lang.Nullable;
 
 import java.nio.charset.Charset;
 
@@ -26,7 +27,7 @@ public class FastJson2JsonRedisSerializer<T> implements RedisSerializer<T>
     }
 
     @Override
-    public byte[] serialize(T t) throws SerializationException
+    public @Nullable byte[] serialize(@Nullable T t) throws SerializationException
     {
         if (t == null)
         {
@@ -36,7 +37,7 @@ public class FastJson2JsonRedisSerializer<T> implements RedisSerializer<T>
     }
 
     @Override
-    public T deserialize(byte[] bytes) throws SerializationException
+    public @Nullable T deserialize(@Nullable byte[] bytes) throws SerializationException
     {
         if (bytes == null || bytes.length <= 0)
         {

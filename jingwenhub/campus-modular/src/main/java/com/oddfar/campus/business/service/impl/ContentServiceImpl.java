@@ -94,7 +94,7 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, ContentEntity
         PageUtils.startPage(WEB_PAGE_SIZE);
         List<Long> contentIds = contentMapper.selectLoveContentList(userId);
         //获取总点赞的墙数量
-        long total = new PageInfo(contentIds).getTotal();
+        long total = new PageInfo<>(contentIds).getTotal();
         List<ContentVo> contentVos = contentMapper.selectContentByIds(contentIds);
 
         return new PageResult<>(contentVos, total);
@@ -174,7 +174,6 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, ContentEntity
         if (contentEntity == null) {
             return;
         }
-        //TODO 删除信息墙的处理
         //删除评论
 
         //墙的文件处理
@@ -251,16 +250,6 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, ContentEntity
                         CampusBizCodeEnum.CONTENT_FILE_EXCEPTION.getCode());
             }
         }
-
-    }
-
-    /**
-     * 用户发表信息墙时，设置其参数
-     *
-     * @param contentEntity
-     */
-    private void setAddContentEntity(ContentEntity contentEntity) {
-
 
     }
 

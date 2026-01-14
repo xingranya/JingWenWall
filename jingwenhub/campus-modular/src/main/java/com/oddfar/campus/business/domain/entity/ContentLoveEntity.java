@@ -13,7 +13,6 @@ import java.util.Date;
 @TableName(value ="campus_content_love")
 @Data
 public class ContentLoveEntity{
-    private static final long serialVersionUID = 1L;
 
     /**
      * 用户id

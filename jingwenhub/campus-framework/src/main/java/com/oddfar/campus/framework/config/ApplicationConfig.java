@@ -8,6 +8,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.TimeZone;
+import java.util.Objects;
 
 /**
  * 程序注解配置
@@ -25,6 +26,6 @@ public class ApplicationConfig {
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jacksonObjectMapperCustomization() {
-        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder.timeZone(TimeZone.getDefault());
+        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder.timeZone(Objects.requireNonNull(TimeZone.getDefault()));
     }
 }

@@ -22,4 +22,23 @@ public class WxMPLoginBody {
      */
     private String code;
 
+    /**
+     * 用户信息原始数据
+     */
+    private String rawData;
+
+    /**
+     * 签名
+     */
+    private String signature;
+
+    /**
+     * 加密数据
+     */
+    private String encryptedData;
+
+    /**
+     * 偏移量
+     */
+    private String iv;
 }

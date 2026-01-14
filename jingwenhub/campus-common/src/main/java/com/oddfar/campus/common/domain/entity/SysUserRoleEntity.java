@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 @TableName("sys_user_role")
 public class SysUserRoleEntity {
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
     /**
      * 用户ID

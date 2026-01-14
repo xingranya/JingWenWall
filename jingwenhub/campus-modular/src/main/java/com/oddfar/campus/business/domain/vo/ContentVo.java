@@ -12,8 +12,6 @@ import java.math.BigDecimal;
 
 @Data
 public class ContentVo {
-    private static final long serialVersionUID = 1L;
-
     /**
      * 内容id
      */

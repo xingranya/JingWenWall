@@ -16,8 +16,12 @@ public class PermissionContextHolder
 
     public static void setContext(String permission)
     {
-        RequestContextHolder.currentRequestAttributes().setAttribute(PERMISSION_CONTEXT_ATTRIBUTES, permission,
-                RequestAttributes.SCOPE_REQUEST);
+        RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
+        if (permission == null) {
+            requestAttributes.removeAttribute(PERMISSION_CONTEXT_ATTRIBUTES, RequestAttributes.SCOPE_REQUEST);
+            return;
+        }
+        requestAttributes.setAttribute(PERMISSION_CONTEXT_ATTRIBUTES, permission, RequestAttributes.SCOPE_REQUEST);
     }
 
     public static String getContext()

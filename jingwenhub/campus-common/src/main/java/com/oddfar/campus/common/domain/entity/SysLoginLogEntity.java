@@ -22,6 +22,7 @@ import java.util.Map;
 @Data
 @TableName("sys_log_login")
 public class SysLoginLogEntity {
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**

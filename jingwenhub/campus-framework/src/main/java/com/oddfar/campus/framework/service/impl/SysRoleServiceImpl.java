@@ -1,6 +1,8 @@
 package com.oddfar.campus.framework.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.oddfar.campus.common.constant.CacheConstants;
+import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.domain.entity.SysRoleEntity;
 import com.oddfar.campus.common.domain.entity.SysRoleMenuEntity;
@@ -37,6 +39,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRo
     private SysMenuService menuService;
     @Autowired
     private SysResourceService resourceService;
+    @Autowired
+    private RedisCache redisCache;
 
     @Resource
     ApplicationContext applicationContext;
@@ -45,6 +49,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRo
     public PageResult<SysRoleEntity> page(SysRoleEntity sysRoleEntity) {
         return roleMapper.selectPage(sysRoleEntity);
     }
+
 
     @Override
     public List<SysRoleEntity> selectRoleList(SysRoleEntity role) {
@@ -117,12 +122,17 @@ public class SysRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRo
         roleMapper.updateById(role);
         // 删除角色与菜单关联
         roleMenuMapper.deleteRoleMenuByRoleId(role.getRoleId());
+        
+        // 清除角色权限缓存
+        clearRoleCache(role.getRoleId());
 
         return insertRoleMenu(role);
     }
 
     @Override
     public int updateRoleStatus(SysRoleEntity role) {
+        // 清除角色权限缓存
+        clearRoleCache(role.getRoleId());
         return roleMapper.updateById(role);
     }
 
@@ -135,11 +145,23 @@ public class SysRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRo
             if (countUserRoleByRoleId(roleId) > 0) {
                 throw new ServiceException(String.format("%1$s已分配,不能删除", role.getRoleName()));
             }
+            // 清除角色权限缓存
+            clearRoleCache(roleId);
         }
         // 删除角色与菜单关联
         roleMenuMapper.deleteRoleMenu(roleIds);
         // 删除角色
         return roleMapper.deleteBatchIds(Arrays.asList(roleIds));
+    }
+    
+    /**
+     * 清除角色权限缓存
+     */
+    private void clearRoleCache(Long roleId) {
+        if (roleId != null) {
+            redisCache.deleteObject(CacheConstants.ROLE_MENU_KEY + roleId);
+            redisCache.deleteObject(CacheConstants.ROLE_RESOURCE_KEY + roleId);
+        }
     }
 
     @Override

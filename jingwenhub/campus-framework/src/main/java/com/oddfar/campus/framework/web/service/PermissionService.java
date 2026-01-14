@@ -82,12 +82,19 @@ public class PermissionService {
         }
 
         HttpServletRequest request = ServletUtils.getRequest();
+        if (request == null) {
+            return false;
+        }
         RequestMappingHandlerMapping mapping = applicationContext.getBean(RequestMappingHandlerMapping.class);
-        HandlerExecutionChain handlerChain = null;
+        HandlerExecutionChain handlerChain;
         try {
             handlerChain = mapping.getHandler(request);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("获取处理链失败", e);
+            return false;
+        }
+        if (handlerChain == null || !(handlerChain.getHandler() instanceof HandlerMethod)) {
+            return false;
         }
         //通过处理链找到对应的HandlerMethod类
         HandlerMethod handler = (HandlerMethod) handlerChain.getHandler();

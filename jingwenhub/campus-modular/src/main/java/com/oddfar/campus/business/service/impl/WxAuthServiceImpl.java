@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -103,7 +104,7 @@ public class WxAuthServiceImpl implements WxAuthService {
             log.info("新用户注册成功, userId: {}, studentId: {}", sysUser.getUserId(), student.getStudentId());
         } else {
             // 4. 老用户 - 获取用户信息，更新登录时间
-            sysUser = sysUserService.selectUserById(student.getUserId());
+            sysUser = sysUserService.selectUserById(Objects.requireNonNull(student).getUserId());
             if (sysUser == null) {
                 throw new ServiceException("用户信息不存在");
             }

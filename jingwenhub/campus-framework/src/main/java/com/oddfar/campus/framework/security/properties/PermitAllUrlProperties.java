@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -42,21 +43,36 @@ public class PermitAllUrlProperties implements InitializingBean, ApplicationCont
 
         map.keySet().forEach(info -> {
             HandlerMethod handlerMethod = map.get(info);
+            Object patternsCondition = info.getPatternsCondition();
 
             // 获取方法上边的注解 替代path variable 为 *
             Anonymous method = AnnotationUtils.findAnnotation(handlerMethod.getMethod(), Anonymous.class);
-            Optional.ofNullable(method).ifPresent(anonymous -> info.getPatternsCondition().getPatterns()
-                    .forEach(url -> urls.add(RegExUtils.replaceAll(url, PATTERN, ASTERISK))));
+            Optional.ofNullable(method).ifPresent(anonymous -> {
+                if (patternsCondition instanceof org.springframework.web.servlet.mvc.condition.PatternsRequestCondition) {
+                    org.springframework.web.servlet.mvc.condition.PatternsRequestCondition pc =
+                            (org.springframework.web.servlet.mvc.condition.PatternsRequestCondition) patternsCondition;
+                    if (pc.getPatterns() != null) {
+                        pc.getPatterns().forEach(url -> urls.add(RegExUtils.replaceAll(url, PATTERN, ASTERISK)));
+                    }
+                }
+            });
 
             // 获取类上边的注解, 替代path variable 为 *
             Anonymous controller = AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), Anonymous.class);
-            Optional.ofNullable(controller).ifPresent(anonymous -> info.getPatternsCondition().getPatterns()
-                    .forEach(url -> urls.add(RegExUtils.replaceAll(url, PATTERN, ASTERISK))));
+            Optional.ofNullable(controller).ifPresent(anonymous -> {
+                if (patternsCondition instanceof org.springframework.web.servlet.mvc.condition.PatternsRequestCondition) {
+                    org.springframework.web.servlet.mvc.condition.PatternsRequestCondition pc =
+                            (org.springframework.web.servlet.mvc.condition.PatternsRequestCondition) patternsCondition;
+                    if (pc.getPatterns() != null) {
+                        pc.getPatterns().forEach(url -> urls.add(RegExUtils.replaceAll(url, PATTERN, ASTERISK)));
+                    }
+                }
+            });
         });
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException
+    public void setApplicationContext(@NonNull ApplicationContext context) throws BeansException
     {
         this.applicationContext = context;
     }

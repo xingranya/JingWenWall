@@ -1,7 +1,6 @@
 package com.oddfar.campus.framework.config;
 
 import com.google.code.kaptcha.text.impl.DefaultTextCreator;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.Random;
 

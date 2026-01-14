@@ -5,6 +5,7 @@ import com.oddfar.campus.common.utils.MessageUtils;
 import com.oddfar.campus.common.utils.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
  * @author ruoyi
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
 public class BaseException extends RuntimeException {

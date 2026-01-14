@@ -4,7 +4,6 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.oddfar.campus.business.domain.entity.BusStudentEntity;
 import com.oddfar.campus.business.errand.domain.dto.ErrandOrderDTO;
 import com.oddfar.campus.business.errand.domain.entity.BusErrandOrderEntity;
 import com.oddfar.campus.business.errand.domain.entity.BusErrandRunnerEntity;
@@ -15,7 +14,6 @@ import com.oddfar.campus.business.errand.enums.PayStatus;
 import com.oddfar.campus.business.errand.mapper.ErrandOrderMapper;
 import com.oddfar.campus.business.errand.mapper.ErrandRunnerMapper;
 import com.oddfar.campus.business.errand.service.ErrandOrderService;
-import com.oddfar.campus.business.mapper.BusStudentMapper;
 import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
@@ -39,6 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
+@SuppressWarnings("null")
 public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusErrandOrderEntity>
         implements ErrandOrderService {
 
@@ -55,9 +54,6 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
 
     @Autowired
     private ErrandRunnerMapper runnerMapper;
-
-    @Autowired
-    private BusStudentMapper studentMapper;
 
     @Autowired
     private RedisCache redisCache;
@@ -200,12 +196,11 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     }
 
     private boolean tryAcquireLock(String key, long timeout, TimeUnit unit) {
-        Boolean result = redisCache.redisTemplate.opsForValue().setIfAbsent(key, "1", timeout, unit);
-        return result != null && result;
+        return redisCache.tryLock(key, timeout, unit);
     }
 
     private void releaseLock(String key) {
-        redisCache.redisTemplate.delete(key);
+        redisCache.unlock(key);
     }
 
     @Override
@@ -262,8 +257,6 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         order.setCancelReason(reason);
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
-        // TODO: 如果已支付，需要退款处理
         
         log.info("订单 {} 已取消, 原因: {}", orderId, reason);
     }

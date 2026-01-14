@@ -300,7 +300,8 @@ public class LogAspect {
         try {
             Class<? extends Annotation> annotationType = apiResource.annotationType();
             Method method = annotationType.getMethod(methodName);
-            return (T) method.invoke(apiResource);
+            Object value = method.invoke(apiResource);
+            return resultType.isInstance(value) ? resultType.cast(value) : null;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 
         }

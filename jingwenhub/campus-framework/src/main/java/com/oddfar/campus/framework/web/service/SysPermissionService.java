@@ -1,5 +1,6 @@
 package com.oddfar.campus.framework.web.service;
 
+import com.oddfar.campus.common.constant.CacheConstants;
 import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.domain.entity.SysRoleEntity;
 import com.oddfar.campus.common.domain.entity.SysUserEntity;
@@ -10,6 +11,7 @@ import com.oddfar.campus.framework.service.SysRoleService;
 import com.oddfar.campus.framework.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -66,10 +68,10 @@ public class SysPermissionService {
             perms.add("*:*:*");
         } else {
             List<SysRoleEntity> roles = user.getRoles();
-            if (!roles.isEmpty() && roles.size() > 1) {
+            if (!CollectionUtils.isEmpty(roles)) {
                 // 多角色设置permissions属性，以便数据权限匹配权限
                 for (SysRoleEntity role : roles) {
-                    Set<String> rolePerms = menuService.selectMenuPermsByRoleId(role.getRoleId());
+                    Set<String> rolePerms = getMenuPermissionByRoleId(role.getRoleId());
                     role.setPermissions(rolePerms);
                     perms.addAll(rolePerms);
                 }
@@ -83,16 +85,26 @@ public class SysPermissionService {
     /**
      * 获取菜单数据权限
      *
-     * @param roleID 角色id
+     * @param roleId 角色id
      * @return 菜单权限信息
      */
-    public Set<String> getMenuPermissionByRoleId(Long roleID) {
-        Set<String> perms = new HashSet<String>();
+    public Set<String> getMenuPermissionByRoleId(Long roleId) {
         // 管理员拥有所有权限
-        if (roleID == 1) {
+        if (SysRoleEntity.isAdmin(roleId)) {
+            Set<String> perms = new HashSet<>();
             perms.add("*:*:*");
-        } else {
-            perms = menuService.selectMenuPermsByRoleId(roleID);
+            return perms;
+        }
+        
+        // 从缓存中读取
+        Set<String> perms = redisCache.getCacheSet(CacheConstants.ROLE_MENU_KEY + roleId);
+        if (CollectionUtils.isEmpty(perms)) {
+            // 缓存中没有，查询数据库
+            perms = menuService.selectMenuPermsByRoleId(roleId);
+            // 存入缓存
+            if (!CollectionUtils.isEmpty(perms)) {
+                redisCache.setCacheSet(CacheConstants.ROLE_MENU_KEY + roleId, perms);
+            }
         }
         return perms;
     }
@@ -110,11 +122,38 @@ public class SysPermissionService {
             res.add("*:*:*");
         } else {
             List<SysRoleEntity> roles = user.getRoles();
-            if (roles != null && !roles.isEmpty()) {
+            if (!CollectionUtils.isEmpty(roles)) {
                 for (SysRoleEntity role : roles) {
-                    Set<String> code = resourceService.selectResourceCodeByRoleId(role.getRoleId());
+                    Set<String> code = getResourcePermissionByRoleId(role.getRoleId());
                     res.addAll(code);
                 }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 获取资源数据权限
+     *
+     * @param roleId 角色id
+     * @return 资源权限信息
+     */
+    public Set<String> getResourcePermissionByRoleId(Long roleId) {
+        // 管理员拥有所有权限
+        if (SysRoleEntity.isAdmin(roleId)) {
+            Set<String> res = new HashSet<>();
+            res.add("*:*:*");
+            return res;
+        }
+
+        // 从缓存中读取
+        Set<String> res = redisCache.getCacheSet(CacheConstants.ROLE_RESOURCE_KEY + roleId);
+        if (CollectionUtils.isEmpty(res)) {
+            // 缓存中没有，查询数据库
+            res = resourceService.selectResourceCodeByRoleId(roleId);
+            // 存入缓存
+            if (!CollectionUtils.isEmpty(res)) {
+                redisCache.setCacheSet(CacheConstants.ROLE_RESOURCE_KEY + roleId, res);
             }
         }
         return res;

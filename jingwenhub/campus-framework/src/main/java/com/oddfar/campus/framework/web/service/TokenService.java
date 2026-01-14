@@ -209,6 +209,7 @@ public class TokenService {
      * @param claims 数据声明
      * @return 令牌
      */
+    @SuppressWarnings("deprecation")
     private String createToken(Map<String, Object> claims) {
         String token = Jwts.builder()
                 .setClaims(claims)
@@ -222,6 +223,7 @@ public class TokenService {
      * @param token 令牌
      * @return 数据声明
      */
+    @SuppressWarnings("deprecation")
     private Claims parseToken(String token) {
         return Jwts.parser()
                 .setSigningKey(secret)

@@ -4,7 +4,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class LocalFileOperator implements FileOperatorApi {
 
-    private String currentSavePath;
+    @SuppressWarnings("unused")
+    private final String currentSavePath;
 
     public LocalFileOperator(String currentSavePath) {
         this.currentSavePath = currentSavePath;

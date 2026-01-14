@@ -6,8 +6,6 @@ import com.oddfar.campus.business.forum.domain.entity.BusForumCommentEntity;
 import com.oddfar.campus.business.forum.domain.vo.ForumCommentVO;
 import com.oddfar.campus.common.domain.PageResult;
 
-import java.util.List;
-
 /**
  * 贴吧评论服务接口
  */

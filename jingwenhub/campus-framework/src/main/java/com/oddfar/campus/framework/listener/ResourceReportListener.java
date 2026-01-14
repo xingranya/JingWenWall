@@ -44,7 +44,7 @@ public class ResourceReportListener  {
             PreAuthorize preAuthorize = AnnotationUtils.findAnnotation(handlerMethod.getMethod(), PreAuthorize.class);
             //如果方法上含有  @PreAuthorize 注解
             Optional.ofNullable(preAuthorize).ifPresent(anonymous -> {
-                if (preAuthorize.value().contains("@ss.test")) {
+                if (anonymous.value().contains("@ss.test")) {
                     Method m = handlerMethod.getMethod();
                     setSource(m);
                 }

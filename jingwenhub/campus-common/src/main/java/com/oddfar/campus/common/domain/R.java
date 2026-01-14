@@ -95,7 +95,7 @@ public class R extends HashMap<String, Object> {
         return this;
     }
 
-    public R put(PageResult pageResult) {
+    public R put(PageResult<?> pageResult) {
         super.put("rows", pageResult.getRows());
         super.put("total", pageResult.getTotal());
         return this;

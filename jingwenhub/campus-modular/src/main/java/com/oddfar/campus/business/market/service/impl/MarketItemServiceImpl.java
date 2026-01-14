@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@SuppressWarnings("null")
 public class MarketItemServiceImpl extends ServiceImpl<MarketItemMapper, BusMarketItemEntity>
         implements MarketItemService {
 

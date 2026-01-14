@@ -43,6 +43,14 @@ public interface WeiXinAuthService {
     String loginByAmpCode(String code);
 
     /**
+     * 根据微信小程序code登录用户（支持签名验证）
+     *
+     * @param loginBody 登录参数
+     * @return token
+     */
+    String loginByAmpCode(WxMPLoginBody loginBody);
+
+    /**
      * 小程序是否绑定了账号
      *
      * @return true为绑定

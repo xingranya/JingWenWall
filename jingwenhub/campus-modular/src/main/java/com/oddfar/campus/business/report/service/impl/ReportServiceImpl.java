@@ -102,7 +102,8 @@ public class ReportServiceImpl extends ServiceImpl<ReportMapper, BusReportEntity
         entity.setHandleTime(new Date());
         this.updateById(entity);
         
-        // TODO: 如果handled为true，可以在此处对被举报内容进行处理（如下架帖子、禁言用户等）
+        if (handled) {
+        }
         
         log.info("举报处理完成, reportId: {}, handled: {}", reportId, handled);
     }

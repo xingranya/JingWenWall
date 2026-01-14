@@ -50,11 +50,8 @@ public class PageUtils extends PageHelper {
      * 获取分页数据
      * 需要在使用 @startPage 之后获取
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static PageResult getPageResult(List<?> list) {
-        long total = new PageInfo(list).getTotal();
-        PageResult<?> pageResult = new PageResult<>(list, total);
-
-        return pageResult;
+    public static <T> PageResult<T> getPageResult(List<T> list) {
+        long total = new PageInfo<>(list).getTotal();
+        return new PageResult<>(list, total);
     }
 }

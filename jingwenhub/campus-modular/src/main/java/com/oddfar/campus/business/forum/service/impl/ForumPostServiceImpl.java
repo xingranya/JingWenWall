@@ -24,14 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 贴吧帖子服务实现
  */
-@Service
 @Slf4j
-public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumPostEntity> 
+@Service
+@SuppressWarnings("null")
+public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumPostEntity>
         implements ForumPostService {
     
     @Autowired

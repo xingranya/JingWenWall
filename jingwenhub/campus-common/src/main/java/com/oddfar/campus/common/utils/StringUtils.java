@@ -544,6 +544,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
      */
     public static boolean isMatch(String pattern, String url)
     {
+        if (pattern == null || url == null) {
+            return false;
+        }
         AntPathMatcher matcher = new AntPathMatcher();
         return matcher.match(pattern, url);
     }

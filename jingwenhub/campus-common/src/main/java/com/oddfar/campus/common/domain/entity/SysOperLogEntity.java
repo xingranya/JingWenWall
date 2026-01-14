@@ -19,6 +19,7 @@ import java.util.Map;
 @TableName("sys_log_oper")
 public class SysOperLogEntity {
 
+    @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
 
     /**

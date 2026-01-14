@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,12 +41,12 @@ public class ApiResourceScanner implements BeanPostProcessor {
     }
 
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
         return bean;
     }
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
         Object aopTarget = AopTargetUtils.getTarget(bean);
 
         if (aopTarget == null) {
@@ -220,7 +221,11 @@ public class ApiResourceScanner implements BeanPostProcessor {
         try {
             Class<? extends Annotation> annotationType = apiResource.annotationType();
             Method method = annotationType.getMethod(methodName);
-            return (T) method.invoke(apiResource);
+            Object value = method.invoke(apiResource);
+            if (resultType.isInstance(value)) {
+                return resultType.cast(value);
+            }
+            throw new RuntimeException("扫描api资源时出错!");
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 
         }

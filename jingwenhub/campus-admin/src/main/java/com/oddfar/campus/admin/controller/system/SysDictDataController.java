@@ -10,7 +10,7 @@ import com.oddfar.campus.framework.service.SysDictDataService;
 import com.oddfar.campus.framework.service.SysDictTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +42,7 @@ public class SysDictDataController {
     public R dictType(@PathVariable String dictType) {
 
         List<SysDictDataEntity> data = dictTypeService.selectDictDataByType(dictType);
-        if (StringUtils.isEmpty(data)) {
+        if (CollectionUtils.isEmpty(data)) {
             data = new ArrayList<SysDictDataEntity>();
         }
         return R.ok().put(data);

@@ -9,13 +9,10 @@ import com.oddfar.campus.common.utils.StringUtils;
 import com.oddfar.campus.common.utils.uuid.Seq;
 import com.oddfar.campus.framework.api.sysconfig.ConfigExpander;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 /**
@@ -24,8 +21,6 @@ import java.util.Objects;
  * @author ruoyi
  */
 public class FileUploadUtils {
-    private static final Logger log = LoggerFactory.getLogger(FileUploadUtils.class);
-
     /**
      * 默认大小 50M
      */
@@ -105,7 +100,7 @@ public class FileUploadUtils {
         String fileName = extractFilename(file);
 
         String absPath = getAbsoluteFile(baseDir, fileName).getAbsolutePath();
-        file.transferTo(Paths.get(absPath));
+        file.transferTo(new File(absPath));
         return getPathFileName(baseDir, fileName);
     }
 

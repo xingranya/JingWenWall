@@ -43,4 +43,14 @@ public class CacheConstants {
      * 登录账户密码错误次数 redis key
      */
     public static final String PWD_ERR_CNT_KEY = "pwd_err_cnt:";
+
+    /**
+     * 角色菜单权限 cache key
+     */
+    public static final String ROLE_MENU_KEY = "role_menu_perms:";
+
+    /**
+     * 角色资源权限 cache key
+     */
+    public static final String ROLE_RESOURCE_KEY = "role_resource_perms:";
 }

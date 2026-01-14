@@ -30,7 +30,6 @@ public class MyDBFieldHandler implements MetaObjectHandler {
             if (Objects.isNull(baseEntity.getUpdateTime())) {
                 baseEntity.setUpdateTime(current);
             }
-            //TODO getRequest2
             Long userId = WebFrameworkUtils.getLoginUserId(ServletUtils.getRequest());
 
             // 当前登录用户不为空，创建人为空，则当前登录用户为创建人

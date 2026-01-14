@@ -1,7 +1,12 @@
 package com.oddfar.campus.web.service.impl;
 
+import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.crypto.Mode;
+import cn.hutool.crypto.Padding;
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.crypto.symmetric.AES;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.oddfar.campus.business.api.weixin.WeiXinApi;
@@ -23,7 +28,9 @@ import com.oddfar.campus.web.service.WeiXinAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -91,18 +98,17 @@ public class WeiXinAuthServiceImpl implements WeiXinAuthService {
         Long userId = socialUserAuthService.getUserIdByWxamp(openid);
         SysUserEntity userEntity = new SysUserEntity();
         if (userId == null) {
-            throw new ServiceException("请使用小程序绑定账号再登录");
-            //暂且先这样处理
+            long id = IdWorker.getId();
+            userEntity.setUserId(id);
+            userEntity.setUserName(Convert.toStr(id));
+            userEntity.setNickName("微信用户" + StringUtils.substring(openid, 0, 4));
+            userEntity.setPassword(SecurityUtils.encryptPassword("123456"));
+            userEntity.setStatus("0");
 
-//            long id = IdWorker.getId();
-//
-//            userEntity.setUserId(id);
-//            userEntity.setUserName(Convert.toStr(id));
-//            userEntity.setNickName(RandomStringUtils.randomAlphabetic(8));
-//
-//            userService.insertUser(userEntity);
-//            socialUserAuthService.insertUserSocial(IdWorker.getId(), userEntity.getUserId(), "WXAMP", openid);
-
+            userService.insertUser(userEntity);
+            socialUserAuthService.insertUserSocial(IdWorker.getId(), userEntity.getUserId(), "WXAMP", openid);
+            setRole(userEntity.getUserId());
+            userId = id;
         }
 
         userEntity = userService.selectUserById(userId);
@@ -117,17 +123,111 @@ public class WeiXinAuthServiceImpl implements WeiXinAuthService {
 
     @Override
     public String loginByAmpCode(String code) {
-        String openid = getOpenidByCode(code);
+        WxMPLoginBody loginBody = new WxMPLoginBody();
+        loginBody.setCode(code);
+        return loginByAmpCode(loginBody);
+    }
 
+    @Override
+    public String loginByAmpCode(WxMPLoginBody loginBody) {
+        // 1. 获取 session_key 和 openid
+        JSONObject jsonObject = JSONObject.parseObject(WeiXinApi.wxampLogin(loginBody.getCode()));
+        String openid = jsonObject.getString("openid");
+        String sessionKey = jsonObject.getString("session_key");
+
+        if (StringUtils.isEmpty(openid) || StringUtils.isEmpty(sessionKey)) {
+            throw new ServiceException("微信登录失败，无法获取 openid 或 session_key");
+        }
+
+        // 2. 校验签名 (如果有 rawData 和 signature)
+        if (StringUtils.isNotEmpty(loginBody.getRawData()) && StringUtils.isNotEmpty(loginBody.getSignature())) {
+            String signature2 = DigestUtil.sha1Hex(loginBody.getRawData() + sessionKey);
+            if (!signature2.equals(loginBody.getSignature())) {
+                throw new ServiceException("签名校验失败");
+            }
+        }
+
+        String nickName = null;
+        String avatarUrl = null;
+
+        // 3. 处理用户信息 (如果有 encryptedData 和 iv)
+        if (StringUtils.isNotEmpty(loginBody.getEncryptedData()) && StringUtils.isNotEmpty(loginBody.getIv())) {
+            try {
+                AES aes = new AES(Mode.CBC, Padding.PKCS5Padding,
+                        Base64.decode(sessionKey),
+                        Base64.decode(loginBody.getIv()));
+                String decryptStr = aes.decryptStr(loginBody.getEncryptedData(), StandardCharsets.UTF_8);
+                JSONObject userInfo = JSONObject.parseObject(decryptStr);
+                
+                // 校验 watermark
+                JSONObject watermark = userInfo.getJSONObject("watermark");
+                if (watermark != null) {
+                    String appid = watermark.getString("appid");
+                    if (!WeiXinApi.APPID.equals(appid)) {
+                        throw new ServiceException("敏感数据归属 appId 不一致");
+                    }
+                }
+                
+                // 获取用户信息
+                nickName = userInfo.getString("nickName");
+                avatarUrl = userInfo.getString("avatarUrl");
+                
+            } catch (Exception e) {
+                 throw new ServiceException("解密用户信息失败");
+            }
+        }
+
+        // 4. 登录/注册逻辑
         Long userId = socialUserAuthService.getUserIdByWxamp(openid);
         SysUserEntity userEntity = new SysUserEntity();
         if (userId == null) {
-            return null;
-        } else {
-            userEntity = userService.selectUserById(userId);
+            long id = IdWorker.getId();
+            userEntity.setUserId(id);
+            userEntity.setUserName(Convert.toStr(id));
+            // 设置昵称（如果有）
+            if (StringUtils.isNotEmpty(nickName)) {
+                userEntity.setNickName(nickName);
+            } else {
+                userEntity.setNickName("微信用户" + StringUtils.substring(openid, 0, 4));
+            }
+            // 设置头像（如果有）
+            if (StringUtils.isNotEmpty(avatarUrl)) {
+                userEntity.setAvatar(avatarUrl);
+            }
 
+            userEntity.setPassword(SecurityUtils.encryptPassword("123456"));
+            userEntity.setStatus("0");
+
+            userService.insertUser(userEntity);
+            socialUserAuthService.insertUserSocial(IdWorker.getId(), userEntity.getUserId(), "WXAMP", openid);
+            setRole(userEntity.getUserId());
+            userId = id;
+        } else {
+            // 已注册用户，尝试更新信息（如果提供了新的信息）
+             if (StringUtils.isNotEmpty(nickName) || StringUtils.isNotEmpty(avatarUrl)) {
+                 SysUserEntity updateUser = new SysUserEntity();
+                 updateUser.setUserId(userId);
+                 boolean needUpdate = false;
+                 
+                 // 获取当前用户信息进行对比，避免重复更新
+                 SysUserEntity currentUser = userService.selectUserById(userId);
+                 
+                 if (StringUtils.isNotEmpty(nickName) && !Objects.equals(nickName, currentUser.getNickName())) {
+                     updateUser.setNickName(nickName);
+                     needUpdate = true;
+                 }
+                 if (StringUtils.isNotEmpty(avatarUrl) && !Objects.equals(avatarUrl, currentUser.getAvatar())) {
+                     updateUser.setAvatar(avatarUrl);
+                     needUpdate = true;
+                 }
+                 
+                 if (needUpdate) {
+                     userService.updateUserProfile(updateUser);
+                 }
+             }
         }
 
+        userEntity = userService.selectUserById(userId);
         //生成用户token
         LoginUser loginUser = new LoginUser(userEntity.getUserId(), userEntity,
                 permissionService.getMenuPermission(userEntity), permissionService.getResources(userEntity));
@@ -253,9 +353,5 @@ public class WeiXinAuthServiceImpl implements WeiXinAuthService {
 
     private static String getCacheKey() {
         return "wxamp:";
-    }
-
-    private static String getMpBindKey() {
-        return "wxamp_bind:";
     }
 }
