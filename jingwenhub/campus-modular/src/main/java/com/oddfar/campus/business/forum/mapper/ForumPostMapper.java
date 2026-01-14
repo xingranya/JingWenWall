@@ -5,6 +5,8 @@ import com.oddfar.campus.business.forum.domain.vo.ForumPostVO;
 import com.oddfar.campus.common.core.BaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -66,4 +68,19 @@ public interface ForumPostMapper extends BaseMapperX<BusForumPostEntity> {
      * @param postId 帖子ID
      */
     void updateViewCount(@Param("postId") Long postId);
+
+    /**
+     * 忽略逻辑删除，查询帖子元信息
+     * @param postId 帖子ID
+     */
+    @Select("SELECT post_id, user_id, CAST(del_flag AS UNSIGNED) AS del_flag FROM bus_forum_post WHERE post_id = #{postId} LIMIT 1")
+    BusForumPostEntity selectPostMetaPhysical(@Param("postId") Long postId);
+
+    /**
+     * 逻辑删除帖子（强制写 del_flag = 1）
+     * @param postId 帖子ID
+     * @param userId 当前用户ID
+     */
+    @Update("UPDATE bus_forum_post SET del_flag = b'1' WHERE post_id = #{postId} AND user_id = #{userId} AND del_flag = b'0'")
+    int markDeleted(@Param("postId") Long postId, @Param("userId") Long userId);
 }

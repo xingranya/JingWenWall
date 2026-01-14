@@ -1,33 +1,45 @@
 <template>
   <view class="market-card" @click="handleClick">
-    <image 
-      class="goods-img" 
-      :src="imageUrl" 
-      mode="aspectFill" 
-    />
+    <!-- 商品图片 -->
+    <view class="img-wrapper">
+      <image 
+        class="goods-img" 
+        :src="imageUrl" 
+        mode="aspectFill"
+        lazy-load
+      />
+      <!-- 成色标签 -->
+      <view class="condition-tag" v-if="item.statusTag">
+        <text>{{ item.statusTag }}</text>
+      </view>
+    </view>
+    
+    <!-- 卡片内容 -->
     <view class="card-body">
-      <text class="goods-desc multi-ellipsis--l2">{{ item.content }}</text>
+      <!-- 商品描述 -->
+      <text class="goods-title">{{ item.content }}</text>
       
-      <view class="tags-row">
-        <view class="tag" v-if="item.statusTag">
-            <text class="tag-text">{{ item.statusTag }}</text>
-        </view>
-        <view class="tag" v-if="!item.statusTag">
-            <text class="tag-text">闲置</text>
-        </view>
-      </view>
-      
-      <view class="price-row">
-        <view class="price">
+      <!-- 价格与原价 -->
+      <view class="price-section">
+        <view class="current-price">
           <text class="symbol">¥</text>
-          <text class="num">{{ item.price || '0.00' }}</text>
+          <text class="amount">{{ formatPrice(item.price) }}</text>
         </view>
-        <text class="location" v-if="item.location">{{ item.location }}</text>
+        <text class="original-price" v-if="item.originalPrice">¥{{ item.originalPrice }}</text>
       </view>
       
-      <view class="user-row">
-        <image class="avatar-xs" :src="(item.params && item.params.avatar) || '/static/default_avatar.jpg'" mode="aspectFill" />
-        <text class="user-name text-ellipsis">{{ (item.params && item.params.nickName) || '匿名' }}</text>
+      <!-- 用户信息 -->
+      <view class="seller-info">
+        <image 
+          class="seller-avatar" 
+          :src="sellerAvatar" 
+          mode="aspectFill" 
+        />
+        <text class="seller-name">{{ sellerName }}</text>
+        <view class="view-count" v-if="item.viewCount">
+          <uni-icons type="eye" size="12" color="#94a3b8" />
+          <text>{{ item.viewCount }}</text>
+        </view>
       </view>
     </view>
   </view>
@@ -44,17 +56,26 @@ export default {
   },
   computed: {
     imageUrl() {
-      // item.fileUrl 是 List<String> 或 String，后端 ContentVo 定义为 List<String> fileUrl
-      // 前端接收到的可能是 null, [], 或 ["url1", "url2"]
       if (this.item.fileUrl && this.item.fileUrl.length > 0) {
         return this.item.fileUrl[0]; 
       }
-      return '/static/logo.png'; // 占位图
+      return '/static/logo.png';
+    },
+    sellerAvatar() {
+      return (this.item.params && this.item.params.avatar) || '/static/default_avatar.jpg';
+    },
+    sellerName() {
+      return (this.item.params && this.item.params.nickName) || '匿名用户';
     }
   },
   methods: {
     handleClick() {
       this.$emit('click', this.item);
+    },
+    formatPrice(price) {
+      if (!price) return '0';
+      const num = parseFloat(price);
+      return num % 1 === 0 ? num.toString() : num.toFixed(2);
     }
   }
 };
@@ -64,117 +85,139 @@ export default {
 @import '@/static/css/theme.scss';
 
 .market-card {
-  background-color: #ffffff;
-  border-radius: $radius-md;
+  background: #ffffff;
+  border-radius: $radius-lg;
   overflow: hidden;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  }
+}
+
+.img-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: $background-dim;
 }
 
 .goods-img {
   width: 100%;
-  height: 340rpx; // 瀑布流图片高度，或者固定高度
-  background-color: $background-dim;
+  height: 100%;
+  object-fit: cover;
+}
+
+.condition-tag {
+  position: absolute;
+  top: 12rpx;
+  left: 12rpx;
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.95) 0%, rgba(255, 123, 0, 0.95) 100%);
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  
+  text {
+    font-size: 20rpx;
+    color: #ffffff;
+    font-weight: 600;
+  }
 }
 
 .card-body {
-  padding: 16rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
+  padding: 20rpx;
 }
 
-.goods-desc {
-  font-size: $font-sm;
-  color: $text-primary-light;
-  line-height: 1.4;
-  height: 2.8em; // 2 lines
-}
-
-.tags-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8rpx;
-}
-
-.tag {
-  background-color: rgba(255, 149, 0, 0.1);
-  padding: 4rpx 8rpx;
-  border-radius: 4rpx;
-  
-  .tag-text {
-      font-size: 20rpx;
-      color: $accent-orange;
-  }
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.price {
-  color: $accent-red;
-  font-weight: 700;
-  
-  .symbol {
-    font-size: 20rpx;
-  }
-  
-  .num {
-    font-size: $font-lg;
-  }
-}
-
-.location {
-  font-size: 18rpx;
-  color: $text-secondary-light;
-}
-
-.user-row {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  margin-top: 4rpx;
-}
-
-.avatar-xs {
-  width: 32rpx;
-  height: 32rpx;
-  border-radius: 50%;
-}
-
-.user-name {
-  font-size: 20rpx;
-  color: $text-secondary-light;
-  flex: 1;
-}
-
-// 通用样式类
-.multi-ellipsis--l2 {
+.goods-title {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  font-size: 26rpx;
+  color: $text-primary-light;
+  line-height: 1.5;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+  min-height: 78rpx;
 }
 
-.text-ellipsis {
+.price-section {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.current-price {
+  color: $accent-red;
+  font-weight: 700;
+  
+  .symbol {
+    font-size: 22rpx;
+  }
+  
+  .amount {
+    font-size: 36rpx;
+    letter-spacing: -1rpx;
+  }
+}
+
+.original-price {
+  font-size: 22rpx;
+  color: $text-tertiary-light;
+  text-decoration: line-through;
+}
+
+.seller-info {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.04);
+}
+
+.seller-avatar {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: $surface-light;
+}
+
+.seller-name {
+  flex: 1;
+  font-size: 22rpx;
+  color: $text-secondary-light;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-// Dark Mode
+.view-count {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  
+  text {
+    font-size: 20rpx;
+    color: $text-tertiary-light;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .market-card {
-    background-color: $card-dark;
+    background: $card-dark;
   }
-  .goods-desc {
+  
+  .goods-title {
     color: $text-primary-dark;
   }
-  .user-name {
+  
+  .seller-info {
+    border-top-color: rgba(255, 255, 255, 0.06);
+  }
+  
+  .seller-name {
     color: $text-secondary-dark;
   }
 }

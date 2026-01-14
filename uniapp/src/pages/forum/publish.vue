@@ -1,86 +1,124 @@
 <template>
-	<view class="publish-container">
-		<scroll-view scroll-y class="content-area">
-			<!-- 标题输入 -->
-			<view class="form-item">
-				<textarea 
-					class="title-input"
-					v-model="formData.title"
-					placeholder="请输入标题..."
-					maxlength="100"
-					:show-count="true"
-				></textarea>
-			</view>
+  <view class="publish-page">
+    <scroll-view scroll-y class="content-scroll">
+      <!-- 标题输入 -->
+      <view class="form-section">
+        <view class="title-card">
+          <textarea 
+            class="title-input"
+            v-model="formData.title"
+            placeholder="输入标题，让更多人看到你..."
+            maxlength="100"
+            auto-height
+            placeholder-class="title-placeholder"
+          />
+        </view>
+      </view>
 
-			<!-- 内容输入 -->
-			<view class="form-item">
-				<textarea 
-					class="content-input"
-					v-model="formData.content"
-					placeholder="分享你的想法..."
-					maxlength="5000"
-					:show-count="true"
-					auto-height
-				></textarea>
-			</view>
+      <!-- 内容输入 -->
+      <view class="form-section">
+        <view class="content-card">
+          <textarea 
+            class="content-input"
+            v-model="formData.content"
+            placeholder="分享你的想法、经历或者发现..."
+            maxlength="5000"
+            :show-count="true"
+            auto-height
+            placeholder-class="content-placeholder"
+          />
+        </view>
+      </view>
 
-			<!-- 图片上传 -->
-			<view class="image-section">
-				<view class="image-list">
-					<view 
-						v-for="(img, index) in formData.images" 
-						:key="index"
-						class="image-item"
-					>
-						<image :src="img" mode="aspectFill"></image>
-						<view class="delete-btn" @click="deleteImage(index)">
-							<text class="iconfont icon-close"></text>
-						</view>
-					</view>
-					
-					<view 
-						v-if="formData.images.length < 9" 
-						class="add-image"
-						@click="chooseImage"
-					>
-						<text class="iconfont icon-add"></text>
-						<text class="tip">添加图片</text>
-					</view>
-				</view>
-			</view>
+      <!-- 图片上传 -->
+      <view class="form-section">
+        <view class="section-header">
+          <text class="section-title">添加图片</text>
+          <text class="section-tip">最多9张</text>
+        </view>
+        <view class="image-grid">
+          <view 
+            v-for="(img, index) in formData.images" 
+            :key="index"
+            class="image-item"
+          >
+            <image :src="img" mode="aspectFill" class="preview-img" />
+            <view class="delete-btn" @click.stop="deleteImage(index)">
+              <uni-icons type="closeempty" size="14" color="#fff" />
+            </view>
+          </view>
+          
+          <view 
+            v-if="formData.images.length < 9" 
+            class="add-image-btn"
+            @click="chooseImage"
+          >
+            <view class="add-icon">
+              <uni-icons type="camera" size="28" color="#94a3b8" />
+            </view>
+            <text class="add-count">{{ formData.images.length }}/9</text>
+          </view>
+        </view>
+      </view>
 
-			<!-- 分类选择 -->
-			<view class="form-item">
-				<view class="label">选择分类</view>
-				<picker 
-					mode="selector" 
-					:range="categories" 
-					range-key="name"
-					@change="onCategoryChange"
-				>
-					<view class="picker">
-						{{ selectedCategory ? selectedCategory.name : '请选择分类' }}
-					</view>
-				</picker>
-			</view>
+      <!-- 分类选择 -->
+      <view class="form-section">
+        <view class="section-header">
+          <text class="section-title">选择分类</text>
+          <text class="required-mark">*</text>
+        </view>
+        <view class="category-grid">
+          <view 
+            v-for="cat in categories" 
+            :key="cat.id"
+            class="category-item"
+            :class="{ active: formData.categoryId === cat.id }"
+            @click="selectCategory(cat)"
+          >
+            <text class="cat-icon">{{ cat.icon }}</text>
+            <text class="cat-name">{{ cat.name }}</text>
+          </view>
+        </view>
+      </view>
 
-			<!-- 匿名发帖 -->
-			<view class="form-item">
-				<view class="label">匿名发帖</view>
-				<switch 
-					:checked="formData.isAnonymous === 1" 
-					@change="onAnonymousChange"
-					color="#007aff"
-				/>
-			</view>
-		</scroll-view>
+      <!-- 发布设置 -->
+      <view class="form-section">
+        <view class="settings-card">
+          <view class="setting-item">
+            <view class="setting-left">
+              <uni-icons type="eye-slash" size="18" color="#64748b" />
+              <text class="setting-label">匿名发帖</text>
+            </view>
+            <switch 
+              :checked="formData.isAnonymous === 1" 
+              @change="onAnonymousChange"
+              color="#007fff"
+              style="transform: scale(0.85)"
+            />
+          </view>
+        </view>
+      </view>
+      
+      <!-- 底部占位 -->
+      <view class="bottom-space"></view>
+    </scroll-view>
 
-		<!-- 底部操作栏 -->
-		<view class="bottom-bar">
-			<button class="draft-btn" @click="saveDraft">保存草稿</button>
-			<button class="publish-btn" type="primary" @click="publish">发布</button>
-		</view>
-	</view>
+    <!-- 底部操作栏 -->
+    <view class="bottom-bar safe-bottom">
+      <button class="draft-btn" @click="saveDraft">
+        <uni-icons type="compose" size="18" color="#007fff" />
+        <text>存草稿</text>
+      </button>
+      <button 
+        class="publish-btn" 
+        :class="{ disabled: !canPublish }"
+        :loading="isSubmitting"
+        @click="publish"
+      >
+        {{ isSubmitting ? '发布中...' : '发布' }}
+      </button>
+    </view>
+  </view>
 </template>
 
 <script>
@@ -88,341 +126,472 @@ import { publishPost, savePostDraft, getPostDraft } from '@/api/forum';
 import { uploadSingleFile } from '@/api/topic';
 
 export default {
-	data() {
-		return {
-			formData: {
-				title: '',
-				content: '',
-				images: [],
-				categoryId: null,
-				isAnonymous: 0
-			},
-			categories: [
-				{ id: 1, name: '校园生活' },
-				{ id: 2, name: '学习交流' },
-				{ id: 3, name: '社团活动' },
-				{ id: 4, name: '美食分享' },
-				{ id: 5, name: '二手市场' },
-				{ id: 6, name: '其他' }
-			],
-			selectedCategory: null,
-			uploadingImage: false
-		};
-	},
-	onLoad() {
-		this.loadDraft();
-	},
-	methods: {
-		// 加载草稿
-		async loadDraft() {
-			try {
-				const draft = await getPostDraft();
-				if (draft) {
-					this.formData = {
-						title: draft.title || '',
-						content: draft.content || '',
-						images: draft.images || [],
-						categoryId: draft.categoryId || null,
-						isAnonymous: draft.isAnonymous || 0
-					};
-					
-					if (draft.categoryId) {
-						this.selectedCategory = this.categories.find(c => c.id === draft.categoryId);
-					}
-					
-					uni.showToast({
-						title: '已加载草稿',
-						icon: 'none'
-					});
-				}
-			} catch (err) {
-				console.log('没有草稿');
-			}
-		},
-		
-		// 选择图片
-		chooseImage() {
-			if (this.uploadingImage) {
-				uni.showToast({
-					title: '正在上传中...',
-					icon: 'none'
-				});
-				return;
-			}
-			
-			uni.chooseImage({
-				count: 9 - this.formData.images.length,
-				sizeType: ['compressed'],
-				sourceType: ['album', 'camera'],
-				success: (res) => {
-					this.uploadImages(res.tempFilePaths);
-				}
-			});
-		},
-		
-		// 上传图片
-		async uploadImages(filePaths) {
-			this.uploadingImage = true;
-			uni.showLoading({
-				title: '上传中...'
-			});
-			
-			try {
-				for (const filePath of filePaths) {
-					const url = await uploadSingleFile(filePath);
-					this.formData.images.push(url);
-				}
-			} catch (err) {
-				uni.showToast({
-					title: err.message || '上传失败',
-					icon: 'none'
-				});
-			} finally {
-				this.uploadingImage = false;
-				uni.hideLoading();
-			}
-		},
-		
-		// 删除图片
-		deleteImage(index) {
-			uni.showModal({
-				title: '提示',
-				content: '确定删除这张图片吗？',
-				success: (res) => {
-					if (res.confirm) {
-						this.formData.images.splice(index, 1);
-					}
-				}
-			});
-		},
-		
-		// 分类选择
-		onCategoryChange(e) {
-			const index = e.detail.value;
-			this.selectedCategory = this.categories[index];
-			this.formData.categoryId = this.selectedCategory.id;
-		},
-		
-		// 匿名切换
-		onAnonymousChange(e) {
-			this.formData.isAnonymous = e.detail.value ? 1 : 0;
-		},
-		
-		// 保存草稿
-		async saveDraft() {
-			if (!this.formData.title && !this.formData.content) {
-				uni.showToast({
-					title: '请输入内容',
-					icon: 'none'
-				});
-				return;
-			}
-			
-			try {
-				await savePostDraft(this.formData);
-				uni.showToast({
-					title: '草稿已保存',
-					icon: 'success'
-				});
-			} catch (err) {
-				uni.showToast({
-					title: err.message || '保存失败',
-					icon: 'none'
-				});
-			}
-		},
-		
-		// 发布
-		async publish() {
-			// 验证
-			if (!this.formData.title.trim()) {
-				uni.showToast({
-					title: '请输入标题',
-					icon: 'none'
-				});
-				return;
-			}
-			
-			if (!this.formData.content.trim()) {
-				uni.showToast({
-					title: '请输入内容',
-					icon: 'none'
-				});
-				return;
-			}
-			
-			if (!this.formData.categoryId) {
-				uni.showToast({
-					title: '请选择分类',
-					icon: 'none'
-				});
-				return;
-			}
-			
-			uni.showLoading({
-				title: '发布中...'
-			});
-			
-			try {
-				await publishPost(this.formData);
-				
-				uni.showToast({
-					title: '发布成功',
-					icon: 'success'
-				});
-				
-				setTimeout(() => {
-					uni.navigateBack();
-				}, 1500);
-			} catch (err) {
-				uni.showToast({
-					title: err.message || '发布失败',
-					icon: 'none'
-				});
-			} finally {
-				uni.hideLoading();
-			}
-		}
-	}
+  data() {
+    return {
+      formData: {
+        title: '',
+        content: '',
+        images: [],
+        categoryId: null,
+        isAnonymous: 0
+      },
+      categories: [
+        { id: 1, name: '校园生活', icon: '🏫' },
+        { id: 2, name: '学习交流', icon: '📚' },
+        { id: 3, name: '社团活动', icon: '🎭' },
+        { id: 4, name: '美食分享', icon: '🍜' },
+        { id: 5, name: '情感树洞', icon: '💭' },
+        { id: 6, name: '其他', icon: '💡' }
+      ],
+      selectedCategory: null,
+      uploadingImage: false,
+      isSubmitting: false
+    };
+  },
+  computed: {
+    canPublish() {
+      return this.formData.title.trim() && 
+             this.formData.content.trim() && 
+             this.formData.categoryId;
+    }
+  },
+  onLoad() {
+    this.loadDraft();
+  },
+  methods: {
+    async loadDraft() {
+      try {
+        const draft = await getPostDraft();
+        if (draft) {
+          this.formData = {
+            title: draft.title || '',
+            content: draft.content || '',
+            images: draft.images || [],
+            categoryId: draft.categoryId || null,
+            isAnonymous: draft.isAnonymous || 0
+          };
+          
+          if (draft.categoryId) {
+            this.selectedCategory = this.categories.find(c => c.id === draft.categoryId);
+          }
+          
+          uni.showToast({ title: '已加载草稿', icon: 'none' });
+        }
+      } catch (err) {
+        console.log('没有草稿');
+      }
+    },
+    
+    selectCategory(cat) {
+      this.selectedCategory = cat;
+      this.formData.categoryId = cat.id;
+    },
+    
+    chooseImage() {
+      if (this.uploadingImage) {
+        uni.showToast({ title: '正在上传中...', icon: 'none' });
+        return;
+      }
+      
+      uni.chooseImage({
+        count: 9 - this.formData.images.length,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: (res) => {
+          this.uploadImages(res.tempFilePaths);
+        }
+      });
+    },
+    
+    async uploadImages(filePaths) {
+      this.uploadingImage = true;
+      uni.showLoading({ title: '上传中...', mask: true });
+      
+      try {
+        for (const filePath of filePaths) {
+          const url = await uploadSingleFile(filePath);
+          this.formData.images.push(url);
+        }
+      } catch (err) {
+        uni.showToast({ title: err.message || '上传失败', icon: 'none' });
+      } finally {
+        this.uploadingImage = false;
+        uni.hideLoading();
+      }
+    },
+    
+    deleteImage(index) {
+      uni.showModal({
+        title: '提示',
+        content: '确定删除这张图片吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.formData.images.splice(index, 1);
+          }
+        }
+      });
+    },
+    
+    onAnonymousChange(e) {
+      this.formData.isAnonymous = e.detail.value ? 1 : 0;
+    },
+    
+    async saveDraft() {
+      if (!this.formData.title && !this.formData.content) {
+        uni.showToast({ title: '请输入内容', icon: 'none' });
+        return;
+      }
+      
+      try {
+        await savePostDraft(this.formData);
+        uni.showToast({ title: '草稿已保存', icon: 'success' });
+      } catch (err) {
+        uni.showToast({ title: err.message || '保存失败', icon: 'none' });
+      }
+    },
+    
+    async publish() {
+      if (!this.canPublish) {
+        if (!this.formData.title.trim()) {
+          uni.showToast({ title: '请输入标题', icon: 'none' });
+        } else if (!this.formData.content.trim()) {
+          uni.showToast({ title: '请输入内容', icon: 'none' });
+        } else if (!this.formData.categoryId) {
+          uni.showToast({ title: '请选择分类', icon: 'none' });
+        }
+        return;
+      }
+      
+      this.isSubmitting = true;
+      
+      try {
+        await publishPost(this.formData);
+        uni.showToast({ title: '发布成功', icon: 'success' });
+        setTimeout(() => uni.navigateBack(), 1500);
+      } catch (err) {
+        uni.showToast({ title: err.message || '发布失败', icon: 'none' });
+      } finally {
+        this.isSubmitting = false;
+      }
+    }
+  }
 };
 </script>
 
-<style scoped>
-.publish-container {
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
-	background-color: #f5f5f5;
+<style lang="scss" scoped>
+@import '@/static/css/theme.scss';
+
+.publish-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: $background-dim;
 }
 
-.content-area {
-	flex: 1;
-	padding: 24rpx;
-	padding-bottom: 120rpx;
+.content-scroll {
+  flex: 1;
+  height: 0;
 }
 
-.form-item {
-	background-color: #fff;
-	border-radius: 16rpx;
-	padding: 24rpx;
-	margin-bottom: 20rpx;
+.form-section {
+  padding: 0 24rpx;
+  margin-top: 24rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 0 8rpx 16rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $text-primary-light;
+}
+
+.section-tip {
+  font-size: 24rpx;
+  color: $text-tertiary-light;
+}
+
+.required-mark {
+  color: $accent-red;
+  font-size: 26rpx;
+}
+
+.title-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  padding: 24rpx 28rpx;
+  box-shadow: $shadow-soft;
 }
 
 .title-input {
-	width: 100%;
-	font-size: 32rpx;
-	font-weight: bold;
-	min-height: 80rpx;
+  width: 100%;
+  font-size: 34rpx;
+  font-weight: 600;
+  line-height: 1.5;
+  color: $text-primary-light;
+  min-height: 60rpx;
+}
+
+.title-placeholder {
+  color: $text-tertiary-light;
+  font-weight: 400;
+}
+
+.content-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  padding: 24rpx 28rpx;
+  box-shadow: $shadow-soft;
 }
 
 .content-input {
-	width: 100%;
-	font-size: 28rpx;
-	min-height: 300rpx;
-	line-height: 1.8;
+  width: 100%;
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: $text-primary-light;
+  min-height: 240rpx;
 }
 
-.image-section {
-	background-color: #fff;
-	border-radius: 16rpx;
-	padding: 24rpx;
-	margin-bottom: 20rpx;
+.content-placeholder {
+  color: $text-tertiary-light;
 }
 
-.image-list {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 16rpx;
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
 }
 
 .image-item {
-	position: relative;
-	width: 100%;
-	padding-bottom: 100%;
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+  overflow: hidden;
+  
+  .preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .delete-btn {
+    position: absolute;
+    top: 8rpx;
+    right: 8rpx;
+    width: 40rpx;
+    height: 40rpx;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
-.image-item image {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	border-radius: 12rpx;
+.add-image-btn {
+  aspect-ratio: 1;
+  background: #ffffff;
+  border: 2rpx dashed $border-light;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  box-shadow: $shadow-soft;
+  transition: all 0.2s;
+  
+  &:active {
+    background: $surface-light;
+  }
+  
+  .add-icon {
+    width: 56rpx;
+    height: 56rpx;
+    border-radius: 50%;
+    background: $surface-light;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .add-count {
+    font-size: 22rpx;
+    color: $text-tertiary-light;
+  }
 }
 
-.delete-btn {
-	position: absolute;
-	top: -12rpx;
-	right: -12rpx;
-	width: 48rpx;
-	height: 48rpx;
-	background-color: rgba(0, 0, 0, 0.6);
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
 }
 
-.delete-btn .iconfont {
-	color: #fff;
-	font-size: 24rpx;
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 24rpx 16rpx;
+  background: #ffffff;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  transition: all 0.25s ease;
+  
+  .cat-icon {
+    font-size: 32rpx;
+  }
+  
+  .cat-name {
+    font-size: 24rpx;
+    color: $text-secondary-light;
+  }
+  
+  &.active {
+    background: linear-gradient(135deg, $primary 0%, #0066cc 100%);
+    box-shadow: 0 6rpx 20rpx rgba(0, 127, 255, 0.35);
+    
+    .cat-name {
+      color: #ffffff;
+      font-weight: 600;
+    }
+  }
 }
 
-.add-image {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	background-color: #f5f5f5;
-	border-radius: 12rpx;
-	aspect-ratio: 1;
+.settings-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-soft;
 }
 
-.add-image .iconfont {
-	font-size: 48rpx;
-	color: #999;
-	margin-bottom: 8rpx;
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx;
 }
 
-.add-image .tip {
-	font-size: 24rpx;
-	color: #999;
+.setting-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 
-.label {
-	font-size: 28rpx;
-	color: #333;
-	margin-bottom: 16rpx;
+.setting-label {
+  font-size: 28rpx;
+  color: $text-primary-light;
 }
 
-.picker {
-	font-size: 28rpx;
-	color: #666;
-	padding: 16rpx;
-	background-color: #f5f5f5;
-	border-radius: 8rpx;
+.bottom-space {
+  height: 180rpx;
 }
 
 .bottom-bar {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	background-color: #fff;
-	padding: 16rpx 24rpx;
-	border-top: 1rpx solid #f0f0f0;
-	display: flex;
-	gap: 20rpx;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 32rpx;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
 .draft-btn {
-	flex: 1;
-	border: 1rpx solid #007aff;
-	color: #007aff;
-	background-color: #fff;
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  background: #ffffff;
+  border: 2rpx solid $primary;
+  border-radius: 44rpx;
+  font-size: 28rpx;
+  color: $primary;
+  font-weight: 500;
+  
+  &::after { border: none; }
+  
+  &:active {
+    background: rgba(0, 127, 255, 0.05);
+  }
 }
 
 .publish-btn {
-	flex: 2;
+  flex: 2;
+  height: 88rpx;
+  background: linear-gradient(135deg, $primary 0%, #0066cc 100%);
+  color: #ffffff;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  border: none;
+  box-shadow: 0 8rpx 24rpx rgba(0, 127, 255, 0.35);
+  
+  &.disabled {
+    background: $border-light;
+    color: $text-tertiary-light;
+    box-shadow: none;
+  }
+  
+  &::after { border: none; }
+  
+  &:active:not(.disabled) {
+    transform: scale(0.98);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .publish-page {
+    background: $background-dark;
+  }
+  
+  .title-card,
+  .content-card,
+  .add-image-btn,
+  .settings-card {
+    background: $card-dark;
+  }
+  
+  .section-title,
+  .setting-label {
+    color: $text-primary-dark;
+  }
+  
+  .title-input,
+  .content-input {
+    color: $text-primary-dark;
+  }
+  
+  .category-item:not(.active) {
+    background: $surface-dark;
+  }
+  
+  .add-image-btn {
+    border-color: $border-dark;
+    
+    .add-icon {
+      background: $surface-dark;
+    }
+  }
+  
+  .bottom-bar {
+    background: rgba(27, 27, 29, 0.95);
+  }
+  
+  .draft-btn {
+    background: $card-dark;
+    border-color: $primary;
+  }
 }
 </style>

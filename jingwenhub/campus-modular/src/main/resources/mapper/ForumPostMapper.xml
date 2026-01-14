@@ -131,6 +131,7 @@
         UPDATE bus_forum_post 
         SET view_count = view_count + 1
         WHERE post_id = #{postId}
+          AND del_flag = 0
     </update>
 
 </mapper>

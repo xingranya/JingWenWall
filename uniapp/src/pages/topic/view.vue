@@ -1,111 +1,149 @@
 <template>
-  <view>
-    <uni-card
-        v-if="topicRecord && topicRecord.postId"
-        :isFull="true"
-        :title="topicRecord.nickName || '匿名用户'"
-        :sub-title="topicRecord.createTime"
-        :thumbnail="formatImageUrl(topicRecord.avatar)"
-        class="card-container"
-        @click.stop
-        @error="topicRecord.avatar = '/static/images/default-avatar.png'"
-    >
-      <uni-icons @click="showActionSheet" type="more" size="24" class="three-dots-icon"></uni-icons>
-      <view v-if="topicRecord.content" class="content">
-        <text>{{ topicRecord.content }}</text>
-      </view>
-      <view v-if="topicRecord.images && topicRecord.images.length" class="image-grid">
-        <image
-            v-for="(imgURL, index) in topicRecord.images"
-            :key="index"
-            :src="formatImageUrl(imgURL)"
-            class="grid-image"
-            mode="aspectFill"
-        />
-      </view>
-      <view slot="actions" class="card-actions">
-        <view class="action-item" @click.stop="handleLike">
-          <uni-icons :type="topicRecord.isLiked ? 'heart-filled' : 'heart'" size="18" :color="topicRecord.isLiked ? '#f00' : '#999'"></uni-icons>
-          <text class="action-item-text">
-            {{ topicRecord.isLiked ? '已点赞' : '点赞' }} {{ topicRecord.likeCount }}
-          </text>
-        </view>
-        <view class="action-item" @click.stop="openCommentPopup">
-          <uni-icons type="chatbubble" size="18" color="#999"></uni-icons>
-          <text class="action-item-text">评论 {{ topicRecord.commentCount }}</text>
-        </view>
-        <view class="action-item" @click.stop="handleCollect">
-          <uni-icons :type="topicRecord.isCollected ? 'star-filled' : 'star'" size="18" :color="topicRecord.isCollected ? '#ffcc00' : '#999'"></uni-icons>
-          <text class="action-item-text">
-            {{ topicRecord.isCollected ? '已收藏' : '收藏' }} {{ topicRecord.collectCount }}
-          </text>
-        </view>
-        <view class="action-item share-item" @click.stop>
-          <uni-icons type="redo" size="18" color="#999"></uni-icons>
-          <text class="action-item-text">分享</text>
-          <button
-              open-type="share"
-              data-share-type="topic"
-              class="share-button"
-              @click.stop
-          ></button>
-        </view>
-      </view>
-    </uni-card>
+  <view class="topic-view">
+    <scroll-view scroll-y class="topic-scroll" :refresher-enabled="false" @scrolltolower="loadComments">
+      <view class="safe-padding content-wrapper">
+        <view v-if="topicRecord && topicRecord.postId" class="post-card">
+          <view class="post-header">
+            <view class="user-left">
+              <image class="avatar avatar-md" :src="formatAvatarUrl(topicRecord.avatar)" mode="aspectFill" />
+              <view class="user-meta">
+                <text class="user-name line-clamp-1">{{ topicRecord.nickName || '匿名用户' }}</text>
+                <text class="post-time">{{ formatTime(topicRecord.createTime) }}</text>
+              </view>
+            </view>
+            <view class="header-actions" @click.stop="showActionSheet">
+              <view class="icon-btn">
+                <uni-icons type="more" size="22" :color="iconMutedColor" />
+              </view>
+            </view>
+          </view>
 
-    <!-- 评论展示区域 -->
-    <view v-if="comments && comments.length" class="comments-section">
-      <uni-card
-          v-for="(comment, index) in comments"
-          :key="comment.commentId"
-          :isFull="true"
-          :title="comment.nickName || '匿名用户'"
-          :sub-title="comment.createTime"
-          :thumbnail="formatImageUrl(comment.avatar)"
-          class="comment-card"
-          @click.stop
-          @error="comment.avatar = '/static/images/default-avatar.png'"
-      >
-        <!-- 评论内容 -->
-        <view v-if="comment.content" class="comment-text">
-          <text>{{ comment.content }}</text>
+          <view v-if="topicRecord.title" class="post-title">{{ topicRecord.title }}</view>
+          <view v-if="topicRecord.content" class="post-content">
+            <text selectable>{{ topicRecord.content }}</text>
+          </view>
+
+          <view v-if="postImages.length" class="image-grid" :class="imageGridClass">
+            <view
+              v-for="(img, index) in postImages"
+              :key="index"
+              class="image-item"
+              @click.stop="previewPostImages(index)"
+            >
+              <image class="post-image" :src="img" mode="aspectFill" />
+            </view>
+          </view>
+
+          <view class="post-stats">
+            <text class="stat">浏览 {{ topicRecord.viewCount || 0 }}</text>
+            <text class="dot">·</text>
+            <text class="stat">点赞 {{ topicRecord.likeCount || 0 }}</text>
+            <text class="dot">·</text>
+            <text class="stat">评论 {{ topicRecord.commentCount || 0 }}</text>
+            <text class="dot">·</text>
+            <text class="stat">收藏 {{ topicRecord.collectCount || 0 }}</text>
+          </view>
         </view>
 
-        <!-- 评论操作 -->
-        <view slot="actions" class="card-actions">
-          <view class="action-item" @click.stop="toggleCommentLike(comment)">
-            <uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" size="18" :color="comment.isLiked ? '#f00' : '#999'"></uni-icons>
-            <text class="action-item-text">{{ comment.isLiked ? '已点赞' : '点赞' }} {{ comment.likeCount }}</text>
+        <view class="comment-section">
+          <view class="section-header">
+            <text class="section-title">全部评论</text>
+            <text class="section-count">({{ topicRecord.commentCount || 0 }})</text>
           </view>
-          <view class="action-item" @click.stop="replyToComment(comment)">
-            <uni-icons type="chatbubble" size="18" color="#999"></uni-icons>
-            <text class="action-item-text">回复</text>
+
+          <view v-if="comments && comments.length" class="comment-list">
+            <view v-for="(comment, index) in comments" :key="comment.commentId || comment.id || index" class="comment-item">
+              <image class="avatar avatar-md" :src="formatAvatarUrl(comment.avatar)" mode="aspectFill" />
+              <view class="comment-main">
+                <view class="comment-head">
+                  <view class="comment-meta">
+                    <text class="comment-name line-clamp-1">{{ comment.nickName || '匿名用户' }}</text>
+                    <text class="comment-time">{{ formatTime(comment.createTime) }}</text>
+                  </view>
+                  <view class="comment-more" @click.stop="showCommentActionSheet(comment)">
+                    <uni-icons type="more" size="18" :color="iconMutedColor" />
+                  </view>
+                </view>
+
+                <view v-if="comment.content" class="comment-text">
+                  <text selectable>{{ comment.content }}</text>
+                </view>
+
+                <view class="comment-actions">
+                  <view class="action-btn" @click.stop="toggleCommentLike(comment)">
+                    <uni-icons
+                      :type="comment.isLiked ? 'heart-filled' : 'heart'"
+                      size="18"
+                      :color="comment.isLiked ? likedColor : iconMutedColor"
+                    />
+                    <text class="action-text">{{ comment.likeCount || 0 }}</text>
+                  </view>
+                  <view class="action-btn" @click.stop="replyToComment(comment)">
+                    <uni-icons type="chatbubble" size="18" :color="iconMutedColor" />
+                    <text class="action-text">回复</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <uni-load-more :status="loadMoreStatus" @loadmore="loadComments" />
           </view>
-          <view class="action-item" @click.stop="showCommentActionSheet(comment)">
-            <uni-icons type="more" size="18" color="#999"></uni-icons>
+
+          <view v-else class="empty-comment">
+            <text class="empty-text">暂无评论，快来发表第一条评论吧~</text>
           </view>
         </view>
-      </uni-card>
-      <uni-load-more :status="loadMoreStatus" @loadmore="loadComments"></uni-load-more>
+      </view>
+    </scroll-view>
+
+    <view class="bottom-bar">
+      <view class="bar-inner">
+        <view class="bar-input" @click="openCommentPopup">
+          <uni-icons type="compose" size="18" :color="iconMutedColor" />
+          <text class="bar-placeholder">说点什么...</text>
+        </view>
+        <view class="bar-actions">
+          <view class="bar-btn" @click.stop="handleLike">
+            <uni-icons :type="topicRecord.isLiked ? 'heart-filled' : 'heart'" size="22" :color="topicRecord.isLiked ? likedColor : iconMutedColor" />
+            <text class="bar-count">{{ topicRecord.likeCount || 0 }}</text>
+          </view>
+          <view class="bar-btn" @click.stop="handleCollect">
+            <uni-icons :type="topicRecord.isCollected ? 'star-filled' : 'star'" size="22" :color="topicRecord.isCollected ? collectedColor : iconMutedColor" />
+            <text class="bar-count">{{ topicRecord.collectCount || 0 }}</text>
+          </view>
+          <view class="bar-btn" @click.stop="openCommentPopup">
+            <uni-icons type="chatbubble" size="22" :color="iconMutedColor" />
+            <text class="bar-count">{{ topicRecord.commentCount || 0 }}</text>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <!-- 评论输入框 -->
     <uni-popup ref="commentPopup" type="bottom" :safe-area="true">
-      <view class="comment-input-container">
-        <uni-easyinput
+      <view class="comment-popup">
+        <view class="popup-header">
+          <text class="popup-title">发表评论</text>
+          <view class="popup-close" @click="closeCommentPopup">
+            <uni-icons type="closeempty" size="20" :color="iconMutedColor" />
+          </view>
+        </view>
+        <view class="popup-body">
+          <uni-easyinput
             v-model="commentContent"
+            type="textarea"
+            :autoHeight="true"
+            maxlength="500"
             placeholder="请输入评论内容..."
             :focus="true"
-            class="comment-input"
-        ></uni-easyinput>
-        <button @click="submitComment" class="submit-button">提交</button>
+            class="popup-input"
+          />
+          <button class="popup-submit btn-primary" @click="submitComment">发送</button>
+        </view>
       </view>
     </uni-popup>
   </view>
 </template>
 
 <script>
-import uniCard from '@dcloudio/uni-ui/lib/uni-card/uni-card.vue';
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
 import uniLoadMore from '@dcloudio/uni-ui/lib/uni-load-more/uni-load-more.vue';
@@ -129,7 +167,6 @@ import { createEmptyForumPost } from "@/models/ForumPost";
 
 export default {
   components: {
-    uniCard,
     uniIcons,
     uniPopup,
     uniLoadMore,
@@ -145,6 +182,7 @@ export default {
       comments: [],
       loadMoreStatus: 'more',
       currentUserId: '',
+      topicId: '',
       page: 1,
       pageSize: 5,
       commentCount: 0,
@@ -153,18 +191,37 @@ export default {
       commentLikeCount: 0,
     };
   },
+  computed: {
+    iconMutedColor() {
+      return '#94a3b8';
+    },
+    likedColor() {
+      return '#ff3b30';
+    },
+    collectedColor() {
+      return '#ffcc00';
+    },
+    postImages() {
+      const list = Array.isArray(this.topicRecord?.images) ? this.topicRecord.images : [];
+      return list
+        .filter((x) => typeof x === 'string' && x.trim())
+        .map((x) => this.formatMediaUrl(x.trim()));
+    },
+    imageGridClass() {
+      const n = this.postImages.length;
+      if (n <= 1) return 'count-1';
+      if (n === 2) return 'count-2';
+      return 'count-3';
+    }
+  },
   async onLoad(options) {
-    const topicId = options.topicId;
-    this.topicId = options.topicId;
+    const topicId = options?.topicId || options?.postId || options?.id;
+    this.topicId = topicId;
     try {
-      const currentUser = await getCurrentUserInfo();
-      this.currentUserId = currentUser.userId;
-      console.log("当前用户ID:", this.currentUserId);
-
-      this.topicRecord = await fetchTopic(topicId);
-
+      this.currentUserId = await this.getCurrentUserIdSafely();
+      const post = await fetchTopic(topicId);
+      this.topicRecord = this.normalizePost(post, topicId);
       await this.loadComments();
-      console.log("Received topicId:", topicId);
     } catch (error) {
       console.error("加载数据失败:", error);
       await uni.showToast({
@@ -177,6 +234,58 @@ export default {
     this.loadComments();
   },
   methods: {
+    normalizePost(post, fallbackId) {
+      const base = createEmptyForumPost();
+      const source = post && typeof post === 'object' ? post : {};
+      const postId = source.postId || source.id || fallbackId || null;
+      const images = source.images || source.imgURLs || [];
+      return {
+        ...base,
+        ...source,
+        postId,
+        images: Array.isArray(images) ? images : [],
+      };
+    },
+
+    async getCurrentUserIdSafely() {
+      try {
+        const currentUser = await getCurrentUserInfo();
+        const id = currentUser?.userId || currentUser?.id || '';
+        if (id) return String(id);
+      } catch (e) {
+        console.error('获取当前用户信息失败:', e);
+      }
+      try {
+        const raw = uni.getStorageSync('userInfo');
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const id = parsed?.userId || parsed?.id || '';
+        return id ? String(id) : '';
+      } catch (e) {
+        return '';
+      }
+    },
+
+    fetchTopicNoCache(postId) {
+      return new Promise((resolve, reject) => {
+        uni.request({
+          url: `${baseUrl}/api/v1/forum/posts/${postId}?_t=${Date.now()}`,
+          method: 'GET',
+          header: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${uni.getStorageSync('token')}`
+          },
+          success: (res) => {
+            if (res.statusCode === 200 && res.data && res.data.code === 200) {
+              resolve(res.data.data);
+            } else {
+              reject(res?.data?.msg || '获取失败');
+            }
+          },
+          fail: (err) => reject(err),
+        });
+      });
+    },
+
     /**
      * 加载评论
      */
@@ -187,11 +296,7 @@ export default {
       this.loadMoreStatus = 'loading';
       try {
         const res = await fetchComments(this.topicId, this.page, this.pageSize);
-        console.log('请求结果:', res);
-        
-        // 关键修复：后端返回的是 PageResult 结构，包含 rows 字段
         const commentList = res.rows || res.records || [];
-        
         if (commentList && commentList.length > 0) {
           this.comments = this.comments.concat(commentList);
           if (commentList.length < this.pageSize) {
@@ -211,27 +316,47 @@ export default {
     },
 
     /**
-     * 格式化图片URL，确保包含baseUrl
+     * 格式化媒体URL，确保包含baseUrl
      */
-    formatImageUrl(url) {
-      if (!url || typeof url !== 'string') return '/static/images/default-avatar.png'; // 增加默认头像回退
-      if (url.startsWith('http') || url.startsWith('https') || url.startsWith('data:')) {
-        return url;
-      }
-      // 如果是 /profile 开头的相对路径
-      if (url.startsWith('/profile') || url.startsWith('profile')) {
-        const path = url.startsWith('/') ? url : '/' + url;
-        return `${baseUrl}${path}`;
-      }
-      // 其他情况（可能是脏数据或相对路径）
-      return url;
+    formatMediaUrl(url) {
+      if (!url || typeof url !== 'string') return '';
+      const v = url.trim();
+      if (!v) return '';
+      if (/^https?:\/\//i.test(v) || /^data:/i.test(v)) return v;
+      if (v.startsWith('//')) return `https:${v}`;
+      if (v.startsWith('/static/')) return v;
+      if (v.startsWith('static/')) return `/${v}`;
+      if (v.startsWith('/')) return `${baseUrl}${v}`;
+      return `${baseUrl}/${v}`;
+    },
+
+    formatAvatarUrl(url) {
+      return this.formatMediaUrl(url) || '/static/default_avatar.jpg';
+    },
+
+    formatTime(time) {
+      if (!time) return '';
+      const s = String(time);
+      if (s.includes(' ')) return s.split(' ')[0];
+      if (s.includes('T')) return s.split('T')[0];
+      return s;
+    },
+
+    previewPostImages(index) {
+      const urls = this.postImages;
+      const current = urls[index] || urls[0];
+      if (!current) return;
+      uni.previewImage({
+        urls,
+        current,
+      });
     },
     /**
      * 显示操作菜单
      */
     showActionSheet() {
-      const isAuthor = String(this.currentUserId) === String(this.topicRecord.userId);
-      const itemList = isAuthor ? ['删除', '举报', '取消'] : ['举报', '取消'];
+      const isAuthor = String(this.currentUserId) && String(this.currentUserId) === String(this.topicRecord.userId);
+      const itemList = isAuthor ? ['删除', '举报'] : ['举报'];
 
       uni.showActionSheet({
         itemList: itemList,
@@ -240,7 +365,7 @@ export default {
             this.deleteTopic();
           } else if ((isAuthor && res.tapIndex === 1) || (!isAuthor && res.tapIndex === 0)) {
             uni.navigateTo({
-              url: `/pages/topic/report?topicId=${this.topicRecord.id}`,
+              url: `/pages/topic/report?topicId=${this.topicRecord.postId}`,
             });
           }
         },
@@ -255,7 +380,7 @@ export default {
      */
     showCommentActionSheet(comment) {
       const isAuthor = String(this.currentUserId) === String(comment.userId);
-      const itemList = isAuthor ? ['删除', '举报', '取消'] : ['举报', '取消'];
+      const itemList = isAuthor ? ['删除', '举报'] : ['举报'];
 
       uni.showActionSheet({
         itemList: itemList,
@@ -265,7 +390,7 @@ export default {
             this.deleteCommentAction(comment);
           } else if ((isAuthor && res.tapIndex === 1) || (!isAuthor && res.tapIndex === 0)) {
             uni.navigateTo({
-              url: `/pages/topic/report?topicId=${this.topicRecord.id}&commentId=${comment.commentId}`,
+              url: `/pages/topic/report?topicId=${this.topicRecord.postId}&commentId=${comment.commentId || comment.id}`,
             });
           }
         },
@@ -282,22 +407,87 @@ export default {
       this.$refs.commentPopup.open();
     },
 
+    closeCommentPopup() {
+      this.$refs.commentPopup.close();
+    },
+
     // 创建话题不在该页面
     /**
      * 删除话题
      */
     async deleteTopic() {
+      const postId = this.topicRecord?.postId;
+      if (!postId) {
+        await uni.showToast({ title: '删除失败', icon: 'none' });
+        return;
+      }
+
+      const isAuthor = String(this.currentUserId) && String(this.currentUserId) === String(this.topicRecord.userId);
+      if (!isAuthor) {
+        await uni.showToast({ title: '无权限删除', icon: 'none' });
+        return;
+      }
+
       try {
-        await deleteTopic(this.topicRecord.postId);
+        const res = await uni.showModal({
+          title: '确认删除',
+          content: '确定要删除此项吗？',
+          confirmText: '删除',
+          cancelText: '取消',
+        });
+
+        if (!res.confirm) return;
+
+        const beforeStatus = this.topicRecord?.status;
+        const deleteMsg = await deleteTopic(postId);
+
+        let isReallyDeleted = false;
+        for (let i = 0; i < 3; i++) {
+          try {
+            const post = await this.fetchTopicNoCache(postId);
+            const afterStatus = post?.status;
+            if (afterStatus !== undefined && beforeStatus !== undefined && String(afterStatus) !== String(beforeStatus)) {
+              isReallyDeleted = true;
+              break;
+            }
+            isReallyDeleted = false;
+          } catch (e) {
+            isReallyDeleted = true;
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 250 * (i + 1)));
+        }
+
+        if (!isReallyDeleted) {
+          await uni.showToast({ title: String(deleteMsg || '删除未生效，请稍后重试'), icon: 'none' });
+          return;
+        }
+
+        this.topicRecord = createEmptyForumPost();
+        this.comments = [];
+        this.page = 1;
+        this.loadMoreStatus = 'more';
+
+        try {
+          const deletedId = String(postId);
+          uni.setStorageSync('deletedPostId', deletedId);
+          uni.$emit && uni.$emit('topic:deleted', deletedId);
+        } catch (e) {
+        }
+
         await uni.showToast({ title: '删除成功', icon: 'success' });
+
         setTimeout(() => {
-          uni.reLaunch({
-            url: '/pages/index/index'
-          });
-        }, 1000);
+          const pages = getCurrentPages();
+          if (pages && pages.length > 1) {
+            uni.navigateBack({ delta: 1 });
+          } else {
+            uni.reLaunch({ url: '/pages/index/index' });
+          }
+        }, 500);
       } catch (error) {
         console.error('删除失败:', error);
-        await uni.showToast({ title: '删除失败', icon: 'none' });
+        await uni.showToast({ title: String(error?.message || error || '删除失败'), icon: 'none' });
       }
     },
 
@@ -361,7 +551,7 @@ export default {
         this.$refs.commentPopup.close();
       } catch (error) {
         console.error("评论失败:", error);
-        await uni.showToast({ title: error , icon: "none" });
+        await uni.showToast({ title: String(error || '评论失败') , icon: "none" });
       }
     },
 
@@ -370,10 +560,12 @@ export default {
      */
     async refreshComments() {
       try {
-        console.log("刷新评论列表", this.topicRecord.postId);
-        this.topicRecord = await fetchTopic(this.topicRecord.postId);
-        const res = await fetchComments(this.topicRecord.postId, 1, this.pageSize);
-        this.comments = res.rows || res.records || [];
+        const post = await fetchTopic(this.topicRecord.postId);
+        this.topicRecord = this.normalizePost(post, this.topicRecord.postId);
+        this.page = 1;
+        this.comments = [];
+        this.loadMoreStatus = 'more';
+        await this.loadComments();
       } catch (error) {
         console.error("刷新评论失败:", error);
         await uni.showToast({title: "刷新评论失败", icon: "none"});
@@ -393,7 +585,8 @@ export default {
         });
 
         if (res.confirm) {
-          await deleteComment(comment.id);
+          const commentId = comment.commentId || comment.id;
+          await deleteComment(commentId);
           await uni.showToast({ title: '删除成功', icon: 'success' });
           await this.refreshComments();
         }
@@ -436,191 +629,473 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.action-item {
+<style lang="scss" scoped>
+@import '@/static/css/theme.scss';
+
+.topic-view {
+  height: 100vh;
+  background-color: $background-dim;
+}
+
+.topic-scroll {
+  height: 100%;
+}
+
+.safe-padding {
+  padding-left: 40rpx;
+  padding-right: 40rpx;
+}
+
+.content-wrapper {
+  padding-top: $spacing-md;
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+}
+
+.post-card {
+  background-color: $background-light;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  border: 1rpx solid $border-light;
+  overflow: hidden;
+  padding: $spacing-lg;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.user-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  min-width: 0;
+}
+
+.avatar {
+  border-radius: $radius-full;
+  background-color: $surface-light;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: $font-sm;
+  font-weight: 700;
+  color: $text-primary-light;
+  line-height: 1.2;
+}
+
+.post-time {
+  font-size: $font-xs;
+  color: $text-tertiary-light;
+  margin-top: 4rpx;
+}
+
+.header-actions {
+  flex: 0 0 auto;
+}
+
+.icon-btn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-full;
+  background-color: $surface-light;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 8px;
-  background-color: transparent;
-  border: none;
-  color: inherit;
-  outline: none;
-  box-shadow: none;
-  font-family: inherit;
-  position: relative;
+
+  &:active {
+    transform: scale(0.95);
+    background-color: darken($surface-light, 5%);
+  }
 }
 
-.share-item {
-  position: relative;
+.post-title {
+  font-size: $font-xl;
+  font-weight: 800;
+  color: $text-primary-light;
+  letter-spacing: -1rpx;
+  margin-bottom: $spacing-sm;
 }
 
-/* 隐藏的按钮样式，覆盖整个 share view */
-.share-button {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  z-index: 1; /* 确保分享按钮的透明 button 只在分享 view 中生效 */
-}
-
-.action-item uni-icons {
-  font-size: 16px;
-  color: #666;
-}
-
-.action-item-text {
-  font-size: 12px;
-  color: #666;
-  margin-left: 4px;
-}
-
-.card-actions {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  height: 50px;
-  border-top: 1px #eee solid;
-}
-
-.comment-actions {
-  display: flex;
-  gap: 15px;
-  margin-top: 6px;
+.post-content {
+  font-size: $font-base;
+  color: $text-primary-light;
+  line-height: 1.7;
+  margin-bottom: $spacing-md;
+  word-break: break-all;
 }
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 16rpx;
+  margin-top: $spacing-sm;
+  margin-bottom: $spacing-md;
 }
 
-.grid-image {
+.image-grid.count-1 {
+  grid-template-columns: 1fr;
+}
+
+.image-grid.count-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.image-grid.count-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.image-item {
+  position: relative;
   width: 100%;
-  height: 110px;
-  object-fit: cover;
-  border-radius: 8px;
+  border-radius: $radius-md;
+  overflow: hidden;
+  background-color: $surface-light;
 }
 
-.content {
-  margin: 10px 0;
+.image-item::before {
+  content: '';
+  display: block;
+  padding-bottom: 100%;
 }
 
-.comment-card {
-  margin-bottom: 10px;
+.post-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.card-actions {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
-}
-
-.comment-input-container {
-  padding: 10px;
+.post-stats {
   display: flex;
   align-items: center;
-  background-color: #fff;
-  border-top: 1px solid #ccc;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  font-size: $font-xs;
+  color: $text-tertiary-light;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $border-light;
 }
 
-.comment-input {
-  flex: 1;
-  height: 40px;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: none;
+.stat {
+  color: $text-secondary-light;
 }
 
-.submit-button {
-  padding: 10px;
-  color: #007aff;
-  font-weight: bold;
+.dot {
+  color: $text-tertiary-light;
 }
 
-.comments-section {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f8f8f8;
+.comment-section {
+  margin-top: $spacing-lg;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-bottom: $spacing-md;
+}
+
+.section-title {
+  font-size: $font-lg;
+  font-weight: 800;
+  color: $text-primary-light;
+}
+
+.section-count {
+  font-size: $font-sm;
+  color: $text-tertiary-light;
+}
+
+.comment-list {
+  background-color: $background-light;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  border: 1rpx solid $border-light;
+  overflow: hidden;
 }
 
 .comment-item {
   display: flex;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  gap: 16rpx;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $border-light;
 }
 
-.comment-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 10px;
+.comment-item:last-child {
+  border-bottom: none;
 }
 
-.comment-content {
+.comment-main {
   flex: 1;
+  min-width: 0;
 }
 
-.comment-username {
-  font-weight: bold;
-  font-size: 14px;
-  color: #333;
+.comment-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.comment-meta {
+  min-width: 0;
+}
+
+.comment-name {
+  font-size: $font-sm;
+  font-weight: 700;
+  color: $text-primary-light;
+}
+
+.comment-time {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-xs;
+  color: $text-tertiary-light;
+}
+
+.comment-more {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-full;
+  background-color: $surface-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    transform: scale(0.95);
+    background-color: darken($surface-light, 5%);
+  }
 }
 
 .comment-text {
-  margin-top: 4px;
-  font-size: 13px;
-  color: #666;
+  margin-top: $spacing-sm;
+  font-size: $font-base;
+  color: $text-primary-light;
+  line-height: 1.6;
+  word-break: break-all;
 }
 
-.comment-date {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #999;
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-top: $spacing-sm;
 }
 
-.comment-more-icon {
-  position: absolute;
-  right: 10px;
-  top: 10px;
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 12rpx;
+  border-radius: $radius-full;
+  background-color: $surface-light;
+
+  &:active {
+    transform: scale(0.98);
+    background-color: darken($surface-light, 5%);
+  }
 }
 
-.card-container {
-  position: relative;
+.action-text {
+  font-size: $font-xs;
+  color: $text-secondary-light;
+  font-weight: 600;
 }
 
-.three-dots-icon {
-  position: absolute;
-  right: 10px;
-  top: 20px;
+.empty-comment {
+  background-color: $background-light;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  border: 1rpx solid $border-light;
+  text-align: center;
 }
 
-.submit-button {
-  padding: 4px 12px;
-  margin-left: 10px;
-  background-color: #007aff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  outline: none;
-  transition: background-color 0.3s;
-  height: auto;
+.empty-text {
+  font-size: $font-sm;
+  color: $text-tertiary-light;
 }
 
-.submit-button:hover {
-  background-color: #005bb5; /* 悬停时稍微变深 */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  background-color: rgba(255, 255, 255, 0.9);
+  border-top: 1rpx solid $border-light;
+  box-shadow: $shadow-nav;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
 }
 
-.submit-button:active {
-  background-color: #004494; /* 点击时更深 */
+.bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.bar-input {
+  flex: 1;
+  height: 88rpx;
+  border-radius: $radius-full;
+  background-color: $surface-light;
+  border: 1rpx solid $border-light;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 24rpx;
+
+  &:active {
+    background-color: darken($surface-light, 3%);
+  }
+}
+
+.bar-placeholder {
+  font-size: $font-sm;
+  color: $text-tertiary-light;
+}
+
+.bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.bar-btn {
+  height: 88rpx;
+  border-radius: $radius-full;
+  background-color: $surface-light;
+  border: 1rpx solid $border-light;
+  padding: 0 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+
+  &:active {
+    transform: scale(0.98);
+    background-color: darken($surface-light, 5%);
+  }
+}
+
+.bar-count {
+  font-size: $font-xs;
+  color: $text-secondary-light;
+  font-weight: 700;
+}
+
+.comment-popup {
+  background-color: $background-light;
+  border-top-left-radius: $radius-2xl;
+  border-top-right-radius: $radius-2xl;
+  padding: $spacing-lg;
+  border: 1rpx solid $border-light;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.popup-title {
+  font-size: $font-lg;
+  font-weight: 800;
+  color: $text-primary-light;
+}
+
+.popup-close {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-full;
+  background-color: $surface-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    transform: scale(0.95);
+    background-color: darken($surface-light, 5%);
+  }
+}
+
+.popup-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.popup-input {
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.popup-submit {
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .topic-view {
+    background-color: $background-dark;
+  }
+
+  .post-card,
+  .comment-list,
+  .empty-comment,
+  .comment-popup {
+    background-color: $card-dark;
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .user-name,
+  .post-title,
+  .post-content,
+  .section-title,
+  .comment-name,
+  .comment-text,
+  .popup-title {
+    color: $text-primary-dark;
+  }
+
+  .post-time,
+  .section-count,
+  .comment-time,
+  .empty-text {
+    color: $text-tertiary-dark;
+  }
+
+  .post-stats,
+  .comment-item {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .post-stats {
+    border-top-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .icon-btn,
+  .comment-more,
+  .action-btn,
+  .bar-input,
+  .bar-btn,
+  .popup-close {
+    background-color: $surface-dark;
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .bottom-bar {
+    background-color: rgba(27, 27, 29, 0.9);
+    border-top-color: rgba(255, 255, 255, 0.05);
+  }
 }
 </style>

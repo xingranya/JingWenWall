@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.market.mapper.MarketCollectMapper">
+
+    <resultMap id="BaseResultMap" type="com.oddfar.campus.business.market.domain.entity.BusMarketCollectEntity">
+        <id property="collectId" column="collect_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="itemId" column="item_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 查询用户收藏的商品ID列表 -->
+    <select id="selectCollectedItemIds" resultType="java.lang.Long">
+        SELECT item_id 
+        FROM bus_market_collect 
+        WHERE user_id = #{userId} AND del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询物理记录 -->
+    <select id="selectOnePhysical" resultMap="BaseResultMap">
+        SELECT * FROM bus_market_collect 
+        WHERE user_id = #{userId} AND item_id = #{itemId}
+        LIMIT 1
+    </select>
+
+    <!-- 更新删除标志 -->
+    <update id="updateDelFlag">
+        UPDATE bus_market_collect 
+        SET del_flag = #{delFlag}
+        WHERE user_id = #{userId} AND item_id = #{itemId}
+    </update>
+
+</mapper>

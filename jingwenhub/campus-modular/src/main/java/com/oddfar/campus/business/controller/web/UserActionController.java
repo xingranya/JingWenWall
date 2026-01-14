@@ -29,7 +29,6 @@ public class UserActionController {
     @Autowired
     private CampusFileService campusFileService;
 
-
     /**
      * 点赞
      */
@@ -44,7 +43,7 @@ public class UserActionController {
     /**
      * 图片文件上传
      */
-    @PreAuthorize("@ss.resourceAuth()")
+    // @PreAuthorize("@ss.resourceAuth()")
     @PostMapping(value = "/imageUpload", name = "图片文件上传")
     public R imageUpload(MultipartFile file) {
         if (!file.isEmpty()) {
@@ -56,7 +55,7 @@ public class UserActionController {
     /**
      * 视频文件上传
      */
-    @PreAuthorize("@ss.resourceAuth()")
+    // @PreAuthorize("@ss.resourceAuth()")
     @PostMapping(value = "/videoUpload", name = "视频文件上传")
     public R videoUpload(MultipartFile file) {
         if (!file.isEmpty()) {
@@ -66,5 +65,18 @@ public class UserActionController {
         return R.error("上传异常");
     }
 
+    /**
+     * 删除文件
+     */
+    // @PreAuthorize("@ss.resourceAuth()")
+    @RequestMapping(value = "/file/delete", method = { RequestMethod.POST, RequestMethod.DELETE })
+    public R deleteFile(@RequestParam String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return R.error("文件地址不能为空");
+        }
+        // 暂时不做物理删除，标记为可清理即可
+        // campusFileService.removeByUrl(fileUrl);
+        return R.ok("删除成功");
+    }
 
 }

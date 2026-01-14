@@ -72,10 +72,10 @@ export const deleteSingleFile = (urlToDelete) => {
             url: `${baseUrl}/campus/file/delete`,
             method: 'POST',
             header: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
-            data: { url: urlToDelete },
+            data: { fileUrl: urlToDelete },
             success: (res) => {
                 if (res.statusCode === 200 && res.data.code === 200) {
                     resolve(urlToDelete);

@@ -89,7 +89,7 @@ public class ForumPostController {
     @DeleteMapping("/{postId}")
     public R delete(@PathVariable Long postId) {
         forumPostService.deletePost(postId);
-        return R.ok();
+        return R.ok("删除成功");
     }
     
     @ApiOperation("点赞帖子")

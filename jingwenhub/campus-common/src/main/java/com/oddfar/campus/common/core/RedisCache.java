@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author ruoyi
  **/
-@SuppressWarnings(value = {"unchecked", "rawtypes"})
+@SuppressWarnings(value = { "unchecked", "rawtypes" })
 @Component
 public class RedisCache {
     @Autowired
@@ -239,5 +239,27 @@ public class RedisCache {
      */
     public Collection<String> keys(final String pattern) {
         return redisTemplate.keys(pattern);
+    }
+
+    /**
+     * 尝试获取分布式锁
+     *
+     * @param key     锁的键
+     * @param timeout 锁的超时时间
+     * @param unit    时间单位
+     * @return true=获取锁成功；false=获取锁失败
+     */
+    public boolean tryLock(final String key, final long timeout, final TimeUnit unit) {
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, "1", timeout, unit);
+        return result != null && result;
+    }
+
+    /**
+     * 释放分布式锁
+     *
+     * @param key 锁的键
+     */
+    public void unlock(final String key) {
+        redisTemplate.delete(key);
     }
 }

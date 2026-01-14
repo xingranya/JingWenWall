@@ -16,6 +16,7 @@ import com.oddfar.campus.business.forum.service.ForumPostService;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
 import com.oddfar.campus.common.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  * 贴吧帖子服务实现
  */
 @Service
+@Slf4j
 public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumPostEntity> 
         implements ForumPostService {
     
@@ -155,19 +157,26 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     @Transactional(rollbackFor = Exception.class)
     public void deletePost(Long postId) {
         Long userId = SecurityUtils.getUserId();
-        
-        BusForumPostEntity entity = this.getById(postId);
-        if (entity == null) {
+
+        BusForumPostEntity meta = forumPostMapper.selectPostMetaPhysical(postId);
+        if (meta == null) {
             throw new ServiceException("帖子不存在");
         }
-        
-        if (!entity.getUserId().equals(userId)) {
+
+        if (meta.getUserId() == null || !meta.getUserId().equals(userId)) {
             throw new ServiceException("无权删除此帖子");
         }
-        
-        // 逻辑删除：设置 del_flag = 1
-        entity.setDelFlag(1);
-        this.updateById(entity);
+
+        if (meta.getDelFlag() != null && meta.getDelFlag() != 0) {
+            throw new ServiceException("帖子已删除");
+        }
+
+        int affected = forumPostMapper.markDeleted(postId, userId);
+        if (affected != 1) {
+            throw new ServiceException("删除失败");
+        }
+
+        log.info("帖子删除成功, postId: {}, userId: {}", postId, userId);
     }
     
     @Override

@@ -67,7 +67,7 @@ import TabBar from '@/components/TabBar.vue';
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 import uniLoadMore from '@dcloudio/uni-ui/lib/uni-load-more/uni-load-more.vue';
 
-import { getErrandList } from '@/api/errand.js';
+import { getWaitingOrders, acceptOrder } from '@/api/errand.js';
 
 export default {
   components: {
@@ -83,8 +83,7 @@ export default {
       page: 1,
       pageSize: 10,
       loadMoreStatus: 'more',
-      isRefreshing: false,
-      categoryId: 6 // 假设跑腿是 6
+      isRefreshing: false
     };
   },
   onLoad() {
@@ -96,27 +95,32 @@ export default {
       this.loadMoreStatus = 'loading';
       
       try {
-        const res = await getErrandList({
-            categoryId: this.categoryId,
-            pageNum: this.page,
-            pageSize: this.pageSize
-        });
+        const res = await getWaitingOrders(this.page, this.pageSize);
         
-        console.log('API Response:', res);
+        console.log('跑腿订单API响应:', res);
         
         if (!res) {
           throw new Error('API response is empty');
         }
 
-        // Support both res.rows (flattened) and res.data.rows (standard R structure)
-        const rows = res.rows || (res.data && res.data.rows) || [];
+        // 新架构返回格式：{ rows: [...], total: N }
+        const rows = res.rows || [];
 
-        const list = rows.map(item => {
-            return {
-                ...item,
-                params: item.params || {} 
-            };
-        });
+        // 适配卡片组件需要的字段
+        const list = rows.map(item => ({
+            ...item,
+            // 兼容旧的字段名
+            contentId: item.orderId,
+            content: item.goodsDesc,
+            params: {
+              type: item.type,
+              typeDesc: item.typeDesc,
+              pickupAddr: item.pickupAddr,
+              deliveryAddr: item.deliveryAddr,
+              tip: item.tip,
+              totalFee: item.totalFee
+            }
+        }));
         
         if (this.isRefreshing) {
             this.orderList = list;
@@ -132,15 +136,17 @@ export default {
             this.page++;
         }
       } catch (err) {
-        console.error(err);
-        this.loadMoreStatus = 'more'; // 失败重置，允许重试
+        console.error('加载跑腿订单失败:', err);
+        this.loadMoreStatus = 'more';
         if (this.isRefreshing) this.isRefreshing = false;
+        uni.showToast({ title: '加载失败', icon: 'none' });
       }
     },
     
     onRefresh() {
       this.isRefreshing = true;
       this.page = 1;
+      this.orderList = [];
       this.loadData();
     },
     
@@ -157,35 +163,40 @@ export default {
           });
           return;
       }
-      // 其他类型可以带参数跳转到发布页或者筛选列表
-      // 目前演示为筛选
-      uni.showToast({
-        title: `筛选：${item.label}`,
-        icon: 'none'
+      // 跳转到发布页并带上类型参数
+      uni.navigateTo({
+        url: `/pages/order/publish?type=${item.type || 0}`
       });
-      // TODO: 实现筛选逻辑 this.filterType = item.type; this.loadData();
     },
     
-    handleAccept(order) {
+    async handleAccept(order) {
       uni.showModal({
         title: '接单确认',
         content: '确定要接下这个订单吗？',
-        success: (res) => {
+        success: async (res) => {
           if (res.confirm) {
-            // TODO: 调用接单API
-             uni.showToast({
-               title: '抢单成功',
-               icon: 'success'
-             });
+            try {
+              await acceptOrder(order.orderId);
+              uni.showToast({
+                title: '抢单成功',
+                icon: 'success'
+              });
+              // 刷新列表
+              this.onRefresh();
+            } catch (err) {
+              uni.showToast({
+                title: err || '抢单失败',
+                icon: 'none'
+              });
+            }
           }
         }
       });
     },
     
     goToDetail(order) {
-      // 详情页暂未创建，或复用 forum/detail
       uni.navigateTo({
-        url: `/pages/forum/detail?id=${order.contentId}`
+        url: `/pages/order/detail?orderId=${order.orderId}`
       });
     },
     

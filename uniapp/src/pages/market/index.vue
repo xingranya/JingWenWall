@@ -1,11 +1,34 @@
 <template>
   <view class="market-container">
-    <!-- 头部搜索/筛选栏 -->
-    <view class="search-bar safe-top">
-      <view class="search-input">
-        <uni-icons type="search" size="18" color="#999" />
-        <text class="placeholder">搜索好物</text>
+    <!-- 顶部区域 -->
+    <view class="header-area safe-top">
+      <!-- 页面标题 -->
+      <view class="page-header">
+        <view class="header-left">
+          <text class="page-title">校园市场</text>
+          <text class="page-subtitle">发现好物 · 闲置变现</text>
+        </view>
+        <view class="header-actions">
+          <view class="icon-btn" @click="handleSearch">
+            <uni-icons type="search" size="20" color="#0c141d" />
+          </view>
+        </view>
       </view>
+      
+      <!-- 分类筛选 -->
+      <scroll-view scroll-x class="category-scroll" :show-scrollbar="false">
+        <view class="category-list">
+          <view 
+            v-for="(cat, idx) in categories" 
+            :key="idx"
+            class="category-item"
+            :class="{ active: currentCategory === cat.id }"
+            @click="switchCategory(cat.id)"
+          >
+            <text>{{ cat.name }}</text>
+          </view>
+        </view>
+      </scroll-view>
     </view>
     
     <scroll-view 
@@ -16,37 +39,47 @@
       :refresher-triggered="isRefreshing"
       @refresherrefresh="onRefresh"
     >
-      <view class="waterfall-container safe-padding">
+      <!-- 空状态 -->
+      <view class="empty-state" v-if="!loading && fullList.length === 0">
+        <image src="/static/empty-box.png" mode="aspectFit" class="empty-img" />
+        <text class="empty-text">暂无商品，快来发布第一个吧</text>
+      </view>
+      
+      <view class="waterfall-container" v-else>
         <!-- 左列 -->
         <view class="column">
           <block v-for="(item, index) in leftList" :key="item.contentId">
-            <MarketCard :item="item" @click="goToDetail" class="mb-20" />
+            <MarketCard :item="item" @click="goToDetail" />
           </block>
         </view>
         <!-- 右列 -->
         <view class="column">
           <block v-for="(item, index) in rightList" :key="item.contentId">
-            <MarketCard :item="item" @click="goToDetail" class="mb-20" />
+            <MarketCard :item="item" @click="goToDetail" />
           </block>
         </view>
       </view>
       
       <!-- 加载更多 -->
-      <uni-load-more :status="loadMoreStatus" />
+      <uni-load-more :status="loadMoreStatus" v-if="fullList.length > 0" />
+      
+      <!-- 底部安全区 -->
+      <view class="bottom-space"></view>
     </scroll-view>
     
     <!-- 悬浮发布按钮 -->
     <view class="float-btn-wrapper safe-bottom">
       <button class="publish-btn" @click="goToPublish">
-        <uni-icons type="plusempty" size="24" color="#ffffff" />
-        <text>卖闲置</text>
+        <view class="btn-icon">
+          <uni-icons type="plusempty" size="20" color="#ffffff" />
+        </view>
+        <text>发布闲置</text>
       </button>
     </view>
   </view>
 </template>
 
 <script>
-// 仅保留业务组件，uni-ui 通过 easycom 自动引入
 import MarketCard from './components/MarketCard.vue';
 import { getMarketList } from '@/api/market.js';
 
@@ -63,7 +96,18 @@ export default {
       pageSize: 10,
       loadMoreStatus: 'more',
       isRefreshing: false,
-      categoryId: 5 // 假设闲置市场是 5
+      loading: false,
+      categoryId: 5,
+      currentCategory: 0,
+      categories: [
+        { id: 0, name: '全部' },
+        { id: 1, name: '数码电子' },
+        { id: 2, name: '书籍教材' },
+        { id: 3, name: '生活用品' },
+        { id: 4, name: '服饰鞋包' },
+        { id: 5, name: '运动户外' },
+        { id: 6, name: '其他' }
+      ]
     };
   },
   onLoad() {
@@ -73,43 +117,38 @@ export default {
     async loadData() {
       if (this.loadMoreStatus === 'loading') return;
       this.loadMoreStatus = 'loading';
+      this.loading = true;
       
       try {
-        const res = await getMarketList({
-            categoryId: this.categoryId,
-            pageNum: this.page,
-            pageSize: this.pageSize
-        });
-        
-        console.log('Market API Res:', res);
-        
-        // 兼容 res.rows 或 res.data.rows
+        // 传递正确的分类ID参数
+        const categoryParam = this.currentCategory > 0 ? this.currentCategory : null;
+        const res = await getMarketList(categoryParam, this.page, this.pageSize);
         const list = res.rows || (res.data && res.data.rows) || [];
         
-        // 分布到瀑布流
         if (this.isRefreshing) {
-            this.fullList = list;
-            this.distributeList(list, true);
-            this.isRefreshing = false;
+          this.fullList = list;
+          this.distributeList(list, true);
+          this.isRefreshing = false;
         } else {
-            this.fullList = [...this.fullList, ...list];
-            this.distributeList(list, false);
+          this.fullList = [...this.fullList, ...list];
+          this.distributeList(list, false);
         }
         
         if (list.length < this.pageSize) {
-            this.loadMoreStatus = 'noMore';
+          this.loadMoreStatus = 'noMore';
         } else {
-            this.loadMoreStatus = 'more';
-            this.page++;
+          this.loadMoreStatus = 'more';
+          this.page++;
         }
       } catch (err) {
         console.error('Market load error:', err);
         this.loadMoreStatus = 'more';
         if (this.isRefreshing) this.isRefreshing = false;
+      } finally {
+        this.loading = false;
       }
     },
     
-    // 简单的瀑布流分布 (左右交替)
     distributeList(list, isReset) {
       if (isReset) {
         this.leftList = [];
@@ -117,15 +156,27 @@ export default {
       }
       
       list.forEach((item, index) => {
-        // 简单策略：根据 index 奇偶交替
         const totalIdx = isReset ? index : (this.fullList.length - list.length + index);
-        
         if (totalIdx % 2 === 0) {
           this.leftList.push(item);
         } else {
           this.rightList.push(item);
         }
       });
+    },
+    
+    switchCategory(catId) {
+      if (this.currentCategory === catId) return;
+      this.currentCategory = catId;
+      this.page = 1;
+      this.fullList = [];
+      this.leftList = [];
+      this.rightList = [];
+      this.loadData();
+    },
+    
+    handleSearch() {
+      uni.showToast({ title: '搜索功能开发中', icon: 'none' });
     },
     
     onRefresh() {
@@ -141,16 +192,11 @@ export default {
     },
     
     goToPublish() {
-      uni.navigateTo({
-        url: '/pages/market/publish'
-      });
+      uni.navigateTo({ url: '/pages/market/publish' });
     },
     
     goToDetail(item) {
-      // 复用 forum/detail
-      uni.navigateTo({
-        url: `/pages/forum/detail?id=${item.contentId}`
-      });
+      uni.navigateTo({ url: `/pages/forum/detail?id=${item.contentId}` });
     }
   }
 };
@@ -163,27 +209,94 @@ export default {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: $background-dim;
+  background: linear-gradient(180deg, #fff9f5 0%, $background-dim 100%);
 }
 
-.search-bar {
-  padding: 24rpx;
-  background-color: #fff;
+.header-area {
+  background: #ffffff;
+  padding-bottom: 0;
+  box-shadow: $shadow-soft;
   z-index: 10;
 }
 
-.search-input {
-  background-color: $background-light;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 32rpx 24rpx;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-title {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: $text-primary-light;
+  letter-spacing: 2rpx;
+}
+
+.page-subtitle {
+  font-size: 22rpx;
+  color: $text-tertiary-light;
+  margin-top: 4rpx;
+  font-weight: 400;
+}
+
+.header-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.icon-btn {
+  width: 72rpx;
   height: 72rpx;
-  border-radius: 36rpx;
+  border-radius: 50%;
+  background: $surface-light;
   display: flex;
   align-items: center;
-  padding: 0 24rpx;
-  gap: 12rpx;
+  justify-content: center;
+  transition: all 0.2s ease;
   
-  .placeholder {
-    font-size: $font-sm;
-    color: $text-secondary-light;
+  &:active {
+    transform: scale(0.92);
+    background: darken($surface-light, 5%);
+  }
+}
+
+.category-scroll {
+  white-space: nowrap;
+  padding: 0 32rpx 24rpx;
+}
+
+.category-list {
+  display: inline-flex;
+  gap: 16rpx;
+}
+
+.category-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 32rpx;
+  border-radius: $radius-full;
+  background: $surface-light;
+  font-size: 26rpx;
+  color: $text-secondary-light;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  
+  &.active {
+    background: linear-gradient(135deg, $accent-orange 0%, #ff7b00 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 6rpx 20rpx rgba(255, 149, 0, 0.35);
+  }
+  
+  &:active:not(.active) {
+    background: darken($surface-light, 5%);
   }
 }
 
@@ -195,35 +308,49 @@ export default {
 .waterfall-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding-top: 24rpx;
-  padding-bottom: 24rpx;
+  padding: 24rpx 24rpx 0;
 }
 
 .column {
-  width: 48%; // 留出 4% 间隙
+  width: calc(50% - 8rpx);
   display: flex;
   flex-direction: column;
+  gap: 16rpx;
 }
 
-.mb-20 {
-  margin-bottom: 20rpx;
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 60rpx;
+  
+  .empty-img {
+    width: 240rpx;
+    height: 240rpx;
+    opacity: 0.6;
+    margin-bottom: 32rpx;
+  }
+  
+  .empty-text {
+    font-size: 28rpx;
+    color: $text-tertiary-light;
+  }
 }
 
-.safe-padding {
-  padding-left: 24rpx;
-  padding-right: 24rpx;
+.bottom-space {
+  height: 200rpx;
 }
 
-// 悬浮发布按钮
 .float-btn-wrapper {
-  position: absolute;
+  position: fixed;
   bottom: calc(48rpx + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   pointer-events: none;
+  z-index: 100;
 }
 
 .publish-btn {
@@ -231,29 +358,60 @@ export default {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  background-color: $accent-orange;
+  background: linear-gradient(135deg, $accent-orange 0%, #ff7b00 100%);
   color: #fff;
-  padding: 0 48rpx;
-  height: 88rpx;
-  border-radius: 44rpx;
-  box-shadow: 0 8rpx 24rpx rgba(255, 149, 0, 0.4);
+  padding: 0 40rpx 0 32rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
+  box-shadow: 0 12rpx 36rpx rgba(255, 123, 0, 0.4);
   border: none;
   font-size: 30rpx;
   font-weight: 600;
+  letter-spacing: 1rpx;
+  
+  .btn-icon {
+    width: 44rpx;
+    height: 44rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   
   &::after { border: none; }
-  &:active { transform: scale(0.95); }
+  
+  &:active { 
+    transform: scale(0.95);
+    box-shadow: 0 6rpx 20rpx rgba(255, 123, 0, 0.3);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   .market-container {
-    background-color: $background-dark;
+    background: linear-gradient(180deg, #1f1f22 0%, $background-dark 100%);
   }
-  .search-bar {
-    background-color: #1b1b1d;
+  
+  .header-area {
+    background: #1b1b1d;
   }
-  .search-input {
-    background-color: rgba(255, 255, 255, 0.1);
+  
+  .page-title {
+    color: $text-primary-dark;
+  }
+  
+  .icon-btn {
+    background: $surface-dark;
+  }
+  
+  .category-item {
+    background: $surface-dark;
+    color: $text-secondary-dark;
+    
+    &.active {
+      background: linear-gradient(135deg, $accent-orange 0%, #ff7b00 100%);
+      color: #ffffff;
+    }
   }
 }
 </style>

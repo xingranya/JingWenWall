@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.errand.mapper.ErrandOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.oddfar.campus.business.errand.domain.entity.BusErrandOrderEntity">
+        <id property="orderId" column="order_id" jdbcType="BIGINT"/>
+        <result property="orderNo" column="order_no" jdbcType="VARCHAR"/>
+        <result property="publisherId" column="publisher_id" jdbcType="BIGINT"/>
+        <result property="runnerId" column="runner_id" jdbcType="BIGINT"/>
+        <result property="type" column="type" jdbcType="TINYINT"/>
+        <result property="pickupAddr" column="pickup_addr" jdbcType="VARCHAR"/>
+        <result property="pickupLat" column="pickup_lat" jdbcType="DECIMAL"/>
+        <result property="pickupLng" column="pickup_lng" jdbcType="DECIMAL"/>
+        <result property="deliveryAddr" column="delivery_addr" jdbcType="VARCHAR"/>
+        <result property="deliveryLat" column="delivery_lat" jdbcType="DECIMAL"/>
+        <result property="deliveryLng" column="delivery_lng" jdbcType="DECIMAL"/>
+        <result property="goodsDesc" column="goods_desc" jdbcType="VARCHAR"/>
+        <result property="goodsWeight" column="goods_weight" jdbcType="VARCHAR"/>
+        <result property="expectTime" column="expect_time" jdbcType="TIMESTAMP"/>
+        <result property="tip" column="tip" jdbcType="DECIMAL"/>
+        <result property="baseFee" column="base_fee" jdbcType="DECIMAL"/>
+        <result property="totalFee" column="total_fee" jdbcType="DECIMAL"/>
+        <result property="runnerFee" column="runner_fee" jdbcType="DECIMAL"/>
+        <result property="platformFee" column="platform_fee" jdbcType="DECIMAL"/>
+        <result property="payStatus" column="pay_status" jdbcType="TINYINT"/>
+        <result property="payTime" column="pay_time" jdbcType="TIMESTAMP"/>
+        <result property="payOrderNo" column="pay_order_no" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="cancelReason" column="cancel_reason" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="version" column="version" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="BIT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="OrderVoResultMap" type="com.oddfar.campus.business.errand.domain.vo.ErrandOrderVO">
+        <id property="orderId" column="order_id" jdbcType="BIGINT"/>
+        <result property="orderNo" column="order_no" jdbcType="VARCHAR"/>
+        <result property="publisherId" column="publisher_id" jdbcType="BIGINT"/>
+        <result property="publisherName" column="publisher_name" jdbcType="VARCHAR"/>
+        <result property="publisherAvatar" column="publisher_avatar" jdbcType="VARCHAR"/>
+        <result property="publisherPhone" column="publisher_phone" jdbcType="VARCHAR"/>
+        <result property="runnerId" column="runner_id" jdbcType="BIGINT"/>
+        <result property="runnerName" column="runner_name" jdbcType="VARCHAR"/>
+        <result property="runnerAvatar" column="runner_avatar" jdbcType="VARCHAR"/>
+        <result property="runnerPhone" column="runner_phone" jdbcType="VARCHAR"/>
+        <result property="runnerRating" column="runner_rating" jdbcType="DECIMAL"/>
+        <result property="type" column="type" jdbcType="TINYINT"/>
+        <result property="pickupAddr" column="pickup_addr" jdbcType="VARCHAR"/>
+        <result property="pickupLat" column="pickup_lat" jdbcType="DECIMAL"/>
+        <result property="pickupLng" column="pickup_lng" jdbcType="DECIMAL"/>
+        <result property="deliveryAddr" column="delivery_addr" jdbcType="VARCHAR"/>
+        <result property="deliveryLat" column="delivery_lat" jdbcType="DECIMAL"/>
+        <result property="deliveryLng" column="delivery_lng" jdbcType="DECIMAL"/>
+        <result property="goodsDesc" column="goods_desc" jdbcType="VARCHAR"/>
+        <result property="goodsWeight" column="goods_weight" jdbcType="VARCHAR"/>
+        <result property="expectTime" column="expect_time" jdbcType="TIMESTAMP"/>
+        <result property="tip" column="tip" jdbcType="DECIMAL"/>
+        <result property="baseFee" column="base_fee" jdbcType="DECIMAL"/>
+        <result property="totalFee" column="total_fee" jdbcType="DECIMAL"/>
+        <result property="runnerFee" column="runner_fee" jdbcType="DECIMAL"/>
+        <result property="payStatus" column="pay_status" jdbcType="TINYINT"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="cancelReason" column="cancel_reason" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="selectOrderVo">
+        SELECT o.order_id, o.order_no, o.publisher_id, o.runner_id, o.type,
+               o.pickup_addr, o.pickup_lat, o.pickup_lng,
+               o.delivery_addr, o.delivery_lat, o.delivery_lng,
+               o.goods_desc, o.goods_weight, o.expect_time,
+               o.tip, o.base_fee, o.total_fee, o.runner_fee,
+               o.pay_status, o.status, o.cancel_reason, o.remark,
+               o.create_time, o.update_time,
+               pu.nick_name as publisher_name, pu.avatar as publisher_avatar, pu.phonenumber as publisher_phone,
+               ru.nick_name as runner_name, ru.avatar as runner_avatar, ru.phonenumber as runner_phone,
+               er.rating as runner_rating
+        FROM bus_errand_order o
+        LEFT JOIN sys_user pu ON o.publisher_id = pu.user_id
+        LEFT JOIN sys_user ru ON o.runner_id = ru.user_id
+        LEFT JOIN bus_errand_runner er ON o.runner_id = er.user_id
+        WHERE o.del_flag = 0
+    </sql>
+
+    <!-- 查询待接单列表 -->
+    <select id="selectWaitingOrders" resultMap="OrderVoResultMap">
+        <include refid="selectOrderVo"/>
+        AND o.status = 0
+        AND o.pay_status = 1
+        ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 查询订单详情 -->
+    <select id="selectOrderDetail" resultMap="OrderVoResultMap">
+        <include refid="selectOrderVo"/>
+        AND o.order_id = #{orderId}
+        LIMIT 1
+    </select>
+
+    <!-- 查询用户发布的订单 -->
+    <select id="selectPublishedOrders" resultMap="OrderVoResultMap">
+        <include refid="selectOrderVo"/>
+        AND o.publisher_id = #{userId}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 查询骑手接的订单 -->
+    <select id="selectAcceptedOrders" resultMap="OrderVoResultMap">
+        <include refid="selectOrderVo"/>
+        AND o.runner_id = #{runnerId}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 根据订单号查询 -->
+    <select id="selectByOrderNo" resultMap="BaseResultMap">
+        SELECT * FROM bus_errand_order 
+        WHERE order_no = #{orderNo} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 乐观锁更新订单状态 -->
+    <update id="updateStatusWithVersion">
+        UPDATE bus_errand_order
+        SET status = #{newStatus},
+            version = version + 1,
+            update_time = NOW()
+        WHERE order_id = #{orderId}
+          AND status = #{oldStatus}
+          AND version = #{version}
+          AND del_flag = 0
+    </update>
+
+    <!-- 管理后台-查询订单列表 -->
+    <select id="selectAdminOrderList" resultMap="OrderVoResultMap">
+        <include refid="selectOrderVo"/>
+        <if test="status != null">
+            AND o.status = #{status}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+
+</mapper>

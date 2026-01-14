@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.report.mapper.ReportMapper">
+
+    <resultMap id="ReportVoResultMap" type="com.oddfar.campus.business.report.domain.vo.ReportVO">
+        <id property="reportId" column="report_id" jdbcType="BIGINT"/>
+        <result property="reporterId" column="reporter_id" jdbcType="BIGINT"/>
+        <result property="targetType" column="target_type" jdbcType="INTEGER"/>
+        <result property="targetId" column="target_id" jdbcType="BIGINT"/>
+        <result property="reasonType" column="reason_type" jdbcType="VARCHAR"/>
+        <result property="reasonDetail" column="reason_detail" jdbcType="LONGVARCHAR"/>
+        <result property="images" column="images" jdbcType="VARCHAR"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="handleRemark" column="handle_remark" jdbcType="VARCHAR"/>
+        <result property="handleTime" column="handle_time" jdbcType="TIMESTAMP"/>
+        <result property="reporterName" column="reporter_name" jdbcType="VARCHAR"/>
+        <result property="reporterAvatar" column="reporter_avatar" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="selectReportVo">
+        SELECT r.report_id, r.reporter_id, r.target_type, r.target_id,
+               r.reason_type, r.reason_detail, r.images, r.status,
+               r.handle_remark, r.handle_time, r.create_time,
+               u.nick_name as reporter_name, u.avatar as reporter_avatar
+        FROM bus_report r
+        LEFT JOIN sys_user u ON r.reporter_id = u.user_id
+        WHERE r.del_flag = 0
+    </sql>
+
+    <!-- 查询举报列表 -->
+    <select id="selectReportList" resultMap="ReportVoResultMap">
+        <include refid="selectReportVo"/>
+        <if test="status != null">
+            AND r.status = #{status}
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 查询举报详情 -->
+    <select id="selectReportDetail" resultMap="ReportVoResultMap">
+        <include refid="selectReportVo"/>
+        AND r.report_id = #{reportId}
+        LIMIT 1
+    </select>
+
+    <!-- 检查是否已举报 -->
+    <select id="checkExists" resultType="int">
+        SELECT COUNT(*) FROM bus_report
+        WHERE reporter_id = #{reporterId}
+          AND target_type = #{targetType}
+          AND target_id = #{targetId}
+          AND del_flag = 0
+    </select>
+
+    <!-- 管理后台-查询举报列表 -->
+    <select id="selectAdminReportList" resultMap="ReportVoResultMap">
+        <include refid="selectReportVo"/>
+        <if test="status != null">
+            AND r.status = #{status}
+        </if>
+        <if test="targetType != null">
+            AND r.target_type = #{targetType}
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 按状态统计举报数 -->
+    <select id="countByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM bus_report WHERE del_flag = 0 AND status = #{status}
+    </select>
+
+    <!-- 统计总举报数 -->
+    <select id="countTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM bus_report WHERE del_flag = 0
+    </select>
+
+</mapper>

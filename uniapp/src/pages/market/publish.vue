@@ -1,120 +1,149 @@
 <template>
-  <view class="publish-container">
-    <view class="form-container">
-      <!-- 图片上传 -->
-      <view class="image-section shadow-sm">
-        <view class="image-list">
-          <view 
-            v-for="(img, index) in displayImages" 
-            :key="index"
-            class="image-item"
-          >
-            <image :src="img" mode="aspectFill"></image>
-            <view class="delete-btn" @click="deleteImage(index)">
-              <text class="iconfont icon-close"></text>
-            </view>
+  <view class="publish-page">
+    <!-- 顶部图片区域 -->
+    <view class="image-section">
+      <view class="section-header">
+        <text class="section-title">商品图片</text>
+        <text class="section-tip">最多9张，第一张为封面</text>
+      </view>
+      <view class="image-grid">
+        <view 
+          v-for="(img, index) in displayImages" 
+          :key="index"
+          class="image-item"
+        >
+          <image :src="img" mode="aspectFill" class="preview-img" />
+          <view class="delete-btn" @click.stop="deleteImage(index)">
+            <uni-icons type="closeempty" size="14" color="#fff" />
           </view>
-          
-          <view 
-            v-if="displayImages.length < 9" 
-            class="add-image"
-            @click="chooseImage"
-          >
-            <text class="iconfont icon-camera"></text>
-            <text class="tip">添加图片</text>
+          <view class="cover-badge" v-if="index === 0">封面</view>
+        </view>
+        
+        <view 
+          v-if="displayImages.length < 9" 
+          class="add-image-btn"
+          @click="chooseImage"
+        >
+          <view class="add-icon">
+            <uni-icons type="camera" size="32" color="#94a3b8" />
           </view>
+          <text class="add-text">添加图片</text>
+          <text class="add-count">{{ displayImages.length }}/9</text>
         </view>
       </view>
+    </view>
 
-      <!-- 描述输入 -->
-      <view class="form-group">
+    <!-- 商品描述 -->
+    <view class="form-section">
+      <view class="input-card">
         <textarea 
-          class="content-input" 
-          v-model="formData.content" 
-          placeholder="描述你的宝贝：品牌型号、入手渠道、转手原因..." 
+          class="desc-textarea" 
+          v-model="formData.title" 
+          :placeholder="placeholderText" 
           maxlength="500"
           :show-count="true"
-        />
-      </view>
-
-      <!-- 价格输入 -->
-      <view class="form-item shadow-sm">
-        <view class="label">
-          <text class="iconfont icon-money"></text>
-          <text>价格 (元)</text>
-        </view>
-        <input 
-          class="input price-input" 
-          type="digit" 
-          v-model="formData.price" 
-          placeholder="0.00"
-        />
-      </view>
-
-      <!-- 成色标签选择 -->
-      <view class="tag-section">
-        <view class="section-title">成色</view>
-        <view class="tag-list">
-          <view 
-            v-for="(tag, index) in statusTags" 
-            :key="index"
-            class="tag-item"
-            :class="{ active: formData.statusTag === tag }"
-            @click="formData.statusTag = tag"
-          >
-            {{ tag }}
-          </view>
-        </view>
-      </view>
-
-      <!-- 匿名选项 -->
-      <view class="switch-item">
-        <text>匿名发布</text>
-        <switch 
-          :checked="formData.isAnonymous === 1"
-          @change="onAnonymousChange" 
-          color="#007aff"
-          style="transform:scale(0.8)"
+          placeholder-class="placeholder-text"
         />
       </view>
     </view>
 
-    <!-- 底部按钮 -->
-    <view class="bottom-action safe-bottom">
-      <button class="submit-btn" :loading="isSubmitting" @click="handleSubmit">立即发布</button>
+    <!-- 价格设置 -->
+    <view class="form-section">
+      <view class="price-card">
+        <view class="price-header">
+          <text class="price-label">出售价格</text>
+          <text class="price-required">*</text>
+        </view>
+        <view class="price-input-wrapper">
+          <text class="currency-symbol">¥</text>
+          <input 
+            class="price-input" 
+            type="digit" 
+            v-model="formData.price" 
+            placeholder="0.00"
+            placeholder-class="price-placeholder"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 成色选择 -->
+    <view class="form-section">
+      <view class="section-header">
+        <text class="section-title">商品成色</text>
+      </view>
+      <view class="condition-tags">
+        <view 
+          v-for="(option, index) in conditionOptions" 
+          :key="index"
+          class="condition-tag"
+          :class="{ active: formData.conditionLevel === option.value }"
+          @click="selectCondition(option)"
+        >
+          <text>{{ option.label }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部发布按钮 -->
+    <view class="bottom-bar safe-bottom">
+      <button 
+        class="publish-btn" 
+        :class="{ disabled: !canPublish }"
+        :loading="isSubmitting" 
+        @click="handleSubmit"
+      >
+        {{ isSubmitting ? '发布中...' : '立即发布' }}
+      </button>
     </view>
   </view>
 </template>
 
 <script>
-import { publishMarketItem } from '@/api/market.js';
-import { uploadSingleFile } from '@/api/topic.js'; // 假设图片上传API在这里
+import { publishItem } from '@/api/market.js';
+import { uploadSingleFile } from '@/api/topic.js';
 
 export default {
   data() {
     return {
       formData: {
-        content: '',
+        title: '',
+        description: '',
         price: '',
-        statusTag: '全新',
-        fileList: [], // 存储文件ID提交给后端
-        categoryId: 5, // 假设二手市场属于分类ID 5
-        isAnonymous: 0,
-        type: 1 // 1图片
+        conditionLevel: 7,
+        categoryId: null,
+        images: []
       },
-      displayImages: [], // 用于前端显示
-      statusTags: ['全新', '99新', '95新', '9成新', '85新', '8成新', '功能正常'],
+      placeholderText: "描述一下你的宝贝吧~ 品牌型号、新旧程度、入手渠道、转让原因...",
+      displayImages: [],
+      conditionOptions: [
+        { label: '全新', value: 10 },
+        { label: '99新', value: 9 },
+        { label: '95新', value: 8 },
+        { label: '9成新', value: 7 },
+        { label: '8成新', value: 6 },
+        { label: '有瑕疵', value: 5 }
+      ],
       isSubmitting: false,
       uploadingImage: false
     };
   },
+  computed: {
+    canPublish() {
+      return this.formData.title.trim() && 
+             this.formData.price && 
+             this.displayImages.length > 0;
+    },
+    selectedConditionLabel() {
+      const opt = this.conditionOptions.find(o => o.value === this.formData.conditionLevel);
+      return opt ? opt.label : '9成新';
+    }
+  },
   methods: {
-    // 切换匿名
-    onAnonymousChange(e) {
-      this.formData.isAnonymous = e.detail.value ? 1 : 0;
+    selectCondition(option) {
+      this.formData.conditionLevel = option.value;
     },
     
-    // 选择图片
     chooseImage() {
       if (this.uploadingImage) return;
       
@@ -128,62 +157,58 @@ export default {
       });
     },
 
-    // 上传图片
     async uploadImages(filePaths) {
       this.uploadingImage = true;
-      uni.showLoading({ title: '上传中...' });
+      uni.showLoading({ title: '上传中...', mask: true });
       
       try {
         for (const filePath of filePaths) {
           const res = await uploadSingleFile(filePath);
-          // res 是 CampusFileEntity 对象: { fileId, url, ... }
-          if (res && res.url && res.fileId) {
-             this.displayImages.push(res.url);
-             this.formData.fileList.push(res.fileId);
+          if (res && res.url) {
+            this.displayImages.push(res.url);
+            this.formData.images.push(res.url);
           }
         }
       } catch (err) {
         uni.showToast({ title: '图片上传失败', icon: 'none' });
-        console.error(err);
       } finally {
         this.uploadingImage = false;
         uni.hideLoading();
       }
     },
 
-    // 删除图片
     deleteImage(index) {
       this.displayImages.splice(index, 1);
-      this.formData.fileList.splice(index, 1);
+      this.formData.images.splice(index, 1);
     },
 
-    // 提交发布
     async handleSubmit() {
-      // 校验
-      if (!this.formData.content.trim()) {
-        uni.showToast({ title: '请输入商品描述', icon: 'none' });
-        return;
-      }
-      if (!this.formData.price) {
-        uni.showToast({ title: '请输入售价', icon: 'none' });
-        return;
-      }
-      if (this.formData.fileList.length === 0) {
-        uni.showToast({ title: '请至少上传一张图片', icon: 'none' });
+      if (!this.canPublish) {
+        if (!this.formData.title.trim()) {
+          uni.showToast({ title: '请输入商品描述', icon: 'none' });
+        } else if (!this.formData.price) {
+          uni.showToast({ title: '请输入售价', icon: 'none' });
+        } else if (this.displayImages.length === 0) {
+          uni.showToast({ title: '请至少上传一张图片', icon: 'none' });
+        }
         return;
       }
 
       this.isSubmitting = true;
       try {
-        await publishMarketItem({
-          ...this.formData,
+        const itemData = {
+          title: this.formData.title,
+          description: this.formData.description || this.formData.title,
           price: parseFloat(this.formData.price),
-        });
+          conditionLevel: this.formData.conditionLevel,
+          categoryId: this.formData.categoryId,
+          images: this.formData.images
+        };
+        
+        await publishItem(itemData);
         
         uni.showToast({ title: '发布成功', icon: 'success' });
-        setTimeout(() => {
-          uni.navigateBack();
-        }, 1500);
+        setTimeout(() => uni.navigateBack(), 1500);
       } catch (err) {
         uni.showToast({ title: err || '发布失败', icon: 'none' });
       } finally {
@@ -195,208 +220,314 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.publish-container {
+@import '@/static/css/theme.scss';
+
+.publish-page {
   min-height: 100vh;
-  background-color: #f8f9fa;
-  padding: 20rpx;
-  box-sizing: border-box;
+  background: $background-dim;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
 
-.form-container {
-  padding-bottom: 120rpx;
+.form-section {
+  padding: 0 24rpx;
+  margin-bottom: 24rpx;
 }
 
-.form-group {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  
-  .content-input {
-    width: 100%;
-    height: 200rpx;
-    font-size: 28rpx;
-    line-height: 1.5;
-  }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx 24rpx 16rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $text-primary-light;
+}
+
+.section-tip {
+  font-size: 24rpx;
+  color: $text-tertiary-light;
 }
 
 .image-section {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx;
+  background: #ffffff;
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+  padding: 0 24rpx;
+}
+
+.image-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+  overflow: hidden;
   
-  &.shadow-sm {
-    box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.02);
-  }
-
-  .image-list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16rpx;
-  }
-
-  .image-item {
-    position: relative;
+  .preview-img {
     width: 100%;
-    padding-bottom: 100%;
-    
-    image {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 12rpx;
-    }
-    
-    .delete-btn {
-      position: absolute;
-      top: -12rpx;
-      right: -12rpx;
-      width: 40rpx;
-      height: 40rpx;
-      background: rgba(0,0,0,0.5);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      
-      .iconfont {
-        color: #fff;
-        font-size: 24rpx;
-      }
-    }
+    height: 100%;
+    object-fit: cover;
   }
   
-  .add-image {
-    background-color: #f5f5f5;
-    border-radius: 12rpx;
+  .delete-btn {
+    position: absolute;
+    top: 8rpx;
+    right: 8rpx;
+    width: 40rpx;
+    height: 40rpx;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 1;
-    
-    .iconfont {
-      font-size: 48rpx;
-      color: #999;
-      margin-bottom: 8rpx;
-    }
-    
-    .tip {
-      font-size: 24rpx;
-      color: #999;
-    }
+  }
+  
+  .cover-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    padding: 16rpx 12rpx 8rpx;
+    font-size: 20rpx;
+    color: #ffffff;
+    text-align: center;
   }
 }
 
-.form-item {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+.add-image-btn {
+  aspect-ratio: 1;
+  background: $surface-light;
+  border: 2rpx dashed $border-light;
+  border-radius: $radius-md;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  transition: all 0.2s;
   
-  &.shadow-sm {
-    box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.02);
+  &:active {
+    background: darken($surface-light, 3%);
   }
-
-  .label {
-    width: 180rpx;
+  
+  .add-icon {
+    width: 64rpx;
+    height: 64rpx;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.1);
     display: flex;
     align-items: center;
-    font-size: 28rpx;
-    color: #333;
-    font-weight: 500;
-    
-    .iconfont {
-      margin-right: 10rpx;
-      font-size: 32rpx;
-      color: #666;
-    }
+    justify-content: center;
   }
   
-  .input {
-    flex: 1;
-    font-size: 28rpx;
-    color: #333;
-    
-    &.price-input {
-      color: #ff4d4f;
-      font-weight: 500;
-      font-size: 32rpx;
-    }
+  .add-text {
+    font-size: 24rpx;
+    color: $text-secondary-light;
+  }
+  
+  .add-count {
+    font-size: 20rpx;
+    color: $text-tertiary-light;
   }
 }
 
-.tag-section {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+.input-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  box-shadow: $shadow-soft;
+}
+
+.desc-textarea {
+  width: 100%;
+  min-height: 200rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: $text-primary-light;
+}
+
+.placeholder-text {
+  color: $text-tertiary-light;
+}
+
+.price-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  padding: 24rpx 28rpx;
+  box-shadow: $shadow-soft;
+}
+
+.price-header {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  margin-bottom: 16rpx;
+}
+
+.price-label {
+  font-size: 26rpx;
+  color: $text-secondary-light;
+}
+
+.price-required {
+  color: $accent-red;
+  font-size: 28rpx;
+}
+
+.price-input-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.currency-symbol {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $accent-red;
+}
+
+.price-input {
+  flex: 1;
+  font-size: 56rpx;
+  font-weight: 700;
+  color: $accent-red;
+  letter-spacing: -2rpx;
+}
+
+.price-placeholder {
+  color: #fecaca;
+  font-weight: 400;
+}
+
+.condition-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 0 24rpx;
+}
+
+.condition-tag {
+  padding: 16rpx 32rpx;
+  background: #ffffff;
+  border-radius: $radius-full;
+  font-size: 26rpx;
+  color: $text-secondary-light;
+  box-shadow: $shadow-soft;
+  transition: all 0.25s ease;
   
-  .section-title {
-    font-size: 28rpx;
-    font-weight: 500;
-    margin-bottom: 20rpx;
-    color: #333;
+  &.active {
+    background: linear-gradient(135deg, $accent-orange 0%, #ff7b00 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 6rpx 20rpx rgba(255, 149, 0, 0.35);
   }
   
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20rpx;
-    
-    .tag-item {
-      padding: 12rpx 30rpx;
-      background-color: #f5f5f5;
-      border-radius: 100rpx;
-      font-size: 26rpx;
-      color: #666;
-      transition: all 0.3s;
-      
-      &.active {
-        background-color: rgba(255, 170, 0, 0.1);
-        color: #ffaa00;
-        font-weight: 500;
-      }
-    }
+  &:active:not(.active) {
+    background: $surface-light;
   }
 }
 
-.switch-item {
+.settings-card {
+  background: #ffffff;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-soft;
+}
+
+.setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20rpx 10rpx;
-  font-size: 28rpx;
-  color: #666;
+  padding: 28rpx;
 }
 
-.bottom-action {
+.setting-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.setting-label {
+  font-size: 28rpx;
+  color: $text-primary-light;
+}
+
+.bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20rpx 30rpx;
-  background-color: #fff;
-  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+  padding: 20rpx 32rpx;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.publish-btn {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(135deg, $accent-orange 0%, #ff7b00 100%);
+  color: #ffffff;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  border: none;
+  box-shadow: 0 8rpx 24rpx rgba(255, 123, 0, 0.35);
   
-  .submit-btn {
-    background-color: #007aff;
-    color: #fff;
-    border-radius: 50rpx;
-    font-size: 32rpx;
-    font-weight: 500;
-    height: 88rpx;
-    line-height: 88rpx;
-    
-    &::after {
-      border: none;
-    }
+  &.disabled {
+    background: $border-light;
+    color: $text-tertiary-light;
+    box-shadow: none;
+  }
+  
+  &::after { border: none; }
+  
+  &:active:not(.disabled) {
+    transform: scale(0.98);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .publish-page {
+    background: $background-dark;
+  }
+  
+  .image-section,
+  .input-card,
+  .price-card,
+  .settings-card {
+    background: $card-dark;
+  }
+  
+  .section-title,
+  .setting-label {
+    color: $text-primary-dark;
+  }
+  
+  .desc-textarea {
+    color: $text-primary-dark;
+  }
+  
+  .add-image-btn {
+    background: $surface-dark;
+    border-color: $border-dark;
+  }
+  
+  .condition-tag:not(.active) {
+    background: $surface-dark;
+  }
+  
+  .bottom-bar {
+    background: rgba(27, 27, 29, 0.95);
   }
 }
 </style>

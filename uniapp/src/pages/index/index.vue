@@ -130,19 +130,46 @@ export default {
       records: [],
       loadMoreStatus: 'more',
       isRefreshing: false,
+      topicDeletedHandler: null,
     };
   },
   onLoad() {
     this.checkPrivacy();
     this.init();
     this.getUserInfo();
+
+    this.topicDeletedHandler = (deletedId) => {
+      const id = String(deletedId || '');
+      if (!id) return;
+      this.records = (this.records || []).filter((r) => String(r?.postId || r?.id) !== id);
+    };
+    uni.$on && uni.$on('topic:deleted', this.topicDeletedHandler);
   },
   onShow() {
-    // 每次显示时刷新数据，或者根据策略刷新
+    try {
+      const deletedId = uni.getStorageSync('deletedPostId');
+      if (deletedId) {
+        this.records = (this.records || []).filter((r) => String(r?.postId || r?.id) !== String(deletedId));
+        uni.removeStorageSync('deletedPostId');
+        this.isRefreshing = true;
+        this.page = 1;
+        this.loadMoreStatus = 'more';
+        this.fetchRecords();
+        return;
+      }
+    } catch (e) {
+    }
+
     if (this.records.length === 0) {
       this.page = 1;
       this.loadMoreStatus = 'more';
       this.fetchRecords();
+    }
+  },
+  onUnload() {
+    if (this.topicDeletedHandler) {
+      uni.$off && uni.$off('topic:deleted', this.topicDeletedHandler);
+      this.topicDeletedHandler = null;
     }
   },
   methods: {
@@ -180,9 +207,9 @@ export default {
      */
     async init() {
       const existingToken = uni.getStorageSync('token');
-      if (existingToken) {
-        return;
-      }
+      // if (existingToken) {
+      //   return;
+      // }
       
       // 微信登录逻辑 (保持原有)
       uni.login({

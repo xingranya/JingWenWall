@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oddfar.campus.business.errand.mapper.ErrandRunnerMapper">
+
+    <resultMap id="BaseResultMap" type="com.oddfar.campus.business.errand.domain.entity.BusErrandRunnerEntity">
+        <id property="runnerId" column="runner_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="idCard" column="id_card" jdbcType="VARCHAR"/>
+        <result property="idCardFront" column="id_card_front" jdbcType="VARCHAR"/>
+        <result property="idCardBack" column="id_card_back" jdbcType="VARCHAR"/>
+        <result property="studentCard" column="student_card" jdbcType="VARCHAR"/>
+        <result property="totalOrders" column="total_orders" jdbcType="INTEGER"/>
+        <result property="totalIncome" column="total_income" jdbcType="DECIMAL"/>
+        <result property="rating" column="rating" jdbcType="DECIMAL"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="auditRemark" column="audit_remark" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="BIT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="RunnerVoResultMap" type="com.oddfar.campus.business.errand.domain.vo.RunnerVO">
+        <id property="runnerId" column="runner_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="phonenumber" column="phonenumber" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="totalOrders" column="total_orders" jdbcType="INTEGER"/>
+        <result property="totalIncome" column="total_income" jdbcType="DECIMAL"/>
+        <result property="rating" column="rating" jdbcType="DECIMAL"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="auditRemark" column="audit_remark" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="selectRunnerVo">
+        SELECT r.runner_id, r.user_id, r.real_name, r.total_orders, r.total_income,
+               r.rating, r.status, r.audit_remark, r.create_time,
+               u.nick_name, u.avatar, u.phonenumber
+        FROM bus_errand_runner r
+        LEFT JOIN sys_user u ON r.user_id = u.user_id
+        WHERE r.del_flag = 0
+    </sql>
+
+    <!-- 根据用户ID查询骑手信息 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM bus_errand_runner 
+        WHERE user_id = #{userId} AND del_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 查询骑手详情(带用户信息) -->
+    <select id="selectRunnerDetail" resultMap="RunnerVoResultMap">
+        <include refid="selectRunnerVo"/>
+        AND r.user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <!-- 查询待审核的骑手列表 -->
+    <select id="selectPendingRunners" resultMap="RunnerVoResultMap">
+        <include refid="selectRunnerVo"/>
+        AND r.status = 0
+        ORDER BY r.create_time ASC
+    </select>
+
+    <!-- 查询所有骑手列表 -->
+    <select id="selectRunnerList" resultMap="RunnerVoResultMap">
+        <include refid="selectRunnerVo"/>
+        <if test="status != null">
+            AND r.status = #{status}
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 更新骑手统计信息 -->
+    <update id="updateRunnerStats">
+        UPDATE bus_errand_runner
+        SET total_orders = total_orders + #{orderCount},
+            total_income = total_income + #{income},
+            update_time = NOW()
+        WHERE user_id = #{userId} AND del_flag = 0
+    </update>
+
+</mapper>
