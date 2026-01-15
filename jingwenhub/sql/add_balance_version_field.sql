@@ -11,8 +11,8 @@ ALTER TABLE bus_student ADD COLUMN version INT DEFAULT 0 COMMENT '乐观锁版�
 -- 2. 初始化现有数据
 UPDATE bus_student SET version = 0 WHERE version IS NULL;
 
--- 3. 添加索引以优化查询性能
-ALTER TABLE bus_student ADD INDEX idx_version (version);
+-- 3. 添加唯一索引以保证数据一致性
+ALTER TABLE bus_student ADD UNIQUE INDEX uk_student_version (student_id, version);
 
 -- =====================================================
 -- 说明:
