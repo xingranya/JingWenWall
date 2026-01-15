@@ -5,7 +5,11 @@
       "Bash(grep:*)",
       "Bash(/help)",
       "Bash(ls:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix\\(student\\): 添加余额并发控制\\(分布式锁+乐观锁\\)\n\n🐛 问题描述:\n- 学生余额更新缺少并发控制\n- 可能导致余额变成负数或重复扣款\n\n✅ 解决方案:\n1. 数据库层: 添加 version 字段实现乐观锁\n   - 创建 SQL 脚本添加 version 字段\n   - 在 BusStudentEntity 添加 @Version 注解\n   \n2. 应用层: 实现分布式锁 + 余额检查\n   - 使用 RedisCache.tryLock 获取分布式锁\n   - 扣款前检查余额是否足够\n   - 使用 MyBatis-Plus 的 @Version 自动乐观锁控制\n   - 记录详细的余额变动日志\n\n3. 测试: 编写并发测试验证功能\n   - 并发扣款测试\\(3线程扣50元,余额100元\\)\n   - 并发充值测试\\(3线程充值10元\\)\n   - 余额不足场景测试\n   - 分布式锁场景测试\n\n📝 改动文件:\n- jingwenhub/sql/add_balance_version_field.sql\n- jingwenhub/.../BusStudentEntity.java \\(添加version字段\\)\n- jingwenhub/.../BusStudentServiceImpl.java \\(重构updateBalance\\)\n- jingwenhub/.../BusStudentServiceTest.java \\(新建并发测试\\)\n\n🔒 并发控制策略:\n- 分布式锁: 防止同一学生的并发操作\n- 乐观锁: 防止版本冲突\\(自动重试\\)\n- 余额检查: 防止余额变成负数\n\nRelated: Task B1.1 余额并发控制修复\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }

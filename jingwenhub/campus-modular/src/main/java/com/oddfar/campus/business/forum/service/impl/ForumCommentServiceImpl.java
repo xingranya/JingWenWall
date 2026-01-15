@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 贴吧评论服务实现
@@ -44,13 +47,28 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
         PageHelper.startPage(pageNum, pageSize);
         List<ForumCommentVO> firstLevelComments = commentMapper.selectFirstLevelComments(postId);
         PageInfo<ForumCommentVO> pageInfo = new PageInfo<>(firstLevelComments);
-        
-        // 为每个一级评论查询其二级评论
-        firstLevelComments.forEach(comment -> {
-            List<ForumCommentVO> replies = commentMapper.selectSecondLevelComments(comment.getCommentId());
-            comment.setReplies(replies);
-        });
-        
+
+        // ✅ 修复 N+1 查询: 使用批量查询
+        if (!firstLevelComments.isEmpty()) {
+            // 提取所有一级评论ID
+            List<Long> commentIds = firstLevelComments.stream()
+                .map(ForumCommentVO::getCommentId)
+                .collect(Collectors.toList());
+
+            // 批量查询所有二级评论
+            List<ForumCommentVO> allReplies = commentMapper.selectSecondLevelBatch(commentIds);
+
+            // 按 parent_id 分组
+            Map<Long, List<ForumCommentVO>> repliesMap = allReplies.stream()
+                .collect(Collectors.groupingBy(ForumCommentVO::getParentId));
+
+            // 填充到一级评论
+            firstLevelComments.forEach(comment -> {
+                List<ForumCommentVO> replies = repliesMap.getOrDefault(comment.getCommentId(), Collections.emptyList());
+                comment.setReplies(replies);
+            });
+        }
+
         return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
     }
     

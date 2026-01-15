@@ -128,8 +128,24 @@
 
     <!-- 更新浏览次数 -->
     <update id="updateViewCount">
-        UPDATE bus_forum_post 
+        UPDATE bus_forum_post
         SET view_count = view_count + 1
+        WHERE post_id = #{postId}
+          AND del_flag = 0
+    </update>
+
+    <!-- 原子性增加点赞数 -->
+    <update id="incrementLikeCount">
+        UPDATE bus_forum_post
+        SET like_count = like_count + 1
+        WHERE post_id = #{postId}
+          AND del_flag = 0
+    </update>
+
+    <!-- 原子性减少点赞数 -->
+    <update id="decrementLikeCount">
+        UPDATE bus_forum_post
+        SET like_count = GREATEST(like_count - 1, 0)
         WHERE post_id = #{postId}
           AND del_flag = 0
     </update>

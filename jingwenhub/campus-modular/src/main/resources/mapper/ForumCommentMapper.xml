@@ -63,6 +63,17 @@
         ORDER BY c.create_time ASC
     </select>
 
+    <!-- 批量查询二级评论 -->
+    <select id="selectSecondLevelBatch" resultMap="CommentVoResultMap">
+        <include refid="selectCommentVo"/>
+        AND c.parent_id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+        AND c.status = 0
+        ORDER BY c.parent_id ASC, c.create_time ASC
+    </select>
+
     <!-- 查询评论详情 -->
     <select id="selectCommentDetail" resultMap="CommentVoResultMap">
         <include refid="selectCommentVo"/>

@@ -70,6 +70,20 @@ public interface ForumPostMapper extends BaseMapperX<BusForumPostEntity> {
     void updateViewCount(@Param("postId") Long postId);
 
     /**
+     * 原子性增加帖子点赞数
+     * @param postId 帖子ID
+     * @return 影响行数
+     */
+    int incrementLikeCount(@Param("postId") Long postId);
+
+    /**
+     * 原子性减少帖子点赞数
+     * @param postId 帖子ID
+     * @return 影响行数
+     */
+    int decrementLikeCount(@Param("postId") Long postId);
+
+    /**
      * 忽略逻辑删除，查询帖子元信息
      * @param postId 帖子ID
      */

@@ -183,10 +183,12 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     @Transactional(rollbackFor = Exception.class)
     public void likePost(Long postId) {
         Long userId = SecurityUtils.getUserId();
-        
+
         // 1. 忽略逻辑删除，直接查询物理记录（确保能找回已删除的记录，规避唯一索引冲突）
         BusForumPostLikeEntity existLike = likeMapper.selectOnePhysical(userId, postId);
-        
+
+        boolean isNewLike = false;  // ✅ 标记是否是新点赞
+
         if (existLike != null) {
             // 如果记录存在且 del_flag 为 0 (未删除)，说明是真的重复点赞
             if (existLike.getDelFlag() != null && existLike.getDelFlag() == 0) {
@@ -195,6 +197,7 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
                 // 如果记录存在但 del_flag 为 1 (已删除)，则将其恢复
                 existLike.setDelFlag(0);
                 likeMapper.updateById(existLike);
+                // ✅ 恢复点赞，不增加计数（之前点赞时已经增加过了）
             }
         } else {
             // 2. 如果物理表完全没有记录，则执行插入
@@ -203,13 +206,12 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
             likeEntity.setPostId(postId);
             likeEntity.setDelFlag(0);
             likeMapper.insert(likeEntity);
+            isNewLike = true;  // ✅ 标记为新点赞
         }
-        
-        // 3. 更新帖子点赞数
-        BusForumPostEntity post = this.getById(postId);
-        if (post != null) {
-            post.setLikeCount(post.getLikeCount() + 1);
-            this.updateById(post);
+
+        // 3. ✅ 修复: 只有新点赞才增加计数，并使用原子性更新
+        if (isNewLike) {
+            forumPostMapper.incrementLikeCount(postId);
         }
     }
     
@@ -217,25 +219,21 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     @Transactional(rollbackFor = Exception.class)
     public void unlikePost(Long postId) {
         Long userId = SecurityUtils.getUserId();
-        
+
         // 查找点赞记录（只查未删除的）
         LambdaQueryWrapper<BusForumPostLikeEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BusForumPostLikeEntity::getUserId, userId)
                .eq(BusForumPostLikeEntity::getPostId, postId)
                .eq(BusForumPostLikeEntity::getDelFlag, 0);
-        
+
         BusForumPostLikeEntity likeEntity = likeMapper.selectOne(wrapper);
         if (likeEntity != null) {
             // 设置 del_flag = 1
             likeEntity.setDelFlag(1);
             likeMapper.updateById(likeEntity);
-            
-            // 更新帖子点赞数
-            BusForumPostEntity post = this.getById(postId);
-            if (post != null && post.getLikeCount() > 0) {
-                post.setLikeCount(post.getLikeCount() - 1);
-                this.updateById(post);
-            }
+
+            // ✅ 修复: 使用原子性更新
+            forumPostMapper.decrementLikeCount(postId);
         }
     }
     

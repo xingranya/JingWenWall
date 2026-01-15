@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +59,10 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
 
     @Autowired
     private RedisCache redisCache;
+
+    /** 订单号格式化器 */
+    private static final DateTimeFormatter ORDER_NO_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     @Override
     public PageResult<ErrandOrderVO> getWaitingOrders(Integer pageNum, Integer pageSize) {
@@ -323,8 +329,7 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
      * 生成订单号
      */
     private String generateOrderNo() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        String timestamp = sdf.format(new Date());
+        String timestamp = LocalDateTime.now().format(ORDER_NO_FORMATTER);
         String random = IdUtil.fastSimpleUUID().substring(0, 6).toUpperCase();
         return "ER" + timestamp + random;
     }

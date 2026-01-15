@@ -27,7 +27,14 @@ public interface ForumCommentMapper extends BaseMapperX<BusForumCommentEntity> {
      * @return 评论VO列表
      */
     List<ForumCommentVO> selectSecondLevelComments(@Param("parentId") Long parentId);
-    
+
+    /**
+     * 批量查询二级评论列表
+     * @param commentIds 父评论ID列表
+     * @return 评论VO列表
+     */
+    List<ForumCommentVO> selectSecondLevelBatch(@Param("commentIds") List<Long> commentIds);
+
     /**
      * 查询评论详情
      * @param commentId 评论ID
