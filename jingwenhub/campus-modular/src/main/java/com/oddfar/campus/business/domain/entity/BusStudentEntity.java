@@ -75,7 +75,13 @@ public class BusStudentEntity implements Serializable {
      * 钱包余额
      */
     private BigDecimal balance;
-    
+
+    /**
+     * 乐观锁版本号
+     */
+    @Version
+    private Integer version;
+
     /**
      * 是否实名认证 (0否 1是)
      */
