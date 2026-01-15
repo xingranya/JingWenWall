@@ -160,33 +160,22 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
             BigDecimal platformRate = new BigDecimal(platformRateConfig);
             BigDecimal platformFee = totalFee.multiply(platformRate).setScale(2, RoundingMode.HALF_UP);
             BigDecimal runnerFee = totalFee.subtract(platformFee);
-            
-            // 5. 更新订单
+
+            // 5. ✅ 修复: 使用 updateById 一次更新所有字段 (MyBatis-Plus 自动使用 @Version 乐观锁)
             order.setRunnerId(runnerId);
             order.setRunnerFee(runnerFee);
             order.setPlatformFee(platformFee);
             order.setStatus(OrderStatus.ACCEPTED.getCode());
             order.setUpdateTime(new Date());
-            
-            // 乐观锁更新
-            int rows = errandOrderMapper.updateStatusWithVersion(
-                    orderId, 
-                    OrderStatus.WAITING.getCode(), 
-                    OrderStatus.ACCEPTED.getCode(), 
-                    order.getVersion()
-            );
-            
-            if (rows == 0) {
-                throw new ServiceException("抢单失败，请重试");
+
+            // ✅ updateById 会自动使用 @Version 注解进行乐观锁控制
+            boolean success = this.updateById(order);
+
+            if (!success) {
+                throw new ServiceException("抢单失败,订单已被接单");
             }
-            
-            // 更新骑手信息
-            order.setRunnerId(runnerId);
-            order.setRunnerFee(runnerFee);
-            order.setPlatformFee(platformFee);
-            this.updateById(order);
-            
-            log.info("订单 {} 被骑手 {} 接单", orderId, runnerId);
+
+            log.info("订单 {} 被骑手 {} 接单, 佣金: {}, 平台抽成: {}", orderId, runnerId, runnerFee, platformFee);
             
         } finally {
             if (locked) {
