@@ -5,6 +5,7 @@ import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -20,6 +21,11 @@ import java.util.concurrent.TimeUnit;
 public class RedisCache {
     @Autowired
     public RedisTemplate<Object, Object> redisTemplate;
+
+    /**
+     * ThreadLocal用于存储当前线程持有的锁标识
+     */
+    private final ThreadLocal<String> lockValueHolder = new ThreadLocal<>();
 
     /**
      * 缓存基本的对象，Integer、String、实体类等
@@ -250,16 +256,73 @@ public class RedisCache {
      * @return true=获取锁成功；false=获取锁失败
      */
     public boolean tryLock(final String key, final long timeout, final TimeUnit unit) {
-        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, "1", timeout, unit);
-        return result != null && result;
+        String lockKey = "lock:" + key;
+        // 生成唯一标识（使用UUID）
+        String lockValue = UUID.randomUUID().toString();
+
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(lockKey, lockValue, timeout, unit);
+
+        if (result != null && result) {
+            // 保存锁标识到ThreadLocal，用于释放时验证
+            lockValueHolder.set(lockValue);
+            return true;
+        }
+        return false;
     }
 
     /**
-     * 释放分布式锁
+     * 释放分布式锁（使用Lua脚本保证原子性，防止误删其他线程的锁）
      *
      * @param key 锁的键
      */
     public void unlock(final String key) {
-        redisTemplate.delete(key);
+        String lockKey = "lock:" + key;
+        String lockValue = lockValueHolder.get();
+
+        if (lockValue == null) {
+            // 当前线程没有持有锁
+            return;
+        }
+
+        // 使用Lua脚本保证原子性：只有锁的值匹配时才删除
+        String luaScript =
+            "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+            "    return redis.call('del', KEYS[1]) " +
+            "else " +
+            "    return 0 " +
+            "end";
+
+        redisTemplate.execute(
+            new DefaultRedisScript<>(luaScript, Long.class),
+            Collections.singletonList(lockKey),
+            lockValue
+        );
+
+        // 清理ThreadLocal
+        lockValueHolder.remove();
+    }
+
+    /**
+     * 尝试获取锁（带重试）
+     *
+     * @param key        锁的键
+     * @param timeout    锁的超时时间
+     * @param unit       时间单位
+     * @param maxRetries 最大重试次数
+     * @return true=获取锁成功；false=获取锁失败
+     */
+    public boolean tryLockWithRetry(final String key, final long timeout, final TimeUnit unit, int maxRetries) {
+        for (int i = 0; i < maxRetries; i++) {
+            if (tryLock(key, timeout, unit)) {
+                return true;
+            }
+            try {
+                Thread.sleep(100); // 重试间隔100ms
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
     }
 }
