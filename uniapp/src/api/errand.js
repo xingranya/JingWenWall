@@ -1,5 +1,6 @@
 import { baseUrl } from "@/utils/env";
 import { handlePageResult } from "@/utils/api-helper";
+import { canTransition, OrderStatusNames, showTransitionErrorToast } from "@/utils/order-status.js";
 
 /**
  * 获取待接单列表
@@ -102,8 +103,24 @@ export const acceptOrder = (orderId) => {
  * 更新订单状态
  * @param {Number} orderId 订单ID
  * @param {Number} status 新状态: 2取件中 3配送中 4待确认
+ * @param {Number} currentStatus 当前状态（可选，用于前端验证）
+ * @returns {Promise}
  */
-export const updateOrderStatus = (orderId, status) => {
+export const updateOrderStatus = (orderId, status, currentStatus = null) => {
+    // 前端验证：如果提供了当前状态，检查状态转换是否合法
+    if (currentStatus !== null) {
+        if (!canTransition(currentStatus, status)) {
+            // 显示错误提示
+            showTransitionErrorToast(currentStatus, status);
+
+            // 返回已拒绝的Promise
+            return Promise.reject({
+                msg: `不能从${OrderStatusNames[currentStatus]}转换为${OrderStatusNames[status]}`,
+                code: 400
+            });
+        }
+    }
+
     return new Promise((resolve, reject) => {
         uni.request({
             url: `${baseUrl}/api/v1/errand/orders/${orderId}/status?status=${status}`,

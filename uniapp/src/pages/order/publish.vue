@@ -37,12 +37,14 @@
         </view>
         <view class="reward-input-wrapper">
           <text class="currency-symbol">¥</text>
-          <input 
-            class="reward-input" 
-            type="digit" 
-            v-model="formData.tip" 
+          <input
+            class="reward-input"
+            type="digit"
+            v-model="formData.tip"
             placeholder="0.00"
             placeholder-class="reward-placeholder"
+            maxlength="6"
+            @blur="formatTip"
           />
         </view>
         <!-- 快捷金额 -->
@@ -181,7 +183,47 @@ export default {
     setQuickAmount(amount) {
       this.formData.tip = amount.toString();
     },
-    
+
+    /**
+     * 格式化小费金额
+     * 在输入框失去焦点时调用
+     * 限制小数点后2位，并确保不超过100
+     */
+    formatTip() {
+      let value = this.formData.tip.trim();
+
+      // 如果为空，不做处理
+      if (!value) {
+        return;
+      }
+
+      // 转换为数字
+      let num = parseFloat(value);
+
+      // 如果不是有效数字，清空
+      if (isNaN(num)) {
+        this.formData.tip = '';
+        return;
+      }
+
+      // 限制最小值为0.01
+      if (num < 0.01) {
+        num = 0.01;
+      }
+
+      // 限制最大值为100
+      if (num > 100) {
+        uni.showToast({
+          title: '赏金金额不能超过100元',
+          icon: 'none'
+        });
+        num = 100;
+      }
+
+      // 保留2位小数
+      this.formData.tip = num.toFixed(2);
+    },
+
     chooseLocation() {
       uni.chooseLocation({
         success: (res) => {
@@ -211,6 +253,17 @@ export default {
         } else if (!this.formData.deliveryAddr) {
           uni.showToast({ title: '请填写送达地点', icon: 'none' });
         }
+        return;
+      }
+
+      // 验证小费金额 (后端限制: 0 < tip <= 100)
+      const tipValue = parseFloat(this.formData.tip);
+      if (isNaN(tipValue) || tipValue <= 0) {
+        uni.showToast({ title: '赏金金额必须大于0元', icon: 'none' });
+        return;
+      }
+      if (tipValue > 100) {
+        uni.showToast({ title: '赏金金额不能超过100元', icon: 'none' });
         return;
       }
 
