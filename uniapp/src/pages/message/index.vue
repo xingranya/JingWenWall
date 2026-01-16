@@ -38,7 +38,7 @@ export default {
   },
   methods: {
     clearUnread() {
-      console.log('未读消息已清除');
+      // 清除未读消息逻辑
     }
   }
 };

@@ -369,7 +369,7 @@ export default {
           }
         },
         fail: (res) => {
-          console.log(res.errMsg);
+          // 用户取消操作
         }
       });
     },
@@ -385,7 +385,7 @@ export default {
         itemList: itemList,
         success: (res) => {
           if (isAuthor && res.tapIndex === 0) {
-            // 作者选择了“删除”
+            // 作者选择了"删除"
             this.deleteCommentAction(comment);
           } else if ((isAuthor && res.tapIndex === 1) || (!isAuthor && res.tapIndex === 0)) {
             uni.navigateTo({
@@ -394,7 +394,7 @@ export default {
           }
         },
         fail: (res) => {
-          console.log(res.errMsg);
+          // 用户取消操作
         }
       });
     },

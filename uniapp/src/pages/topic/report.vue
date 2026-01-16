@@ -54,7 +54,6 @@ export default {
   async onLoad(options) {
     const currentUser =  await getCurrentUserInfo();
     this.userId = currentUser.userId;
-    console.log(this.userId);
     this.topicId = options.topicId;
     this.commentId = options.topicId;
   },
@@ -84,7 +83,6 @@ export default {
         tags: this.selectedTypes.map(index => this.complaintTypes[index]).join(','),
         detailedDescription: this.detailReason
       };
-      console.log(reportData);
       try {
         await uni.request({
           url: `${baseUrl}/student/report/insert`,

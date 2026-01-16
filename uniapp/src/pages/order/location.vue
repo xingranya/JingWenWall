@@ -33,7 +33,6 @@ export default {
   },
   methods: {
     commitCheck(e) {
-      console.log(e, 565);
       uni.$emit('commitCheck', e);
       uni.navigateBack({
         delta: 1

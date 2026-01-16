@@ -96,9 +96,7 @@ export default {
       
       try {
         const res = await getWaitingOrders(this.page, this.pageSize);
-        
-        console.log('跑腿订单API响应:', res);
-        
+
         if (!res) {
           throw new Error('API response is empty');
         }

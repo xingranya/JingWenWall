@@ -99,18 +99,15 @@ export default {
   methods: {
     checkLoginStatus() {
       const token = uni.getStorageSync('token');
-      console.log('检查登录状态 - token:', token ? '存在' : '不存在');
       this.isLoggedIn = !!token;
       
       if (this.isLoggedIn) {
         const info = uni.getStorageSync('userInfo');
-        console.log('读取用户信息:', info);
-        
+
         if (info) {
           try {
             // 尝试解析 JSON，如果已经是对象则直接使用
             const parsed = typeof info === 'string' ? JSON.parse(info) : info;
-            console.log('解析后的用户信息:', parsed);
             
             this.userInfo = {
                 nickName: parsed.nickName || parsed.username || parsed.studentNo || '同学',
@@ -131,7 +128,6 @@ export default {
           }
         } else {
           // 没有用户信息但有 token，显示默认信息
-          console.log('没有 userInfo 但有 token，显示默认信息');
           this.userInfo = { nickName: '同学', avatar: '/static/default_avatar.jpg', deptName: '已认证用户' };
           this.userStats = { posts: 0, following: 0, followers: 0, balance: '0.00' };
         }
@@ -154,8 +150,6 @@ export default {
        uni.login({
          provider: 'weixin',
          success: (loginRes) => {
-           console.log('获取到微信 code:', loginRes.code);
-           
            // 调用后端登录接口
            uni.request({
              url: baseUrl + '/api/v1/wx/auth/login',
@@ -164,12 +158,10 @@ export default {
              data: { code: loginRes.code },
              success: (res) => {
                uni.hideLoading();
-               console.log('登录响应:', res);
-               
+
                if (res.statusCode === 200 && res.data.code === 200) {
                  const token = res.data.data?.token;
                  if (token) {
-                   console.log('登录成功，token:', token);
                    uni.setStorageSync('token', token);
                    
                    // 保存用户信息

@@ -43,7 +43,6 @@ export default {
       this.loadMoreStatus = 'loading';
       try {
         const data = await getPublishedPosts(this.page, 5);
-        console.log('请求结果:', data);
 
         // 兼容不同的数据结构 (records 或 rows)
         let newRecords = data.records || data.rows || [];

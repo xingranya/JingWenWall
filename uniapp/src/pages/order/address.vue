@@ -44,13 +44,10 @@ export default {
   },
   onLoad() {},
   beforeDestroy () {
-    console.log('移除')
     uni.$off();
   },
   onShow() {
-    let _this = this;
     uni.$once('commitCheck', (data) => {
-      console.log(data,'地址+++1')
       this.address=data
     });
   },

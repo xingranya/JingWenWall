@@ -146,7 +146,6 @@ export default {
       getDraft()
           .then(response => {
             const draft = response;
-            console.log('加载草稿:', draft);
             if (draft) {
               this.id = draft.id || null;
               this.title = draft.title || '';
@@ -169,7 +168,6 @@ export default {
         return;
       }
       if (this.content.trim() !== '' || this.imgUrls.length > 0) {
-        console.log('保存草稿:', this.id);
         const draftData = {
           id: this.id,
           title: this.title,
@@ -195,7 +193,6 @@ export default {
         return;
       }
       this.uploadTopic();
-      console.log('提交帖子:', this.content, toRaw(this.imgUrls));
     },
 
     /**
@@ -280,7 +277,6 @@ export default {
               return url;
             });
             this.imgUrls.push(...urls);
-            console.log('所有图片上传成功:', this.imgUrls);
             uni.showToast({
               title: '上传成功',
               icon: 'success',
@@ -305,7 +301,6 @@ export default {
       deleteSingleFile(urlToDelete)
           .then(() => {
             this.imgUrls.splice(index, 1);
-            console.log('图片删除成功，当前图片列表:', this.imgUrls);
           })
           .catch(error => {
             console.error('删除文件失败:', error);
