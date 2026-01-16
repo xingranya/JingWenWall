@@ -18,6 +18,7 @@ import com.oddfar.campus.business.service.BusStudentService;
 import com.oddfar.campus.business.service.WxAuthService;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
+import com.oddfar.campus.common.service.ViewCountService;
 import com.oddfar.campus.common.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -51,7 +52,10 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
 
     @Autowired
     private BusStudentService busStudentService;
-    
+
+    @Autowired
+    private ViewCountService viewCountService;
+
     @Override
     public PageResult<ForumPostVO> pageList(Long categoryId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
@@ -81,21 +85,30 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     
     @Override
     public ForumPostVO getDetail(Long postId) {
-        // 更新浏览次数
-        forumPostMapper.updateViewCount(postId);
-        
         ForumPostVO vo = forumPostMapper.selectPostDetail(postId);
         if (vo == null) {
             throw new ServiceException("帖子不存在");
         }
-        
+
+        // 使用Redis增加浏览量
+        viewCountService.incrementViewCount("post", postId);
+
+        // 合并Redis中的实时浏览量
+        BusForumPostEntity post = this.getById(postId);
+        Integer redisViewCount = viewCountService.getViewCount("post", postId);
+        if (redisViewCount != null) {
+            vo.setViewCount(post.getViewCount() + redisViewCount);
+        } else {
+            vo.setViewCount(post.getViewCount());
+        }
+
         // 填充当前用户的点赞和收藏状态
         if (SecurityUtils.isLogin()) {
             Long userId = SecurityUtils.getUserId();
             vo.setIsLiked(checkUserLike(userId, postId));
             vo.setIsCollected(checkUserCollect(userId, postId));
         }
-        
+
         return vo;
     }
     
