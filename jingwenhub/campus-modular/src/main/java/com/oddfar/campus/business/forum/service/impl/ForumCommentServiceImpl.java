@@ -1,5 +1,6 @@
 package com.oddfar.campus.business.forum.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -135,26 +136,61 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
     @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Long commentId) {
         Long userId = SecurityUtils.getUserId();
-        
+
         BusForumCommentEntity comment = this.getById(commentId);
         if (comment == null) {
             throw new ServiceException("评论不存在");
         }
-        
+
         if (!comment.getUserId().equals(userId)) {
             throw new ServiceException("无权删除此评论");
         }
-        
-        // 逻辑删除：设置 del_flag = 1
-        comment.setDelFlag(1);
-        this.updateById(comment);
-        
+
+        // 使用递归删除处理所有子评论
+        int deletedCount = deleteCommentRecursive(commentId);
+
         // 更新帖子评论数
         BusForumPostEntity post = postMapper.selectById(comment.getPostId());
-        if (post != null && post.getCommentCount() > 0) {
-            post.setCommentCount(post.getCommentCount() - 1);
+        if (post != null && post.getCommentCount() >= deletedCount) {
+            post.setCommentCount(post.getCommentCount() - deletedCount);
             postMapper.updateById(post);
         }
+
+        log.info("用户删除评论成功, userId: {}, commentId: {}, deletedCount: {}",
+                userId, commentId, deletedCount);
+    }
+
+    /**
+     * 递归删除评论及其所有子评论
+     *
+     * @param commentId 评论ID
+     * @return 删除的评论总数
+     */
+    private int deleteCommentRecursive(Long commentId) {
+        // 1. 查找所有子评论
+        LambdaQueryWrapper<BusForumCommentEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BusForumCommentEntity::getParentId, commentId);
+        List<BusForumCommentEntity> children = commentMapper.selectList(wrapper);
+
+        int deletedCount = 0;
+
+        // 2. 递归删除所有子评论
+        for (BusForumCommentEntity child : children) {
+            deletedCount += deleteCommentRecursive(child.getCommentId());
+        }
+
+        // 3. 软删除当前评论
+        BusForumCommentEntity comment = new BusForumCommentEntity();
+        comment.setCommentId(commentId);
+        comment.setDelFlag(1);
+        commentMapper.updateById(comment);
+
+        deletedCount++;
+
+        log.debug("递归删除评论, commentId: {}, 子评论数: {}, 累计删除: {}",
+                commentId, children.size(), deletedCount);
+
+        return deletedCount;
     }
     
     @Override
