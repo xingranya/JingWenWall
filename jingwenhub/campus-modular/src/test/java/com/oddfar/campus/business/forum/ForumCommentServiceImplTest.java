@@ -53,7 +53,6 @@ public class ForumCommentServiceImplTest {
         post.setUserId(testUserId);
         post.setTitle("测试帖子-评论级联删除");
         post.setContent("这是一个测试帖子的内容");
-        post.setPostType(0);
         post.setStatus(0);
         post.setViewCount(0);
         post.setLikeCount(0);

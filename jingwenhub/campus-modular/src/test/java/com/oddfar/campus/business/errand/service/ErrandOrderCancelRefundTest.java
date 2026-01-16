@@ -1,10 +1,12 @@
 package com.oddfar.campus.business.errand.service;
 
-import com.oddfar.campus.business.domain.entity.BusErrandOrderEntity;
+import com.oddfar.campus.business.errand.domain.entity.BusErrandOrderEntity;
 import com.oddfar.campus.business.domain.entity.BusStudentEntity;
 import com.oddfar.campus.business.errand.enums.PayStatus;
 import com.oddfar.campus.business.errand.domain.enums.OrderStatus;
 import com.oddfar.campus.common.exception.ServiceException;
+import com.oddfar.campus.business.service.BusStudentService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author jingwen
  */
+@Slf4j
 @SpringBootTest
 @Transactional
 public class ErrandOrderCancelRefundTest {
@@ -33,7 +36,7 @@ public class ErrandOrderCancelRefundTest {
 
     @Test
     @DisplayName("取消已支付订单 - 应退款到余额")
-    @WithMockUser(username = "publisher", userId = 1L)
+    @WithMockUser(username = "publisher")
     public void testCancelPaidOrder_ShouldRefundToBalance() {
         // 准备测试数据
         Long orderId = 1L;  // 假设数据库中存在一个已支付的订单
@@ -70,7 +73,7 @@ public class ErrandOrderCancelRefundTest {
 
     @Test
     @DisplayName("取消未支付订单 - 不应退款")
-    @WithMockUser(username = "publisher", userId = 2L)
+    @WithMockUser(username = "publisher")
     public void testCancelUnpaidOrder_ShouldNotRefund() {
         // 准备测试数据
         Long orderId = 2L;  // 假设存在一个未支付的订单
@@ -101,7 +104,7 @@ public class ErrandOrderCancelRefundTest {
 
     @Test
     @DisplayName("取消已完成订单 - 应抛出异常")
-    @WithMockUser(username = "publisher", userId = 3L)
+    @WithMockUser(username = "publisher")
     public void testCancelCompletedOrder_ShouldThrowException() {
         Long orderId = 3L;  // 假设存在一个已完成的订单
 
@@ -112,7 +115,7 @@ public class ErrandOrderCancelRefundTest {
 
     @Test
     @DisplayName("取消正在进行中的订单 - 应抛出异常")
-    @WithMockUser(username = "publisher", userId = 4L)
+    @WithMockUser(username = "publisher")
     public void testCancelInProgressOrder_ShouldThrowException() {
         Long orderId = 4L;  // 假设存在一个进行中的订单
 
@@ -123,20 +126,12 @@ public class ErrandOrderCancelRefundTest {
 
     @Test
     @DisplayName("非订单发布者取消订单 - 应抛出异常")
-    @WithMockUser(username = "other", userId = 999L)
+    @WithMockUser(username = "other")
     public void testCancelOrderByOtherUser_ShouldThrowException() {
         Long orderId = 1L;  // 属于用户1的订单
 
         assertThrows(ServiceException.class, () -> {
             errandOrderService.cancelOrder(orderId, "恶意取消");
         }, "非订单发布者不应允许取消");
-    }
-
-    private void log(String message) {
-        System.out.println(message);
-    }
-
-    private void log(String message, Object value) {
-        System.out.println(message + ": " + value);
     }
 }
