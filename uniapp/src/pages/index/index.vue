@@ -102,8 +102,6 @@ export default {
     FabComponent,
     uniIcons,
     uniLoadMore,
-    uniIcons,
-    uniLoadMore,
     TabBar
   },
   data() {
@@ -190,7 +188,9 @@ export default {
       const userInfoStr = uni.getStorageSync('userInfo');
       if (userInfoStr) {
         try {
-          const info = JSON.parse(userInfoStr);
+          // 判断是否已经是对象，如果是字符串则解析
+          const info = typeof userInfoStr === 'string' ? JSON.parse(userInfoStr) : userInfoStr;
+
           // 适配字段名
           this.userInfo = {
             nickName: info.nickName || info.username || '同学',
