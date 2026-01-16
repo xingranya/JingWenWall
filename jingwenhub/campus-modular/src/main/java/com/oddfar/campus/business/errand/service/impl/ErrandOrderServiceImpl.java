@@ -14,6 +14,7 @@ import com.oddfar.campus.business.errand.enums.PayStatus;
 import com.oddfar.campus.business.errand.mapper.ErrandOrderMapper;
 import com.oddfar.campus.business.errand.mapper.ErrandRunnerMapper;
 import com.oddfar.campus.business.errand.service.ErrandOrderService;
+import com.oddfar.campus.business.errand.statemachine.OrderStateMachine;
 import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
@@ -59,6 +60,9 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private OrderStateMachine stateMachine;
 
     /** 订单号格式化器 */
     private static final DateTimeFormatter ORDER_NO_FORMATTER =
@@ -202,30 +206,30 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     @Transactional(rollbackFor = Exception.class)
     public void updateOrderStatus(Long orderId, Integer status) {
         Long userId = SecurityUtils.getUserId();
-        
+
         BusErrandOrderEntity order = this.getById(orderId);
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        
+
         // 检查权限: 只有骑手可以更新状态
         if (!userId.equals(order.getRunnerId())) {
             throw new ServiceException("无权操作此订单");
         }
-        
-        // 状态流转校验
+
+        // 状态流转校验 (使用状态机)
         OrderStatus currentStatus = OrderStatus.fromCode(order.getStatus());
         OrderStatus newStatus = OrderStatus.fromCode(status);
-        
-        if (!isValidStatusTransition(currentStatus, newStatus)) {
-            throw new ServiceException("订单状态不允许此操作");
+
+        if (!stateMachine.canTransition(currentStatus, newStatus)) {
+            throw new ServiceException("订单状态不允许此操作: " + currentStatus + " -> " + newStatus);
         }
-        
+
         order.setStatus(status);
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
-        log.info("订单 {} 状态更新: {} -> {}", orderId, currentStatus, newStatus);
+
+        log.info("订单 {} 状态更新: {} -> {}, 操作用户: {}", orderId, currentStatus, newStatus, userId);
     }
 
     @Override
@@ -344,28 +348,8 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     private void fillOrderDesc(ErrandOrderVO vo) {
         vo.setTypeDesc(ErrandType.getDescByCode(vo.getType()));
         vo.setStatusDesc(OrderStatus.getDescByCode(vo.getStatus()));
-        vo.setPayStatusDesc(PayStatus.fromCode(vo.getPayStatus()) != null 
+        vo.setPayStatusDesc(PayStatus.fromCode(vo.getPayStatus()) != null
                 ? PayStatus.fromCode(vo.getPayStatus()).getDesc() : "未知");
-    }
-
-    /**
-     * 检查状态流转是否合法
-     */
-    private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
-        if (current == null || next == null) {
-            return false;
-        }
-        
-        switch (current) {
-            case ACCEPTED:
-                return next == OrderStatus.PICKING;
-            case PICKING:
-                return next == OrderStatus.DELIVERING;
-            case DELIVERING:
-                return next == OrderStatus.CONFIRMING;
-            default:
-                return false;
-        }
     }
 
     // ==================== 管理后台方法 ====================
