@@ -152,16 +152,15 @@ import uniEasyinput from '@dcloudio/uni-ui/lib/uni-easyinput/uni-easyinput.vue';
 import { deleteTopic, fetchTopic } from "@/api/topic";
 
 import {
+  getPostComments,
+  publishComment as submitComment,
   deleteComment,
-  fetchComments,
   likeComment,
-  submitComment,
   unlikeComment,
-} from "@/api/comment";
+} from "@/api/forum";
 
 import {likeTopic, unlikeTopic} from "@/api/like";
 import {collectTopic, uncollectTopic} from "@/api/collect";
-import {getCurrentUserInfo} from "@/api/user";
 import { baseUrl } from "@/utils/env";
 import { createEmptyForumPost } from "@/models/ForumPost";
 
@@ -295,7 +294,7 @@ export default {
       }
       this.loadMoreStatus = 'loading';
       try {
-        const res = await fetchComments(this.topicId, this.page, this.pageSize);
+        const res = await getPostComments(this.topicId, this.page, this.pageSize);
         const commentList = res.rows || res.records || [];
         if (commentList && commentList.length > 0) {
           this.comments = this.comments.concat(commentList);

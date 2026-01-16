@@ -1,4 +1,4 @@
-import { baseUrl } from "@/utils/env";
+import { post } from "@/utils/request";
 
 /**
  * 举报目标类型
@@ -30,25 +30,7 @@ export const ReportReasons = [
  * @param {Object} data { targetType, targetId, reasonType, reasonDetail, images }
  */
 export const submitReport = (data) => {
-    return new Promise((resolve, reject) => {
-        uni.request({
-            url: `${baseUrl}/api/v1/report`,
-            method: 'POST',
-            header: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${uni.getStorageSync('token')}`
-            },
-            data: data,
-            success: (res) => {
-                if (res.statusCode === 200 && res.data.code === 200) {
-                    resolve(res.data);
-                } else {
-                    reject(res.data.msg || '举报失败');
-                }
-            },
-            fail: (err) => reject(err)
-        });
-    });
+    return post('/api/v1/report', data);
 };
 
 /**

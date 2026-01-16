@@ -90,7 +90,6 @@ import TabBar from '@/components/TabBar.vue';
 // API 引入
 import { getRecords } from "@/api/topic";
 import { userLoginService } from "@/api/login";
-import { likeTopic, unlikeTopic } from "@/api/like";
 import { collectTopic, uncollectTopic } from "@/api/collect";
 
 export default {

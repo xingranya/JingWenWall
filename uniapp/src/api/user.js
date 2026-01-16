@@ -1,3 +1,4 @@
+import { get, put } from "@/utils/request";
 import { baseUrl } from "@/utils/env";
 
 /**
@@ -5,22 +6,47 @@ import { baseUrl } from "@/utils/env";
  * 新架构：使用后端BusStudentController的接口
  */
 export const getCurrentUserInfo = () => {
+    return get('/student/get/info');
+};
+
+/**
+ * 更新用户信息
+ * @param {Object} data 用户信息
+ * @param {String} data.username 用户名
+ * @param {String} data.avatar 头像URL
+ * @param {Number} data.sex 性别 (1:男性, 2:女性)
+ * @param {String} data.studentid 学号
+ */
+export const updateUserInfo = (data) => {
+    return put('/student/update/info', data);
+};
+
+/**
+ * 上传头像
+ * @param {String} filePath 本地文件路径
+ */
+export const uploadAvatar = (filePath) => {
     return new Promise((resolve, reject) => {
-        uni.request({
-            url: `${baseUrl}/student/get/info`,
-            method: 'GET',
+        uni.uploadFile({
+            url: `${baseUrl}/student/common/upload`,
+            filePath: filePath,
+            name: 'files',
             header: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.data.code === 200) {
-                    resolve(res.data.data);
-                } else {
-                    reject(res.data.msg);
+                try {
+                    const responseData = JSON.parse(res.data);
+                    if (responseData.code === 1) {
+                        resolve(responseData);
+                    } else {
+                        reject(responseData.msg || '上传失败');
+                    }
+                } catch (e) {
+                    reject('解析响应失败');
                 }
             },
-            fail: (err) => reject(err),
+            fail: (err) => reject(err)
         });
     });
 };

@@ -1,18 +1,19 @@
 /**
  * 评论接口测试用例 (示例)
- * 用于验证 handlePageResult 处理器和 API 联动
+ * 用于验证 API 联动
+ * 注意：评论相关功能已统一到 forum.js，此测试文件保留用于向后兼容
  */
-import { fetchComments } from "@/api/comment";
+import { getPostComments } from "@/api/forum";
 
-// 模拟 handlePageResult 逻辑进行测试
+// 模拟测试
 describe('Comment API Specification', () => {
-  
-  test('fetchComments should return a PageResult object with rows and total', async () => {
+
+  test('getPostComments should return a PageResult object with rows and total', async () => {
     // 假设 postId 为 1
     const postId = 1;
-    
+
     try {
-      const result = await fetchComments(postId, 1, 10);
+      const result = await getPostComments(postId, 1, 10);
       
       // 验证返回结构
       console.log('Test Result:', result);
