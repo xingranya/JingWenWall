@@ -49,6 +49,20 @@ public interface MarketItemMapper extends BaseMapper<BusMarketItemEntity> {
      */
     int updateViewCount(@Param("itemId") Long itemId);
 
+    /**
+     * 原子性增加收藏数
+     * @param itemId 商品ID
+     * @return 影响行数
+     */
+    int incrementCollectCount(@Param("itemId") Long itemId);
+
+    /**
+     * 原子性减少收藏数 (防止负数)
+     * @param itemId 商品ID
+     * @return 影响行数
+     */
+    int decrementCollectCount(@Param("itemId") Long itemId);
+
     // ==================== 管理后台方法 ====================
 
     /**

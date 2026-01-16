@@ -222,25 +222,20 @@ public class MarketItemServiceImpl extends ServiceImpl<MarketItemMapper, BusMark
             collectEntity.setCreateTime(new Date());
             collectMapper.insert(collectEntity);
         }
-        
-        // 更新商品收藏数
-        item.setCollectCount(item.getCollectCount() + 1);
-        this.updateById(item);
+
+        // 原子性更新商品收藏数 (使用数据库原子操作,避免并发竞态条件)
+        itemMapper.incrementCollectCount(itemId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void uncollectItem(Long itemId) {
         Long userId = SecurityUtils.getUserId();
-        
+
         int rows = collectMapper.updateDelFlag(userId, itemId, 1);
         if (rows > 0) {
-            // 更新商品收藏数
-            BusMarketItemEntity item = this.getById(itemId);
-            if (item != null && item.getCollectCount() > 0) {
-                item.setCollectCount(item.getCollectCount() - 1);
-                this.updateById(item);
-            }
+            // 原子性减少商品收藏数 (使用数据库原子操作,避免并发竞态条件且防止负数)
+            itemMapper.decrementCollectCount(itemId);
         }
     }
 

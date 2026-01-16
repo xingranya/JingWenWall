@@ -73,8 +73,22 @@
 
     <!-- 更新浏览次数 -->
     <update id="updateViewCount">
-        UPDATE bus_market_item 
+        UPDATE bus_market_item
         SET view_count = view_count + 1
+        WHERE item_id = #{itemId}
+    </update>
+
+    <!-- 原子性增加收藏数 -->
+    <update id="incrementCollectCount">
+        UPDATE bus_market_item
+        SET collect_count = collect_count + 1
+        WHERE item_id = #{itemId}
+    </update>
+
+    <!-- 原子性减少收藏数 (防止负数) -->
+    <update id="decrementCollectCount">
+        UPDATE bus_market_item
+        SET collect_count = GREATEST(collect_count - 1, 0)
         WHERE item_id = #{itemId}
     </update>
 
