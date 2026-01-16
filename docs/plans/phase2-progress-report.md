@@ -43,6 +43,7 @@
 | # | 任务 | 描述 | 修改文件 | 状态 |
 |---|------|------|---------|------|
 | B2.1 | 订单金额校验 | 添加小费金额限制 | ErrandOrderServiceImpl.java + ErrandOrderDTO.java | ✅ 完成 |
+| B2.2 | 权限控制完善 | 已验证SecurityConfig全局认证 | SecurityConfig.java (无需修改) | ✅ 完成 |
 
 ---
 
@@ -51,6 +52,7 @@
 | # | 任务 | 描述 | 修改文件 | 状态 |
 |---|------|------|---------|------|
 | B3.1 | @Valid注解 | 添加@DecimalMax校验 | ErrandOrderDTO.java | ✅ 完成 |
+| B3.2 | 分页参数限制 | PageParamUtils + 拦截器 | PageParamUtils.java + PageParamValidationInterceptor.java | ✅ 完成 |
 
 ---
 
@@ -148,10 +150,14 @@ jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/errand/domain
 - ✅ **Group B1**: 6/6 (100%)
 - ✅ **Group A**: 6/6 (100%)
 - ✅ **Group D**: 2/2 (100%)
-- ✅ **Group B2**: 1/2 (50%)
-- ✅ **Group B3**: 1/2 (50%)
+- ✅ **Group B2**: 2/2 (100%)
+- ✅ **Group B3**: 2/2 (100%)
 
-**总体完成度**: 约92%
+**总体完成度**: 100% ✅
+
+---
+
+## 🎉 Phase 2 已完成!
 
 ---
 
@@ -361,6 +367,45 @@ ADD UNIQUE INDEX uk_user_post (user_id, post_id) COMMENT '用户帖子收藏唯�
 
 ---
 
+## 🎉 Phase 2 完成总结
+
+**完成时间**: 2026-01-16
+**总耗时**: 约1.5小时 (本次会话)
+**Git提交数**: 1个commit
+
+### 本次会话完成任务
+
+**B2.2: 权限控制完善** (已验证)
+- 验证 SecurityConfig.java: `.anyRequest().authenticated()` 全局认证
+- 验证 Service 层业务级权限检查
+- 验证 Admin 控制器 @PreAuthorize 注解
+- 结论: 权限控制已完善,无需额外修改
+
+**B3.2: 分页参数限制** (新增代码)
+- 新增 PageParamUtils 验证工具类
+  - MIN_PAGE_NUM = 1, MAX_PAGE_NUM = 10000
+  - MIN_PAGE_SIZE = 1, MAX_PAGE_SIZE = 100
+  - validate() / safePageNum() / safePageSize() 方法
+- 新增 PageParamValidationInterceptor 自动拦截器
+  - 自动检测 pageNum/pageSize 参数
+  - 验证失败返回 400 Bad Request
+- 注册到 MyWebMvcConfig 全局生效
+- 新增 PageParamValidationTest 测试类 (11个测试全部通过)
+
+### 最新 Commit
+
+```bash
+commit 1b7470de
+feat(phase2): 完成Phase 2数据库优化与业务逻辑修复
+
+- Group B2: 权限控制完善 (已验证)
+- Group B3: 分页参数限制拦截器
+  - PageParamUtils + PageParamValidationInterceptor
+  - 11个单元测试全部通过
+```
+
+---
+
 **文档生成时间**: 2026-01-16
-**生成者**: Claude Code (Session 044ce2b5)
+**生成者**: Claude Code (Continued Session)
 **项目路径**: E:\wxxcx\JingWenWall
