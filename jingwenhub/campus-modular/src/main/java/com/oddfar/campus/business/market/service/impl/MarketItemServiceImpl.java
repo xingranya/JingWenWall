@@ -13,6 +13,7 @@ import com.oddfar.campus.business.market.mapper.MarketItemMapper;
 import com.oddfar.campus.business.market.service.MarketItemService;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
+import com.oddfar.campus.common.service.ViewCountService;
 import com.oddfar.campus.common.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +41,9 @@ public class MarketItemServiceImpl extends ServiceImpl<MarketItemMapper, BusMark
     @Autowired
     private MarketCollectMapper collectMapper;
 
+    @Autowired
+    private ViewCountService viewCountService;
+
     @Override
     public PageResult<MarketItemVO> getItemList(Long categoryId, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
@@ -52,23 +56,32 @@ public class MarketItemServiceImpl extends ServiceImpl<MarketItemMapper, BusMark
 
     @Override
     public MarketItemVO getItemDetail(Long itemId) {
-        // 更新浏览次数
-        itemMapper.updateViewCount(itemId);
-        
         MarketItemVO vo = itemMapper.selectItemDetail(itemId);
         if (vo == null) {
             throw new ServiceException("商品不存在");
         }
-        
+
+        // 使用Redis增加浏览量
+        viewCountService.incrementViewCount("item", itemId);
+
+        // 合并Redis中的实时浏览量
+        BusMarketItemEntity item = this.getById(itemId);
+        Integer redisViewCount = viewCountService.getViewCount("item", itemId);
+        if (redisViewCount != null) {
+            vo.setViewCount(item.getViewCount() + redisViewCount);
+        } else {
+            vo.setViewCount(item.getViewCount());
+        }
+
         fillItemDesc(vo);
-        
+
         // 填充当前用户标识
         if (SecurityUtils.isLogin()) {
             Long userId = SecurityUtils.getUserId();
             vo.setIsMine(userId.equals(vo.getUserId()));
             vo.setIsCollected(checkUserCollect(userId, itemId));
         }
-        
+
         return vo;
     }
 
