@@ -63,52 +63,62 @@ public class WxAuthServiceImpl implements WxAuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public WxLoginVO wxLogin(WxLoginDTO wxLoginDTO) {
-        // 1. 调用微信接口获取 openid 和 session_key
+        // 1. 检查code是否已使用（防止重放攻击）
         String code = wxLoginDTO.getCode();
+        String cacheKey = "wx:login:code:" + code;
+        Boolean isUsed = redisCache.getCacheObject(cacheKey);
+        if (isUsed != null && isUsed) {
+            log.warn("微信登录code已使用: {}", code);
+            throw new ServiceException("code已使用，请重新获取");
+        }
+
+        // 2. 调用微信接口获取 openid 和 session_key
         Map<String, Object> params = new HashMap<>();
         params.put("appid", wechatProperties.getAppId());
         params.put("secret", wechatProperties.getAppSecret());
         params.put("js_code", code);
         params.put("grant_type", "authorization_code");
-        
+
         String response = HttpUtil.get(wechatProperties.getLoginUrl(), params);
         log.info("微信登录响应: {}", response);
-        
+
         JSONObject jsonResult = JSON.parseObject(response);
-        
+
         // 检查错误
         if (jsonResult.containsKey("errcode") && jsonResult.getIntValue("errcode") != 0) {
             log.error("微信登录失败: {}", jsonResult.getString("errmsg"));
             throw new ServiceException("微信登录失败: " + jsonResult.getString("errmsg"));
         }
-        
+
         String openid = jsonResult.getString("openid");
         String unionid = jsonResult.getString("unionid");
-        
+
         if (StringUtils.isEmpty(openid)) {
             throw new ServiceException("获取openid失败");
         }
-        
+
+        // 3. 标记code已使用（5分钟过期，与微信code有效期一致）
+        redisCache.setCacheObject(cacheKey, true, 5, TimeUnit.MINUTES);
         log.info("微信登录成功, openid: {}", openid);
-        
-        // 2. 查询是否已存在学生信息
+
+        // 4. 查询是否已存在学生信息
         BusStudentEntity student = busStudentService.getByOpenid(openid);
         boolean isNewUser = (student == null);
-        
+
         SysUserEntity sysUser;
-        
+
         if (isNewUser) {
-            // 3. 新用户 - 创建 sys_user 和 bus_student
+            // 5. 新用户 - 创建 sys_user 和 bus_student
             sysUser = createWxUser(openid, wxLoginDTO.getNickName(), wxLoginDTO.getAvatarUrl(), wxLoginDTO.getGender());
             student = busStudentService.createStudent(sysUser.getUserId(), openid, unionid);
             log.info("新用户注册成功, userId: {}, studentId: {}", sysUser.getUserId(), student.getStudentId());
         } else {
-            // 4. 老用户 - 获取用户信息，更新登录时间
+            // 6. 老用户 - 获取用户信息，更新登录时间
             sysUser = sysUserService.selectUserById(Objects.requireNonNull(student).getUserId());
             if (sysUser == null) {
                 throw new ServiceException("用户信息不存在");
             }
-            
+
             // 更新用户昵称和头像 (如果有传入)
             if (StringUtils.isNotEmpty(wxLoginDTO.getNickName()) || StringUtils.isNotEmpty(wxLoginDTO.getAvatarUrl())) {
                 if (StringUtils.isNotEmpty(wxLoginDTO.getNickName())) {
@@ -119,22 +129,22 @@ public class WxAuthServiceImpl implements WxAuthService {
                 }
                 sysUserService.updateUserProfile(sysUser);
             }
-            
+
             // 更新登录时间
             sysUser.setLoginDate(new Date());
             sysUserService.updateUserProfile(sysUser);
         }
-        
-        // 5. 生成 JWT Token
+
+        // 7. 生成 JWT Token
         LoginUser loginUser = new LoginUser(sysUser.getUserId(), sysUser, new HashSet<>(), new HashSet<>());
         String token = tokenService.createToken(loginUser);
-        
-        // 6. 填充学生关联信息
+
+        // 8. 填充学生关联信息
         student.setNickName(sysUser.getNickName());
         student.setAvatar(sysUser.getAvatar());
         student.setPhonenumber(sysUser.getPhonenumber());
-        
-        // 7. 构建返回结果
+
+        // 9. 构建返回结果
         return WxLoginVO.fromStudent(student, token, isNewUser);
     }
     
