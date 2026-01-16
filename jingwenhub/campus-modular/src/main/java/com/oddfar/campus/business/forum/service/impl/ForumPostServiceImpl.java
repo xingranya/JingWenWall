@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.oddfar.campus.business.domain.entity.BusStudentEntity;
 import com.oddfar.campus.business.forum.domain.dto.ForumPostDTO;
 import com.oddfar.campus.business.forum.domain.entity.BusForumPostCollectEntity;
 import com.oddfar.campus.business.forum.domain.entity.BusForumPostEntity;
@@ -13,6 +14,8 @@ import com.oddfar.campus.business.forum.mapper.ForumPostCollectMapper;
 import com.oddfar.campus.business.forum.mapper.ForumPostLikeMapper;
 import com.oddfar.campus.business.forum.mapper.ForumPostMapper;
 import com.oddfar.campus.business.forum.service.ForumPostService;
+import com.oddfar.campus.business.service.BusStudentService;
+import com.oddfar.campus.business.service.WxAuthService;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
 import com.oddfar.campus.common.utils.SecurityUtils;
@@ -36,12 +39,18 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     
     @Autowired
     private ForumPostMapper forumPostMapper;
-    
+
     @Autowired
     private ForumPostLikeMapper likeMapper;
-    
+
     @Autowired
     private ForumPostCollectMapper collectMapper;
+
+    @Autowired
+    private WxAuthService wxAuthService;
+
+    @Autowired
+    private BusStudentService busStudentService;
     
     @Override
     public PageResult<ForumPostVO> pageList(Long categoryId, Integer pageNum, Integer pageSize) {
@@ -94,7 +103,27 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     @Transactional(rollbackFor = Exception.class)
     public Long publish(ForumPostDTO postDTO) {
         Long userId = SecurityUtils.getUserId();
-        
+
+        // 1. 内容安全审核
+        BusStudentEntity student = busStudentService.getByUserId(userId);
+        String openid = student != null ? student.getOpenid() : "";
+
+        // 检查标题和内容
+        if (postDTO.getTitle() != null && !postDTO.getTitle().trim().isEmpty()) {
+            boolean titleSafe = wxAuthService.checkTextContent(postDTO.getTitle(), openid, 1);
+            if (!titleSafe) {
+                throw new ServiceException("标题包含违规内容，请修改后重试");
+            }
+        }
+
+        if (postDTO.getContent() != null && !postDTO.getContent().trim().isEmpty()) {
+            boolean contentSafe = wxAuthService.checkTextContent(postDTO.getContent(), openid, 1);
+            if (!contentSafe) {
+                throw new ServiceException("内容包含违规信息，请修改后重试");
+            }
+        }
+
+        // 2. 创建帖子
         BusForumPostEntity entity = new BusForumPostEntity();
         BeanUtils.copyProperties(postDTO, entity);
         entity.setUserId(userId);
@@ -104,8 +133,10 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
         entity.setLikeCount(0);
         entity.setCommentCount(0);
         entity.setCollectCount(0);
-        
+
         this.save(entity);
+        log.info("用户发布帖子成功, userId: {}, postId: {}", userId, entity.getPostId());
+
         return entity.getPostId();
     }
     

@@ -81,4 +81,12 @@
         LIMIT 1
     </select>
 
+    <!-- 原子性增加帖子评论数 -->
+    <update id="incrementPostCommentCount">
+        UPDATE bus_forum_post
+        SET comment_count = comment_count + 1
+        WHERE post_id = #{postId}
+          AND del_flag = 0
+    </update>
+
 </mapper>

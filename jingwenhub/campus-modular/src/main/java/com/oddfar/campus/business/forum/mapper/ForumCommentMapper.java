@@ -41,4 +41,11 @@ public interface ForumCommentMapper extends BaseMapperX<BusForumCommentEntity> {
      * @return 评论VO
      */
     ForumCommentVO selectCommentDetail(@Param("commentId") Long commentId);
+
+    /**
+     * 原子性增加帖子评论数
+     * @param postId 帖子ID
+     * @return 影响行数
+     */
+    int incrementPostCommentCount(@Param("postId") Long postId);
 }

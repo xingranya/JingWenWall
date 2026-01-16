@@ -3,6 +3,7 @@ package com.oddfar.campus.business.forum.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.oddfar.campus.business.domain.entity.BusStudentEntity;
 import com.oddfar.campus.business.forum.domain.dto.ForumCommentDTO;
 import com.oddfar.campus.business.forum.domain.entity.BusForumCommentEntity;
 import com.oddfar.campus.business.forum.domain.entity.BusForumCommentLikeEntity;
@@ -12,9 +13,12 @@ import com.oddfar.campus.business.forum.mapper.ForumCommentLikeMapper;
 import com.oddfar.campus.business.forum.mapper.ForumCommentMapper;
 import com.oddfar.campus.business.forum.mapper.ForumPostMapper;
 import com.oddfar.campus.business.forum.service.ForumCommentService;
+import com.oddfar.campus.business.service.BusStudentService;
+import com.oddfar.campus.business.service.WxAuthService;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
 import com.oddfar.campus.common.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,18 +32,25 @@ import java.util.stream.Collectors;
 /**
  * 贴吧评论服务实现
  */
+@Slf4j
 @Service
-public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, BusForumCommentEntity> 
+public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, BusForumCommentEntity>
         implements ForumCommentService {
-    
+
     @Autowired
     private ForumCommentMapper commentMapper;
-    
+
     @Autowired
     private ForumCommentLikeMapper commentLikeMapper;
-    
+
     @Autowired
     private ForumPostMapper postMapper;
+
+    @Autowired
+    private WxAuthService wxAuthService;
+
+    @Autowired
+    private BusStudentService busStudentService;
     
     @Override
     public PageResult<ForumCommentVO> getCommentList(Long postId, Integer pageNum, Integer pageSize) {
@@ -71,39 +82,52 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
 
         return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long publishComment(ForumCommentDTO commentDTO) {
         Long userId = SecurityUtils.getUserId();
-        
-        // 验证帖子是否存在
+
+        // 1. 内容安全审核
+        BusStudentEntity student = busStudentService.getByUserId(userId);
+        String openid = student != null ? student.getOpenid() : "";
+
+        if (commentDTO.getContent() != null && !commentDTO.getContent().trim().isEmpty()) {
+            boolean contentSafe = wxAuthService.checkTextContent(commentDTO.getContent(), openid, 1);
+            if (!contentSafe) {
+                throw new ServiceException("评论内容包含违规信息，请修改后重试");
+            }
+        }
+
+        // 2. 验证帖子是否存在
         BusForumPostEntity post = postMapper.selectById(commentDTO.getPostId());
         if (post == null) {
             throw new ServiceException("帖子不存在");
         }
-        
-        // 如果是二级评论,验证父评论是否存在
+
+        // 3. 如果是二级评论,验证父评论是否存在
         if (commentDTO.getParentId() != null && commentDTO.getParentId() > 0) {
             BusForumCommentEntity parentComment = this.getById(commentDTO.getParentId());
             if (parentComment == null) {
                 throw new ServiceException("父评论不存在");
             }
         }
-        
-        // 创建评论
+
+        // 4. 创建评论
         BusForumCommentEntity entity = new BusForumCommentEntity();
         BeanUtils.copyProperties(commentDTO, entity);
         entity.setUserId(userId);
         entity.setLikeCount(0);
         entity.setStatus(0);
-        
+
         this.save(entity);
-        
-        // 更新帖子评论数
-        post.setCommentCount(post.getCommentCount() + 1);
-        postMapper.updateById(post);
-        
+
+        // 5. 更新帖子评论数 (原子性更新)
+        commentMapper.incrementPostCommentCount(commentDTO.getPostId());
+
+        log.info("用户发布评论成功, userId: {}, commentId: {}, postId: {}",
+                userId, entity.getCommentId(), commentDTO.getPostId());
+
         return entity.getCommentId();
     }
     
