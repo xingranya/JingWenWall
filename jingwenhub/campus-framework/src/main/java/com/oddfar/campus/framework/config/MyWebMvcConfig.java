@@ -35,6 +35,9 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private RepeatSubmitInterceptor repeatSubmitInterceptor;
 
+    @Autowired
+    private com.oddfar.campus.framework.interceptor.PageParamValidationInterceptor pageParamValidationInterceptor;
+
 
     /**
      * 映射到访问本地的资源文件
@@ -85,6 +88,7 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(Objects.requireNonNull(repeatSubmitInterceptor)).addPathPatterns("/**");
+        registry.addInterceptor(pageParamValidationInterceptor).addPathPatterns("/**");
     }
 
     /**
