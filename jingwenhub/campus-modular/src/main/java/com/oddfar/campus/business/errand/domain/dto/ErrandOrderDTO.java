@@ -2,6 +2,7 @@ package com.oddfar.campus.business.errand.domain.dto;
 
 import lombok.Data;
 
+import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -74,7 +75,8 @@ public class ErrandOrderDTO {
     /**
      * 小费
      */
-    @DecimalMin(value = "0", message = "小费不能为负数")
+    @DecimalMin(value = "0.0", message = "小费不能为负数")
+    @DecimalMax(value = "100.0", message = "小费不能超过100元")
     private BigDecimal tip;
 
     /**

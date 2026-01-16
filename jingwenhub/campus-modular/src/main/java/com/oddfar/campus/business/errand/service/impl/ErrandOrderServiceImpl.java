@@ -52,6 +52,12 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     @Value("${errand.platform-rate:0.15}")
     private String platformRateConfig;
 
+    /** 小费最大值 */
+    private static final BigDecimal MAX_TIP = new BigDecimal("100.00");
+
+    /** 小费最小值 */
+    private static final BigDecimal MIN_TIP = new BigDecimal("0.00");
+
     @Autowired
     private ErrandOrderMapper errandOrderMapper;
 
@@ -107,10 +113,15 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         // 生成订单号
         entity.setOrderNo(generateOrderNo());
         entity.setPublisherId(userId);
-        
-        // 计算费用
-        BigDecimal baseFee = new BigDecimal(baseFeeConfig);
+
+        // 校验小费金额（防止金额篡改）
         BigDecimal tip = orderDTO.getTip() != null ? orderDTO.getTip() : BigDecimal.ZERO;
+        if (tip.compareTo(MIN_TIP) < 0 || tip.compareTo(MAX_TIP) > 0) {
+            throw new ServiceException("小费金额必须在" + MIN_TIP + "到" + MAX_TIP + "之间");
+        }
+
+        // 计算费用（后端重新计算，不直接使用前端传来的值）
+        BigDecimal baseFee = new BigDecimal(baseFeeConfig);
         BigDecimal totalFee = baseFee.add(tip);
         
         entity.setBaseFee(baseFee);
