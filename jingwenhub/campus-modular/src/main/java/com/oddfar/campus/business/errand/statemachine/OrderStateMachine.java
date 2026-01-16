@@ -1,6 +1,6 @@
 package com.oddfar.campus.business.errand.statemachine;
 
-import com.oddfar.campus.business.errand.enums.OrderStatus;
+import com.oddfar.campus.business.errand.domain.enums.OrderStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
