@@ -4,8 +4,8 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.lang.management.ManagementFactory;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -28,6 +28,13 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
             "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM",
             "yyyy/MM/dd", "yyyy/MM/dd HH:mm:ss", "yyyy/MM/dd HH:mm", "yyyy/MM",
             "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm", "yyyy.MM"};
+
+    // 线程安全的 DateTimeFormatter 缓存
+    private static final DateTimeFormatter YYYY_FORMATTER = DateTimeFormatter.ofPattern(YYYY);
+    private static final DateTimeFormatter YYYY_MM_FORMATTER = DateTimeFormatter.ofPattern(YYYY_MM);
+    private static final DateTimeFormatter YYYY_MM_DD_FORMATTER = DateTimeFormatter.ofPattern(YYYY_MM_DD);
+    private static final DateTimeFormatter YYYYMMDDHHMMSS_FORMATTER = DateTimeFormatter.ofPattern(YYYYMMDDHHMMSS);
+    private static final DateTimeFormatter YYYY_MM_DD_HH_MM_SS_FORMATTER = DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM_SS);
 
     /**
      * 获取当前Date型日期
@@ -63,15 +70,45 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         return parseDateToStr(YYYY_MM_DD, date);
     }
 
+    /**
+     * Date转字符串（使用线程安全的DateTimeFormatter）
+     */
     public static final String parseDateToStr(final String format, final Date date) {
-        return new SimpleDateFormat(format).format(date);
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        DateTimeFormatter formatter = getFormatterForPattern(format);
+        return localDateTime.format(formatter);
     }
 
+    /**
+     * 字符串转Date（使用线程安全的DateTimeFormatter）
+     */
     public static final Date dateTime(final String format, final String ts) {
         try {
-            return new SimpleDateFormat(format).parse(ts);
-        } catch (ParseException e) {
+            DateTimeFormatter formatter = getFormatterForPattern(format);
+            LocalDateTime localDateTime = LocalDateTime.parse(ts, formatter);
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 根据格式模式获取对应的DateTimeFormatter
+     */
+    private static DateTimeFormatter getFormatterForPattern(String pattern) {
+        switch (pattern) {
+            case YYYY:
+                return YYYY_FORMATTER;
+            case YYYY_MM:
+                return YYYY_MM_FORMATTER;
+            case YYYY_MM_DD:
+                return YYYY_MM_DD_FORMATTER;
+            case YYYYMMDDHHMMSS:
+                return YYYYMMDDHHMMSS_FORMATTER;
+            case YYYY_MM_DD_HH_MM_SS:
+                return YYYY_MM_DD_HH_MM_SS_FORMATTER;
+            default:
+                return DateTimeFormatter.ofPattern(pattern);
         }
     }
 
