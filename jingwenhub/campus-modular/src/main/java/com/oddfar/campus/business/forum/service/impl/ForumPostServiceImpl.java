@@ -285,29 +285,28 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     @Transactional(rollbackFor = Exception.class)
     public void collectPost(Long postId) {
         Long userId = SecurityUtils.getUserId();
-        
-        // 检查是否已收藏（只查询未删除的）
+
+        // 检查是否存在收藏记录（包括已删除的）
         LambdaQueryWrapper<BusForumPostCollectEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BusForumPostCollectEntity::getUserId, userId)
                .eq(BusForumPostCollectEntity::getPostId, postId)
-               .eq(BusForumPostCollectEntity::getDelFlag, 0);  // 只查询未删除的
-        
-        if (collectMapper.selectCount(wrapper) > 0) {
+               .eq(BusForumPostCollectEntity::getDelFlag, 0);  // 只查未删除的
+
+        BusForumPostCollectEntity existEntity = collectMapper.selectOne(wrapper);
+
+        if (existEntity == null) {
+            // 不存在，插入新记录
+            BusForumPostCollectEntity collectEntity = new BusForumPostCollectEntity();
+            collectEntity.setUserId(userId);
+            collectEntity.setPostId(postId);
+            collectEntity.setDelFlag(0);
+            collectMapper.insert(collectEntity);
+
+            // 增加收藏计数
+            forumPostMapper.incrementCollectCount(postId);
+        } else {
+            // 已收藏，抛出异常
             throw new ServiceException("已经收藏过了");
-        }
-        
-        // 添加收藏记录
-        BusForumPostCollectEntity collectEntity = new BusForumPostCollectEntity();
-        collectEntity.setUserId(userId);
-        collectEntity.setPostId(postId);
-        collectEntity.setDelFlag(0);  // 下檇标记为未删除
-        collectMapper.insert(collectEntity);
-        
-        // 更新帖子收藏数
-        BusForumPostEntity post = this.getById(postId);
-        if (post != null) {
-            post.setCollectCount(post.getCollectCount() + 1);
-            this.updateById(post);
         }
     }
     
@@ -315,25 +314,21 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
     @Transactional(rollbackFor = Exception.class)
     public void uncollectPost(Long postId) {
         Long userId = SecurityUtils.getUserId();
-        
+
         // 查找收藏记录
         LambdaQueryWrapper<BusForumPostCollectEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BusForumPostCollectEntity::getUserId, userId)
                .eq(BusForumPostCollectEntity::getPostId, postId)
                .eq(BusForumPostCollectEntity::getDelFlag, 0);  // 只查询未删除的
-        
+
         BusForumPostCollectEntity collectEntity = collectMapper.selectOne(wrapper);
         if (collectEntity != null) {
-            // 逐辑删除：设置 del_flag = 1
+            // 逻辑删除：设置 del_flag = 1
             collectEntity.setDelFlag(1);
             collectMapper.updateById(collectEntity);
-            
-            // 更新帖子收藏数
-            BusForumPostEntity post = this.getById(postId);
-            if (post != null && post.getCollectCount() > 0) {
-                post.setCollectCount(post.getCollectCount() - 1);
-                this.updateById(post);
-            }
+
+            // 使用原子性更新
+            forumPostMapper.decrementCollectCount(postId);
         }
     }
     
