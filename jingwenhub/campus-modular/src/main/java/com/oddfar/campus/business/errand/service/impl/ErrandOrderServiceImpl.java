@@ -14,6 +14,7 @@ import com.oddfar.campus.business.errand.enums.PayStatus;
 import com.oddfar.campus.business.errand.mapper.ErrandOrderMapper;
 import com.oddfar.campus.business.errand.mapper.ErrandRunnerMapper;
 import com.oddfar.campus.business.errand.service.ErrandOrderService;
+import com.oddfar.campus.business.service.BusStudentService;
 import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
@@ -59,6 +60,9 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private BusStudentService studentService;
 
     /** 订单号格式化器 */
     private static final DateTimeFormatter ORDER_NO_FORMATTER =
@@ -250,6 +254,19 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         OrderStatus currentStatus = OrderStatus.fromCode(order.getStatus());
         if (!currentStatus.isCancellable()) {
             throw new ServiceException("订单当前状态无法取消: " + currentStatus.getDesc());
+        }
+
+        // 新增: 已支付订单需要退款
+        if (order.getPayStatus() != null && order.getPayStatus().equals(PayStatus.PAID.getCode())) {
+            // 退款到余额
+            BusStudentEntity student = studentService.getByUserId(order.getPublisherId());
+            if (student != null) {
+                BigDecimal refundAmount = order.getTotalFee();
+                studentService.updateBalance(student.getStudentId(), refundAmount);
+
+                log.info("订单取消退款: orderId={}, publisherId={}, refundAmount={}",
+                        orderId, order.getPublisherId(), refundAmount);
+            }
         }
 
         order.setStatus(OrderStatus.CANCELLED.getCode());
