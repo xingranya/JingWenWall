@@ -102,7 +102,9 @@ public class WeiXinAuthServiceImpl implements WeiXinAuthService {
             userEntity.setUserId(id);
             userEntity.setUserName(Convert.toStr(id));
             userEntity.setNickName("微信用户" + StringUtils.substring(openid, 0, 4));
-            userEntity.setPassword(SecurityUtils.encryptPassword("123456"));
+            // 使用强随机密码，微信用户不应使用密码登录
+            String randomPassword = DigestUtil.md5Hex(id + openid + System.currentTimeMillis());
+            userEntity.setPassword(SecurityUtils.encryptPassword(randomPassword));
             userEntity.setStatus("0");
 
             userService.insertUser(userEntity);
@@ -195,7 +197,9 @@ public class WeiXinAuthServiceImpl implements WeiXinAuthService {
                 userEntity.setAvatar(avatarUrl);
             }
 
-            userEntity.setPassword(SecurityUtils.encryptPassword("123456"));
+            // 使用强随机密码，微信用户不应使用密码登录
+            String randomPassword = DigestUtil.md5Hex(id + openid + System.currentTimeMillis());
+            userEntity.setPassword(SecurityUtils.encryptPassword(randomPassword));
             userEntity.setStatus("0");
 
             userService.insertUser(userEntity);
