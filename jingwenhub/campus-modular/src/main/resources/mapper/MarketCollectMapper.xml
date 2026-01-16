@@ -22,7 +22,8 @@
 
     <!-- 查询物理记录 -->
     <select id="selectOnePhysical" resultMap="BaseResultMap">
-        SELECT * FROM bus_market_collect 
+        SELECT collect_id, user_id, item_id, create_time, del_flag
+        FROM bus_market_collect
         WHERE user_id = #{userId} AND item_id = #{itemId}
         LIMIT 1
     </select>

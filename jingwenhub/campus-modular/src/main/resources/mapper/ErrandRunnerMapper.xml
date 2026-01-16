@@ -48,7 +48,10 @@
 
     <!-- 根据用户ID查询骑手信息 -->
     <select id="selectByUserId" resultMap="BaseResultMap">
-        SELECT * FROM bus_errand_runner 
+        SELECT runner_id, user_id, real_name, id_card, id_card_front, id_card_back,
+               student_card, total_orders, total_income, rating, status, audit_remark,
+               del_flag, create_time, update_time
+        FROM bus_errand_runner
         WHERE user_id = #{userId} AND del_flag = 0
         LIMIT 1
     </select>

@@ -119,7 +119,15 @@
 
     <!-- 根据订单号查询 -->
     <select id="selectByOrderNo" resultMap="BaseResultMap">
-        SELECT * FROM bus_errand_order 
+        SELECT order_id, order_no, publisher_id, runner_id, type,
+               pickup_addr, pickup_lat, pickup_lng,
+               delivery_addr, delivery_lat, delivery_lng,
+               goods_desc, goods_weight, expect_time,
+               tip, base_fee, total_fee, runner_fee, platform_fee,
+               pay_status, pay_time, pay_order_no,
+               status, cancel_reason, remark, version,
+               del_flag, create_time, update_time
+        FROM bus_errand_order
         WHERE order_no = #{orderNo} AND del_flag = 0
         LIMIT 1
     </select>

@@ -17,7 +17,7 @@ spring:
   #数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/jingwen_campus?characterEncoding=utf-8&useSSL=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://localhost:3306/jingwen_campus?useUnicode=true&characterEncoding=utf8mb4&useSSL=true&serverTimezone=Asia/Shanghai
     username: root
     password: xingran8
   #redis配置
@@ -58,8 +58,8 @@ token:
   header: Authorization
   # 令牌密钥（至少64字符，支持HS512算法）
   secret: abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz
-  # 令牌有效期（单位分钟）
-  expireTime: 1440
+  # 令牌有效期（单位分钟）：12小时
+  expireTime: 720
 
 # 用户配置
 user:
