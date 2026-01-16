@@ -8,13 +8,12 @@ import com.oddfar.campus.business.errand.domain.dto.ErrandOrderDTO;
 import com.oddfar.campus.business.errand.domain.entity.BusErrandOrderEntity;
 import com.oddfar.campus.business.errand.domain.entity.BusErrandRunnerEntity;
 import com.oddfar.campus.business.errand.domain.vo.ErrandOrderVO;
+import com.oddfar.campus.business.errand.domain.enums.OrderStatus;
 import com.oddfar.campus.business.errand.enums.ErrandType;
-import com.oddfar.campus.business.errand.enums.OrderStatus;
 import com.oddfar.campus.business.errand.enums.PayStatus;
 import com.oddfar.campus.business.errand.mapper.ErrandOrderMapper;
 import com.oddfar.campus.business.errand.mapper.ErrandRunnerMapper;
 import com.oddfar.campus.business.errand.service.ErrandOrderService;
-import com.oddfar.campus.business.errand.statemachine.OrderStateMachine;
 import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.domain.PageResult;
 import com.oddfar.campus.common.exception.ServiceException;
@@ -60,9 +59,6 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
 
     @Autowired
     private RedisCache redisCache;
-
-    @Autowired
-    private OrderStateMachine stateMachine;
 
     /** 订单号格式化器 */
     private static final DateTimeFormatter ORDER_NO_FORMATTER =
@@ -217,46 +213,50 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
             throw new ServiceException("无权操作此订单");
         }
 
-        // 状态流转校验 (使用状态机)
+        // 状态流转校验 (使用枚举内置的状态机)
         OrderStatus currentStatus = OrderStatus.fromCode(order.getStatus());
         OrderStatus newStatus = OrderStatus.fromCode(status);
 
-        if (!stateMachine.canTransition(currentStatus, newStatus)) {
-            throw new ServiceException("订单状态不允许此操作: " + currentStatus + " -> " + newStatus);
+        // 使用状态机检查转换是否合法
+        if (!currentStatus.canTransitionTo(newStatus)) {
+            throw new ServiceException(
+                    String.format("订单状态不允许此操作: %s -> %s",
+                            currentStatus.getDesc(), newStatus.getDesc()));
         }
 
         order.setStatus(status);
         order.setUpdateTime(new Date());
         this.updateById(order);
 
-        log.info("订单 {} 状态更新: {} -> {}, 操作用户: {}", orderId, currentStatus, newStatus, userId);
+        log.info("订单 {} 状态更新: {} -> {}, 操作用户: {}", orderId, currentStatus.getDesc(), newStatus.getDesc(), userId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long orderId, String reason) {
         Long userId = SecurityUtils.getUserId();
-        
+
         BusErrandOrderEntity order = this.getById(orderId);
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        
+
         // 只有发布者可以取消订单
         if (!userId.equals(order.getPublisherId())) {
             throw new ServiceException("无权取消此订单");
         }
-        
-        // 只有待接单或已接单的订单可以取消
-        if (order.getStatus() > OrderStatus.ACCEPTED.getCode()) {
-            throw new ServiceException("订单已开始配送，无法取消");
+
+        // 使用状态机检查是否可取消
+        OrderStatus currentStatus = OrderStatus.fromCode(order.getStatus());
+        if (!currentStatus.isCancellable()) {
+            throw new ServiceException("订单当前状态无法取消: " + currentStatus.getDesc());
         }
-        
+
         order.setStatus(OrderStatus.CANCELLED.getCode());
         order.setCancelReason(reason);
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
+
         log.info("订单 {} 已取消, 原因: {}", orderId, reason);
     }
 
@@ -370,17 +370,18 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        
-        // 管理员可以取消任何未完成的订单
-        if (order.getStatus() >= OrderStatus.COMPLETED.getCode()) {
-            throw new ServiceException("订单已完成，无法取消");
+
+        // 使用状态机检查是否可取消
+        OrderStatus currentStatus = OrderStatus.fromCode(order.getStatus());
+        if (currentStatus.isTerminalState()) {
+            throw new ServiceException("订单已完成或已取消，无法再次取消");
         }
-        
+
         order.setStatus(OrderStatus.CANCELLED.getCode());
         order.setCancelReason("管理员取消: " + (reason != null ? reason : ""));
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
+
         log.info("管理员取消订单 {}, 原因: {}", orderId, reason);
     }
 
