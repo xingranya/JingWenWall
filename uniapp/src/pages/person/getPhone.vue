@@ -32,7 +32,7 @@
 
 <script>
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
-import { userGetPhoneService } from "@/api/getPhone";
+import { userLoginService } from "@/api/login";
 
 export default {
   components: {
@@ -44,12 +44,22 @@ export default {
         uni.showLoading({ title: '登录中...' });
         try {
           const code = e.detail.code;
-          // 调用后端接口
-          const res = await userGetPhoneService({ code });
-          // 假设 res 包含 Token
-          uni.setStorageSync('token', res.token || 'mock-token');
+          // 调用正确的微信登录接口
+          const res = await userLoginService({ code: code });
+
+          // 保存token (userLoginService已经保存了，这里双重保险)
+          if (res.data && res.data.token) {
+            uni.setStorageSync('token', res.data.token);
+          }
+
+          // 保存用户信息
+          if (res.data && res.data.studentInfo) {
+            uni.setStorageSync('userInfo', res.data.studentInfo);
+          }
+
+          uni.hideLoading();
           uni.showToast({ title: '登录成功', icon: 'success' });
-          
+
           setTimeout(() => {
             uni.switchTab({ url: '/pages/index/index' });
           }, 1000);

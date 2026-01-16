@@ -46,7 +46,7 @@ function handleTokenExpired() {
         success: () => {
             // 使用 reLaunch 跳转到登录页，清空页面栈
             uni.reLaunch({
-                url: '/pages/transition/login'
+                url: '/pages/person/getPhone'
             });
         }
     });
@@ -150,7 +150,7 @@ export function request({url='', params={}, method='GET', showError = true}) {
                 // 成功响应
                 if (data.code === 200 || data.code === 1) {
                     console.log('[Request] Success:', url, data);
-                    resolve(res.data);
+                    resolve(data);  // 返回完整的响应对象 {code, msg, data}
                     return;
                 }
 

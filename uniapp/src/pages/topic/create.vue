@@ -90,11 +90,9 @@ import {
 } from '@/api/topic';
 import { baseUrl } from '@/utils/env';
 import uniSection from '@dcloudio/uni-ui/lib/uni-section/uni-section.vue';
-import View from '@/pages/topic/create.vue';
 
 export default {
   components: {
-    View,
     uniSection
   },
   data() {

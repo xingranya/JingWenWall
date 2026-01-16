@@ -21,7 +21,9 @@
       "Bash(mvn dependency:tree:*)",
       "Bash(jar:*)",
       "Bash(mvn install:*)",
-      "Bash(mvn test-compile:*)"
+      "Bash(mvn test-compile:*)",
+      "Bash(mvn test:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

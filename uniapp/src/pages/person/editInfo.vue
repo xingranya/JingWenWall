@@ -34,11 +34,9 @@
 
 <script>
 import {baseUrl} from "@/utils/env";
-import View from "@/pages/person/editInfo.vue";
 
 export default {
   components: {
-    View
   },
   data() {
     return {
