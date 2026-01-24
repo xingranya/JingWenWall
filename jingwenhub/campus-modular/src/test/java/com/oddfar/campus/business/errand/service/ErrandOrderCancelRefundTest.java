@@ -39,9 +39,9 @@ public class ErrandOrderCancelRefundTest {
     @WithMockUser(username = "publisher")
     public void testCancelPaidOrder_ShouldRefundToBalance() {
         // 准备测试数据
-        Long orderId = 1L;  // 假设数据库中存在一个已支付的订单
+        Long orderId = 1L; // 假设数据库中存在一个已支付的订单
         Long publisherId = 1L;
-        BigDecimal initialBalance = new BigDecimal("100.00");
+        // initialBalance 用于测试计算，非直接断言
         BigDecimal expectedRefund = new BigDecimal("10.00");
 
         // 获取用户当前余额
@@ -76,7 +76,7 @@ public class ErrandOrderCancelRefundTest {
     @WithMockUser(username = "publisher")
     public void testCancelUnpaidOrder_ShouldNotRefund() {
         // 准备测试数据
-        Long orderId = 2L;  // 假设存在一个未支付的订单
+        Long orderId = 2L; // 假设存在一个未支付的订单
         Long publisherId = 2L;
 
         // 获取用户当前余额
@@ -106,7 +106,7 @@ public class ErrandOrderCancelRefundTest {
     @DisplayName("取消已完成订单 - 应抛出异常")
     @WithMockUser(username = "publisher")
     public void testCancelCompletedOrder_ShouldThrowException() {
-        Long orderId = 3L;  // 假设存在一个已完成的订单
+        Long orderId = 3L; // 假设存在一个已完成的订单
 
         assertThrows(ServiceException.class, () -> {
             errandOrderService.cancelOrder(orderId, "想取消");
@@ -117,7 +117,7 @@ public class ErrandOrderCancelRefundTest {
     @DisplayName("取消正在进行中的订单 - 应抛出异常")
     @WithMockUser(username = "publisher")
     public void testCancelInProgressOrder_ShouldThrowException() {
-        Long orderId = 4L;  // 假设存在一个进行中的订单
+        Long orderId = 4L; // 假设存在一个进行中的订单
 
         assertThrows(ServiceException.class, () -> {
             errandOrderService.cancelOrder(orderId, "不想做了");
@@ -128,7 +128,7 @@ public class ErrandOrderCancelRefundTest {
     @DisplayName("非订单发布者取消订单 - 应抛出异常")
     @WithMockUser(username = "other")
     public void testCancelOrderByOtherUser_ShouldThrowException() {
-        Long orderId = 1L;  // 属于用户1的订单
+        Long orderId = 1L; // 属于用户1的订单
 
         assertThrows(ServiceException.class, () -> {
             errandOrderService.cancelOrder(orderId, "恶意取消");

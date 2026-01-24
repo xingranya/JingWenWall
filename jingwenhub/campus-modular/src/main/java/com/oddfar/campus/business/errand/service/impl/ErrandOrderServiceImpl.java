@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -72,8 +71,7 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     private BusStudentService studentService;
 
     /** 订单号格式化器 */
-    private static final DateTimeFormatter ORDER_NO_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter ORDER_NO_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     @Override
     public PageResult<ErrandOrderVO> getWaitingOrders(Integer pageNum, Integer pageSize) {
@@ -91,14 +89,14 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
             throw new ServiceException("订单不存在");
         }
         fillOrderDesc(vo);
-        
+
         // 填充当前用户标识
         if (SecurityUtils.isLogin()) {
             Long userId = SecurityUtils.getUserId();
             vo.setIsMine(userId.equals(vo.getPublisherId()));
             vo.setIsMyAccept(userId.equals(vo.getRunnerId()));
         }
-        
+
         return vo;
     }
 
@@ -106,11 +104,11 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     @Transactional(rollbackFor = Exception.class)
     public Long createOrder(ErrandOrderDTO orderDTO) {
         Long userId = SecurityUtils.getUserId();
-        
+
         // 创建订单实体
         BusErrandOrderEntity entity = new BusErrandOrderEntity();
         BeanUtils.copyProperties(orderDTO, entity);
-        
+
         // 生成订单号
         entity.setOrderNo(generateOrderNo());
         entity.setPublisherId(userId);
@@ -124,19 +122,19 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         // 计算费用（后端重新计算，不直接使用前端传来的值）
         BigDecimal baseFee = new BigDecimal(baseFeeConfig);
         BigDecimal totalFee = baseFee.add(tip);
-        
+
         entity.setBaseFee(baseFee);
         entity.setTotalFee(totalFee);
-        
+
         // 初始状态
         entity.setStatus(OrderStatus.WAITING.getCode());
         entity.setPayStatus(PayStatus.UNPAID.getCode());
         entity.setVersion(0);
         entity.setDelFlag(0);
         entity.setCreateTime(new Date());
-        
+
         this.save(entity);
-        
+
         log.info("订单创建成功, orderId: {}, orderNo: {}", entity.getOrderId(), entity.getOrderNo());
         return entity.getOrderId();
     }
@@ -145,23 +143,23 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     @Transactional(rollbackFor = Exception.class)
     public void acceptOrder(Long orderId) {
         Long runnerId = SecurityUtils.getUserId();
-        
+
         // 1. 检查是否是认证骑手
         BusErrandRunnerEntity runner = runnerMapper.selectByUserId(runnerId);
         if (runner == null || runner.getStatus() != 1) {
             throw new ServiceException("请先完成骑手认证");
         }
-        
+
         // 2. Redis 分布式锁
         String lockKey = "lock:errand:order:" + orderId;
         boolean locked = false;
-        
+
         try {
             locked = tryAcquireLock(lockKey, 10, TimeUnit.SECONDS);
             if (!locked) {
                 throw new ServiceException("手慢了，订单正在被抢");
             }
-            
+
             // 3. 查询订单
             BusErrandOrderEntity order = this.getById(orderId);
             if (order == null) {
@@ -176,7 +174,7 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
             if (!PayStatus.PAID.getCode().equals(order.getPayStatus())) {
                 throw new ServiceException("订单未支付");
             }
-            
+
             // 4. 计算骑手佣金和平台抽成
             BigDecimal totalFee = order.getTotalFee();
             BigDecimal platformRate = new BigDecimal(platformRateConfig);
@@ -198,7 +196,7 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
             }
 
             log.info("订单 {} 被骑手 {} 接单, 佣金: {}, 平台抽成: {}", orderId, runnerId, runnerFee, platformFee);
-            
+
         } finally {
             if (locked) {
                 releaseLock(lockKey);
@@ -293,31 +291,31 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
     @Transactional(rollbackFor = Exception.class)
     public void confirmComplete(Long orderId) {
         Long userId = SecurityUtils.getUserId();
-        
+
         BusErrandOrderEntity order = this.getById(orderId);
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        
+
         // 只有发布者可以确认完成
         if (!userId.equals(order.getPublisherId())) {
             throw new ServiceException("无权操作此订单");
         }
-        
+
         // 只有待确认的订单可以确认完成
         if (!OrderStatus.CONFIRMING.getCode().equals(order.getStatus())) {
             throw new ServiceException("订单状态不正确");
         }
-        
+
         order.setStatus(OrderStatus.COMPLETED.getCode());
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
+
         // 更新骑手统计
         if (order.getRunnerId() != null && order.getRunnerFee() != null) {
             runnerMapper.updateRunnerStats(order.getRunnerId(), 1, order.getRunnerFee());
         }
-        
+
         log.info("订单 {} 已完成", orderId);
     }
 
@@ -348,13 +346,13 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        
+
         order.setPayStatus(PayStatus.PAID.getCode());
         order.setPayTime(new Date());
         order.setPayOrderNo("MOCK_" + System.currentTimeMillis());
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
+
         log.info("订单 {} 模拟支付成功", orderId);
     }
 
@@ -378,7 +376,8 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         vo.setTypeDesc(ErrandType.getDescByCode(vo.getType()));
         vo.setStatusDesc(OrderStatus.getDescByCode(vo.getStatus()));
         vo.setPayStatusDesc(PayStatus.fromCode(vo.getPayStatus()) != null
-                ? PayStatus.fromCode(vo.getPayStatus()).getDesc() : "未知");
+                ? PayStatus.fromCode(vo.getPayStatus()).getDesc()
+                : "未知");
     }
 
     // ==================== 管理后台方法 ====================
@@ -421,12 +420,12 @@ public class ErrandOrderServiceImpl extends ServiceImpl<ErrandOrderMapper, BusEr
         if (order == null) {
             throw new ServiceException("订单不存在");
         }
-        
+
         // 逻辑删除
         order.setDelFlag(1);
         order.setUpdateTime(new Date());
         this.updateById(order);
-        
+
         log.info("订单 {} 已删除", orderId);
     }
 }

@@ -21,11 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/campus")
 @ApiResource(name = "评论api", appCode = "campus", resBizType = ResBizTypeEnum.BUSINESS)
-@SuppressWarnings("unchecked")
 public class CommentInfoController {
     @Autowired
     private CommentService commentService;
-
 
     /**
      * 查询一级评论
@@ -60,7 +58,6 @@ public class CommentInfoController {
         return R.ok(commentVos);
     }
 
-
     /**
      * 分页查询自己发布或回复的评论列表
      */
@@ -69,7 +66,7 @@ public class CommentInfoController {
     public R getOwnCommentList() {
         PageUtils.startPage(5);
         List<CommentVo> commentVos = commentService.selectOwnComment();
-        //封装分页数据
+        // 封装分页数据
         PageResult<CommentVo> pageResult = PageUtils.getPageResult(commentVos);
         return R.ok().put(pageResult);
     }
@@ -95,7 +92,6 @@ public class CommentInfoController {
 
         return R.ok(commentService.selectCommentVo(commentId));
     }
-
 
     /**
      * 删除自己的评论

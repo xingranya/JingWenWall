@@ -1,7 +1,6 @@
 package com.oddfar.campus.common.service;
 
-import com.oddfar.campus.business.forum.mapper.ForumPostMapper;
-import com.oddfar.campus.common.utils.spring.SpringUtils;
+import com.oddfar.campus.common.utils.SpringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -9,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +22,9 @@ import java.util.concurrent.TimeUnit;
 public class ViewCountService {
 
     private static final String VIEW_COUNT_PREFIX = "view:count:";
+
+    /** ForumPostMapper 的 Bean 名称，用于解耦模块间依赖 */
+    private static final String FORUM_POST_MAPPER_BEAN = "forumPostMapper";
 
     @Autowired
     @Qualifier("redisStringObjectTemplate")
@@ -45,8 +48,19 @@ public class ViewCountService {
      */
     public Integer getViewCount(String resourceType, Long resourceId) {
         String key = VIEW_COUNT_PREFIX + resourceType + ":" + resourceId;
-        Object count = redisTemplate.opsForValue().get(key);
-        return parseCount(count);
+        // 由于使用 StringRedisSerializer，返回值总是 String 类型
+        Object rawValue = redisTemplate.opsForValue().get(key);
+        if (rawValue == null) {
+            return null;
+        }
+        // 显式转换为 String 后再解析
+        String strValue = rawValue.toString();
+        try {
+            return Integer.parseInt(strValue);
+        } catch (NumberFormatException e) {
+            log.warn("解析浏览量失败，key={}, value={}", key, strValue);
+            return null;
+        }
     }
 
     /**
@@ -101,26 +115,38 @@ public class ViewCountService {
         for (String key : keys) {
             // key format: view:count:post:123
             String[] parts = key.split(":");
-            if (parts.length != 4) continue;
+            if (parts.length != 4)
+                continue;
 
             String resourceType = parts[2];
             Long resourceId = Long.valueOf(parts[3]);
             Integer count = parseCount(redisTemplate.opsForValue().get(key));
 
             grouped.computeIfAbsent(resourceType, k -> new HashMap<>())
-                   .put(resourceId, count);
+                    .put(resourceId, count);
         }
 
         return grouped;
     }
 
+    /**
+     * 同步帖子浏览量到数据库
+     * 注意：使用反射调用以解耦 campus-common 与 campus-modular 模块间的依赖
+     */
     private void syncPostsViewCount(Map<Long, Integer> counts) {
+        if (counts.isEmpty()) {
+            return;
+        }
         try {
-            // 使用 SpringUtils 获取 ForumPostMapper Bean
-            ForumPostMapper forumPostMapper = SpringUtils.getBean(ForumPostMapper.class);
-            if (forumPostMapper != null && !counts.isEmpty()) {
-                forumPostMapper.batchUpdateViewCount(counts);
+            // 通过 Bean 名称获取 ForumPostMapper，避免直接类型依赖
+            Object forumPostMapper = SpringUtils.getBean(FORUM_POST_MAPPER_BEAN);
+            if (forumPostMapper != null) {
+                // 反射调用 batchUpdateViewCount 方法
+                Method method = forumPostMapper.getClass().getMethod("batchUpdateViewCount", Map.class);
+                method.invoke(forumPostMapper, counts);
                 log.debug("同步帖子浏览量成功: {} 条", counts.size());
+            } else {
+                log.warn("ForumPostMapper Bean 未找到，跳过帖子浏览量同步");
             }
         } catch (Exception e) {
             log.error("同步帖子浏览量失败", e);

@@ -10,6 +10,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import org.springframework.lang.NonNull;
+
 /**
  * redis配置
  *
@@ -24,7 +26,7 @@ public class RedisConfig extends CachingConfigurerSupport {
      */
     @Bean
     @Primary
-    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<Object, Object> redisTemplate(@NonNull RedisConnectionFactory connectionFactory) {
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
@@ -46,7 +48,7 @@ public class RedisConfig extends CachingConfigurerSupport {
      * RedisTemplate<String, Object> - 用于 ViewCountService（使用String序列化）
      */
     @Bean("redisStringObjectTemplate")
-    public RedisTemplate<String, Object> redisStringObjectTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisStringObjectTemplate(@NonNull RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
@@ -71,6 +73,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     /**
      * 限流脚本
      */
+    @NonNull
     private String limitScriptText() {
         return "local key = KEYS[1]\n" +
                 "local count = tonumber(ARGV[1])\n" +

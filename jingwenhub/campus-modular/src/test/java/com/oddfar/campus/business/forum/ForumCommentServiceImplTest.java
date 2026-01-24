@@ -1,6 +1,5 @@
 package com.oddfar.campus.business.forum;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.oddfar.campus.business.forum.domain.entity.BusForumCommentEntity;
 import com.oddfar.campus.business.forum.domain.entity.BusForumPostEntity;
 import com.oddfar.campus.business.forum.mapper.ForumCommentMapper;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -354,15 +351,5 @@ public class ForumCommentServiceImplTest {
     private boolean isCommentDeleted(Long commentId) {
         BusForumCommentEntity comment = commentMapper.selectById(commentId);
         return comment != null && comment.getDelFlag() == 1;
-    }
-
-    /**
-     * 统计未删除的子评论数量
-     */
-    private int countActiveChildren(Long parentId) {
-        LambdaQueryWrapper<BusForumCommentEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BusForumCommentEntity::getParentId, parentId);
-        wrapper.eq(BusForumCommentEntity::getDelFlag, 0);
-        return Math.toIntExact(commentMapper.selectCount(wrapper));
     }
 }

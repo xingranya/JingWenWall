@@ -2,9 +2,9 @@ package com.oddfar.campus.framework.interceptor;
 
 import com.oddfar.campus.common.validation.PageParamUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,8 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 public class PageParamValidationInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-                             Object handler) throws Exception {
+    public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull Object handler) throws Exception {
         // 获取请求参数
         String pageNumStr = request.getParameter("pageNum");
         String pageSizeStr = request.getParameter("pageSize");

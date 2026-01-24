@@ -38,7 +38,6 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private com.oddfar.campus.framework.interceptor.PageParamValidationInterceptor pageParamValidationInterceptor;
 
-
     /**
      * 映射到访问本地的资源文件
      *
@@ -69,18 +68,18 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
          * 序列换成json时,将所有的long变成string
          * 因为js中得数字类型不能包含所有的java long值
          */
-        //返回json数据long型精度丢失问题
+        // 返回json数据long型精度丢失问题
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
         simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
         objectMapper.registerModule(simpleModule);
-        // 反序列化设置 关闭反序列化时Jackson发现无法找到对应的对象字段，便会抛出UnrecognizedPropertyException: Unrecognized field xxx异常
+        // 反序列化设置 关闭反序列化时Jackson发现无法找到对应的对象字段，便会抛出UnrecognizedPropertyException:
+        // Unrecognized field xxx异常
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         jackson2HttpMessageConverter.setObjectMapper(objectMapper);
         converters.add(jackson2HttpMessageConverter);
     }
-
 
     /**
      * 自定义拦截规则
@@ -88,7 +87,7 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(Objects.requireNonNull(repeatSubmitInterceptor)).addPathPatterns("/**");
-        registry.addInterceptor(pageParamValidationInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(Objects.requireNonNull(pageParamValidationInterceptor)).addPathPatterns("/**");
     }
 
     /**
@@ -116,6 +115,7 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
     /**
      * RequestContextListener监听器
      * bug：https://blog.csdn.net/qq_39575279/article/details/86562195
+     * 
      * @return
      */
     @Bean

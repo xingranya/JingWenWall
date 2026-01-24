@@ -1,0 +1,105 @@
+# 测试环境专用配置
+# 该配置用于运行集成测试，使用本地 MySQL 和 Redis
+
+# 项目相关配置
+campus:
+  name: jingwenhub-test
+  version: 1.1.7
+
+server:
+  port: 8099
+
+spring:
+  application:
+    name: oddfar-test
+  profiles:
+    active: unittest
+
+  # 禁用定时任务，避免测试时后台任务干扰
+  task:
+    scheduling:
+      pool:
+        size: 0
+
+  # 数据源配置 - 使用本地 MySQL
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 测试数据库，与开发数据库分离
+    url: jdbc:mysql://localhost:3306/jingwen_campus_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    # 测试环境密码：优先使用环境变量，否则使用默认密码
+    password: ${DB_PASSWORD:xingran8}
+
+  # Redis 配置 - 使用本地 Redis
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    # 测试环境 Redis 无密码
+    # password: ${REDIS_PASSWORD:}
+    # 使用独立的数据库编号，避免污染开发数据
+    database: 15
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 4
+        min-idle: 0
+
+  # 文件上传
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  # Jackson 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# Token 配置 - 测试环境使用固定密钥
+token:
+  header: Authorization
+  # 测试环境专用密钥（64字符以上，满足 HS512 算法要求）
+  secret: ${JWT_SECRET:test-secret-key-for-unit-testing-purpose-only-must-be-at-least-64-characters-long-12345678}
+  expireTime: 720
+
+# 用户配置
+user:
+  password:
+    maxRetryCount: 5
+    lockTime: 10
+
+# 日志配置 - 测试环境使用 INFO 级别减少输出
+logging:
+  level:
+    com.oddfar: info
+    org.springframework: warn
+    org.mybatis: warn
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  configuration:
+    # 测试环境关闭 SQL 日志
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  type-aliases-package: com.oddfar.**.domain
+
+# PageHelper 分页插件
+pagehelper:
+  helperDialect: mysql
+  support-methods-arguments: false
+
+# Swagger 配置 - 测试环境关闭
+swagger:
+  enabled: false
+
+# 微信小程序配置 - 测试环境使用模拟值
+wechat:
+  mini:
+    appId: ${WECHAT_APPID:wx_test_app_id}
+    appSecret: ${WECHAT_APP_SECRET:wx_test_app_secret_for_testing_only}

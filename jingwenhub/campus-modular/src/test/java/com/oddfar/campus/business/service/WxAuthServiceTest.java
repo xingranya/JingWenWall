@@ -6,8 +6,6 @@ import com.oddfar.campus.business.domain.vo.WxLoginVO;
 import com.oddfar.campus.common.core.RedisCache;
 import com.oddfar.campus.common.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

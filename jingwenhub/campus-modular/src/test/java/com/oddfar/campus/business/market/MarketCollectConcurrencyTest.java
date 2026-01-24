@@ -4,8 +4,6 @@ import com.oddfar.campus.business.market.domain.entity.BusMarketCollectEntity;
 import com.oddfar.campus.business.market.domain.entity.BusMarketItemEntity;
 import com.oddfar.campus.business.market.mapper.MarketCollectMapper;
 import com.oddfar.campus.business.market.mapper.MarketItemMapper;
-import com.oddfar.campus.business.market.service.MarketItemService;
-import com.oddfar.campus.common.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,9 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 @Transactional
 public class MarketCollectConcurrencyTest {
-
-    @Autowired
-    private MarketItemService marketItemService;
 
     @Autowired
     private MarketItemMapper itemMapper;

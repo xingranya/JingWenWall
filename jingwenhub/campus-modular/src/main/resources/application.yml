@@ -20,7 +20,7 @@ spring:
     url: jdbc:mysql://localhost:3306/jingwen_campus?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
     username: root
     # 生产环境请使用环境变量 DB_PASSWORD
-    password: ${DB_PASSWORD}
+    password: ${DB_PASSWORD:xingran8}
   #redis配置
   redis:
     host: 127.0.0.1
@@ -59,7 +59,7 @@ token:
   header: Authorization
   # 令牌密钥（至少64字符，支持HS512算法）
   # 生产环境请使用环境变量 JWT_SECRET,并使用强随机密钥
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:this-is-a-default-dev-secret-key-please-change-in-prod-123456}
   # 令牌有效期（单位分钟）：12小时
   expireTime: 720
 
@@ -105,6 +105,7 @@ swagger:
 wechat:
   mini:
     # 小程序 AppID (需替换为实际值)
-    appId: ${WECHAT_APPID}
+    # 小程序 AppID (需替换为实际值)
+    appId: wxc56334f1f425a05f
     # 小程序 AppSecret (生产环境请使用环境变量 WECHAT_APP_SECRET)
-    appSecret: ${WECHAT_APP_SECRET}
+    appSecret: c5e4a048b701be66b35ac4e1e8d4b075

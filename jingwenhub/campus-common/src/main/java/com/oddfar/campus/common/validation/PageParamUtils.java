@@ -1,13 +1,5 @@
 package com.oddfar.campus.common.validation;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * 分页参数验证工具
  *
@@ -41,19 +33,19 @@ public class PageParamUtils {
     /**
      * 验证并规范化分页参数
      *
-     * @param pageNum 页码
+     * @param pageNum  页码
      * @param pageSize 每页数量
      * @throws IllegalArgumentException 参数超出范围
      */
     public static void validate(Integer pageNum, Integer pageSize) {
         if (pageNum != null && (pageNum < MIN_PAGE_NUM || pageNum > MAX_PAGE_NUM)) {
             throw new IllegalArgumentException(
-                String.format("页码超出范围,应在%d-%d之间", MIN_PAGE_NUM, MAX_PAGE_NUM));
+                    String.format("页码超出范围,应在%d-%d之间", MIN_PAGE_NUM, MAX_PAGE_NUM));
         }
 
         if (pageSize != null && (pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)) {
             throw new IllegalArgumentException(
-                String.format("每页数量超出范围,应在%d-%d之间", MIN_PAGE_SIZE, MAX_PAGE_SIZE));
+                    String.format("每页数量超出范围,应在%d-%d之间", MIN_PAGE_SIZE, MAX_PAGE_SIZE));
         }
     }
 
