@@ -82,7 +82,16 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
         PageInfo<ForumPostVO> pageInfo = new PageInfo<>(list);
         return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
     }
-    
+
+    @Override
+    public PageResult<ForumPostVO> searchPosts(String keyword, Long categoryId, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<ForumPostVO> list = forumPostMapper.selectSearchPosts(keyword, categoryId);
+        fillUserLikeAndCollectStatus(list);
+        PageInfo<ForumPostVO> pageInfo = new PageInfo<>(list);
+        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+    }
+
     @Override
     public ForumPostVO getDetail(Long postId) {
         ForumPostVO vo = forumPostMapper.selectPostDetail(postId);
@@ -400,5 +409,49 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, BusForumP
                .eq(BusForumPostCollectEntity::getPostId, postId)
                .eq(BusForumPostCollectEntity::getDelFlag, 0);  // 仅查询未删除的记录
         return collectMapper.selectCount(wrapper) > 0;
+    }
+
+    // ==================== 管理后台方法实现 ====================
+
+    @Override
+    public PageResult<ForumPostVO> getAdminPostList(Long userId, Long categoryId, Integer status, String title, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<ForumPostVO> list = forumPostMapper.selectAdminPostList(userId, categoryId, status, title);
+        PageInfo<ForumPostVO> pageInfo = new PageInfo<>(list);
+        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePost(BusForumPostEntity post) {
+        if (post.getPostId() == null) {
+            throw new ServiceException("帖子ID不能为空");
+        }
+        this.updateById(post);
+        log.info("更新帖子成功, postId: {}", post.getPostId());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void adminDeletePosts(Long[] postIds) {
+        if (postIds == null || postIds.length == 0) {
+            throw new ServiceException("帖子ID不能为空");
+        }
+        for (Long postId : postIds) {
+            this.deletePost(postId);
+        }
+        log.info("批量删除帖子成功, count: {}", postIds.length);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePostStatus(Long postId, Integer status) {
+        BusForumPostEntity post = this.getById(postId);
+        if (post == null) {
+            throw new ServiceException("帖子不存在");
+        }
+        post.setStatus(status);
+        this.updateById(post);
+        log.info("更新帖子状态成功, postId: {}, status: {}", postId, status);
     }
 }

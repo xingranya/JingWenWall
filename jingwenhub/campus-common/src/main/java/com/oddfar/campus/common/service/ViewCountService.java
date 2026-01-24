@@ -1,6 +1,9 @@
 package com.oddfar.campus.common.service;
 
+import com.oddfar.campus.business.forum.mapper.ForumPostMapper;
+import com.oddfar.campus.common.utils.spring.SpringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class ViewCountService {
     private static final String VIEW_COUNT_PREFIX = "view:count:";
 
     @Autowired
+    @Qualifier("redisStringObjectTemplate")
     private RedisTemplate<String, Object> redisTemplate;
 
     /**
@@ -42,7 +46,7 @@ public class ViewCountService {
     public Integer getViewCount(String resourceType, Long resourceId) {
         String key = VIEW_COUNT_PREFIX + resourceType + ":" + resourceId;
         Object count = redisTemplate.opsForValue().get(key);
-        return count != null ? (Integer) count : null;
+        return parseCount(count);
     }
 
     /**
@@ -101,7 +105,7 @@ public class ViewCountService {
 
             String resourceType = parts[2];
             Long resourceId = Long.valueOf(parts[3]);
-            Integer count = (Integer) redisTemplate.opsForValue().get(key);
+            Integer count = parseCount(redisTemplate.opsForValue().get(key));
 
             grouped.computeIfAbsent(resourceType, k -> new HashMap<>())
                    .put(resourceId, count);
@@ -111,17 +115,39 @@ public class ViewCountService {
     }
 
     private void syncPostsViewCount(Map<Long, Integer> counts) {
-        // TODO: 调用 ForumPostMapper 批量更新
-        log.debug("同步帖子浏览量: {}", counts.size());
+        try {
+            // 使用 SpringUtils 获取 ForumPostMapper Bean
+            ForumPostMapper forumPostMapper = SpringUtils.getBean(ForumPostMapper.class);
+            if (forumPostMapper != null && !counts.isEmpty()) {
+                forumPostMapper.batchUpdateViewCount(counts);
+                log.debug("同步帖子浏览量成功: {} 条", counts.size());
+            }
+        } catch (Exception e) {
+            log.error("同步帖子浏览量失败", e);
+        }
     }
 
     private void syncItemsViewCount(Map<Long, Integer> counts) {
-        // TODO: 调用 MarketItemMapper 批量更新
-        log.debug("同步商品浏览量: {}", counts.size());
+        // 暂不实现，待市场模块完善后再添加
+        log.debug("同步商品浏览量: {} 条（暂未实现）", counts.size());
     }
 
     private void syncContentViewCount(Map<Long, Integer> counts) {
-        // TODO: 调用 ContentMapper 批量更新
-        log.debug("同步内容浏览量: {}", counts.size());
+        // 暂不实现，待内容模块完善后再添加
+        log.debug("同步内容浏览量: {} 条（暂未实现）", counts.size());
+    }
+
+    private Integer parseCount(Object count) {
+        if (count == null) {
+            return null;
+        }
+        if (count instanceof Number) {
+            return ((Number) count).intValue();
+        }
+        try {
+            return Integer.parseInt(count.toString());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

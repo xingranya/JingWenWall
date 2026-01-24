@@ -33,7 +33,7 @@ public class CampusFileServiceImpl extends ServiceImpl<CampusFileMapper, CampusF
     /**
      * 文件起始路径
      */
-    private static String CAMPUS_FILE_PATH = CampusConfigExpander.getCampusFilePath();
+
 
     /**
      * 文件当日最大上传数量
@@ -87,7 +87,7 @@ public class CampusFileServiceImpl extends ServiceImpl<CampusFileMapper, CampusF
             throw new FileSizeLimitExceededException(IMAGE_MAX_SIZE / 1024 / 1024);
         }
         try {
-            String path = FileUploadUtils.upload(CAMPUS_FILE_PATH, file, MimeTypeUtils.IMAGE_EXTENSION);
+            String path = FileUploadUtils.upload(getCampusFilePath(), file, MimeTypeUtils.IMAGE_EXTENSION);
             return saveDB(path);
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,7 +103,7 @@ public class CampusFileServiceImpl extends ServiceImpl<CampusFileMapper, CampusF
             throw new FileSizeLimitExceededException(VIDEO_MAX_SIZE / 1024 / 1024);
         }
         try {
-            String path = FileUploadUtils.upload(CAMPUS_FILE_PATH, file, MimeTypeUtils.VIDEO_EXTENSION);
+            String path = FileUploadUtils.upload(getCampusFilePath(), file, MimeTypeUtils.VIDEO_EXTENSION);
             return saveDB(path);
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,6 +173,24 @@ public class CampusFileServiceImpl extends ServiceImpl<CampusFileMapper, CampusF
         campusFileEntity.setCreateTime(new Date());
         campusFileMapper.insert(campusFileEntity);
         return campusFileEntity;
+    }
+
+    private String getCampusFilePath() {
+        try {
+            return CampusConfigExpander.getCampusFilePath();
+        } catch (Exception e) {
+            String osName = System.getProperty("os.name").toLowerCase();
+            if (osName.contains("win")) {
+                return "D:\\uploadPath\\CampusFile";
+            }
+            if (osName.contains("mac")) {
+                return "~/uploadPath/CampusFile";
+            }
+            if (osName.contains("linux")) {
+                return "/data/uploadPath/CampusFile";
+            }
+            return System.getProperty("java.io.tmpdir") + File.separator + "CampusFile";
+        }
     }
 }
 

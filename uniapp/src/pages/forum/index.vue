@@ -20,7 +20,7 @@
         <!-- 推荐 Tab 展示组合内容 -->
         <block v-if="currentTab === 0">
           <!-- 每日精选 -->
-          <DailyPick :data="dailyPickData" />
+          <DailyPick :data="dailyPickData" @click="goToDetail" />
           
           <!-- 热榜 -->
           <HotTopicList :list="hotList" @click="goToDetail" />
@@ -97,14 +97,27 @@ export default {
   data() {
     return {
       currentTab: 0,
+      currentCategory: 'recommend', // 当前选中的分类类型
       postList: [],
       pageNum: 1,
       pageSize: 10,
       loadMoreStatus: 'more',
       isRefreshing: false,
+
+      // 分类映射：type → categoryId（假设ID，实际应从后端获取）
+      categoryMap: {
+        recommend: null, // 推荐不使用分类
+        hot: null,       // 热榜不使用分类
+        love: 1,         // 表白墙
+        lost: 2,         // 失物招领
+        secondhand: 3,   // 闲置
+        daily: 4,        // 日常
+        help: 5          // 求助
+      },
       
       // Mock Data for Demo
       dailyPickData: {
+        postId: 'mock_daily_pick_001', // 每日精选帖子ID
         title: '校园音乐节今晚震撼开幕！',
         desc: '准备好你的荧光棒了吗？今晚7点，南操场不见不散！',
         image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9ey2T5dja4XFhGAU_NSs3tGVgJo60XUvh9_ouize7CBk-HzYiVyQc7p764Q1s84i6vd057XxDH7iS56D0l9euZYlk3pjNej2FjXhzhvLh7-iiGHR9hUqiOGicaTO3L638-jQl2xcbC32HKsmj8xWwo_miZnAD1idAGq6OQlrrTEmEdkfyTrtS8_y28YSjcgoTDHbBrl531B6ZiaWUciDbpziEmGS7bCtn0LpZaaQrYKdbC_rUVsjQi6THq3pFB0IOaHi3xxHQVjEP',
@@ -128,16 +141,29 @@ export default {
     async loadData() {
       if (this.loadMoreStatus === 'loading') return;
       this.loadMoreStatus = 'loading';
-      
+
       try {
-        // 根据 Tab 选择 API
-        // 简单处理：推荐/热榜用不同接口，其他暂用最新
-        let apiMethod = getNewestPosts;
-        if (this.currentTab === 1) apiMethod = getHotPosts;
-        
-        // TODO: 实际项目中应根据 CategoryScroll 的 type 传参
-        const res = await apiMethod(this.pageNum, this.pageSize);
-        
+        let res;
+
+        // 根据当前分类选择 API
+        if (this.currentCategory === 'recommend') {
+          // 推荐：使用最新帖子接口
+          res = await getNewestPosts(this.pageNum, this.pageSize);
+        } else if (this.currentCategory === 'hot') {
+          // 热榜：使用热门帖子接口
+          res = await getHotPosts(this.pageNum, this.pageSize);
+        } else {
+          // 其他分类：使用分类帖子接口
+          const categoryId = this.categoryMap[this.currentCategory];
+          if (categoryId) {
+            res = await getCategoryPosts(categoryId, this.pageNum, this.pageSize);
+          } else {
+            // 如果没有对应的 categoryId，fallback 到最新帖子
+            console.warn(`未找到分类 ${this.currentCategory} 对应的 categoryId`);
+            res = await getNewestPosts(this.pageNum, this.pageSize);
+          }
+        }
+
         const newPosts = (res.rows || []).map(item => ({
           ...item,
           createTime: item.createTime || item.updatedAt,
@@ -180,9 +206,12 @@ export default {
       }
     },
     
-    onTabChange(index) {
-      if (this.currentTab === index) return;
-      this.currentTab = index;
+    onTabChange(payload) {
+      // payload 包含 { index, type, name }
+      if (this.currentTab === payload.index) return;
+
+      this.currentTab = payload.index;
+      this.currentCategory = payload.type; // 存储当前分类类型
       this.isRefreshing = true;
       this.pageNum = 1;
       this.postList = [];

@@ -41,7 +41,21 @@ public interface ForumPostMapper extends BaseMapperX<BusForumPostEntity> {
      * @return 帖子VO列表
      */
     List<ForumPostVO> selectHotPosts();
-    
+
+    /**
+     * 搜索帖子列表
+     * @param keyword 关键词（搜索标题和内容）
+     * @param categoryId 分类ID（可选）
+     * @return 帖子VO列表
+     */
+    List<ForumPostVO> selectSearchPosts(@Param("keyword") String keyword, @Param("categoryId") Long categoryId);
+
+    /**
+     * 批量更新帖子浏览量
+     * @param updates 浏览量更新列表 {postId: viewCount}
+     */
+    void batchUpdateViewCount(@Param("updates") java.util.Map<Long, Integer> updates);
+
     /**
      * 查询用户发布的帖子
      * @param userId 用户ID
@@ -111,4 +125,12 @@ public interface ForumPostMapper extends BaseMapperX<BusForumPostEntity> {
      */
     @Update("UPDATE bus_forum_post SET del_flag = b'1' WHERE post_id = #{postId} AND user_id = #{userId} AND del_flag = b'0'")
     int markDeleted(@Param("postId") Long postId, @Param("userId") Long userId);
+
+    /**
+     * 管理后台 - 查询帖子列表（支持多条件筛选）
+     */
+    List<ForumPostVO> selectAdminPostList(@Param("userId") Long userId,
+                                           @Param("categoryId") Long categoryId,
+                                           @Param("status") Integer status,
+                                           @Param("title") String title);
 }

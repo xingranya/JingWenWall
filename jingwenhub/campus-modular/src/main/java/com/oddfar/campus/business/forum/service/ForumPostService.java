@@ -29,7 +29,17 @@ public interface ForumPostService extends IService<BusForumPostEntity> {
      * 获取热门帖子
      */
     PageResult<ForumPostVO> hotList(Integer pageNum, Integer pageSize);
-    
+
+    /**
+     * 搜索帖子
+     * @param keyword 关键词（搜索标题和内容）
+     * @param categoryId 分类ID（可选）
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @return 分页结果
+     */
+    PageResult<ForumPostVO> searchPosts(String keyword, Long categoryId, Integer pageNum, Integer pageSize);
+
     /**
      * 获取帖子详情
      * @param postId 帖子ID
@@ -99,4 +109,26 @@ public interface ForumPostService extends IService<BusForumPostEntity> {
      * @param userId 用户ID
      */
     PageResult<ForumPostVO> getUserCollects(Long userId, Integer pageNum, Integer pageSize);
+
+    // ==================== 管理后台方法 ====================
+
+    /**
+     * 管理后台 - 获取帖子列表（支持多条件筛选）
+     */
+    PageResult<ForumPostVO> getAdminPostList(Long userId, Long categoryId, Integer status, String title, Integer pageNum, Integer pageSize);
+
+    /**
+     * 管理后台 - 更新帖子
+     */
+    void updatePost(BusForumPostEntity post);
+
+    /**
+     * 管理后台 - 批量删除帖子
+     */
+    void adminDeletePosts(Long[] postIds);
+
+    /**
+     * 管理后台 - 更新帖子状态
+     */
+    void updatePostStatus(Long postId, Integer status);
 }

@@ -235,14 +235,14 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
         if (comment == null) {
             throw new ServiceException("评论不存在");
         }
-                    
+
         Long userId = SecurityUtils.getUserId();
         System.out.println("[取消点赞] userId=" + userId + ", commentId=" + commentId);
-                    
+
         // 强制执行更新，不进行前置判断，确保物理状态一定会被设为 1
         int rows = commentLikeMapper.updateDelFlag(userId, commentId, 1);
         System.out.println("[取消点赞] 影响行数=" + rows);
-            
+
         if (rows > 0) {
             // 只有更新成功（即之前确实是点赞状态）才减少计数
             if (comment.getLikeCount() > 0) {
@@ -250,5 +250,39 @@ public class ForumCommentServiceImpl extends ServiceImpl<ForumCommentMapper, Bus
                 this.updateById(comment);
             }
         }
+    }
+
+    // ==================== 管理后台方法实现 ====================
+
+    @Override
+    public PageResult<ForumCommentVO> getAdminCommentList(Long postId, Long userId, Integer status, String content, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<ForumCommentVO> list = commentMapper.selectAdminCommentList(postId, userId, status, content);
+        PageInfo<ForumCommentVO> pageInfo = new PageInfo<>(list);
+        return new PageResult<>(pageInfo.getList(), pageInfo.getTotal());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void adminDeleteComments(Long[] commentIds) {
+        if (commentIds == null || commentIds.length == 0) {
+            throw new ServiceException("评论ID不能为空");
+        }
+        for (Long commentId : commentIds) {
+            this.deleteComment(commentId);
+        }
+        log.info("批量删除评论成功, count: {}", commentIds.length);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCommentStatus(Long commentId, Integer status) {
+        BusForumCommentEntity comment = this.getById(commentId);
+        if (comment == null) {
+            throw new ServiceException("评论不存在");
+        }
+        comment.setStatus(status);
+        this.updateById(comment);
+        log.info("更新评论状态成功, commentId: {}, status: {}", commentId, status);
     }
 }

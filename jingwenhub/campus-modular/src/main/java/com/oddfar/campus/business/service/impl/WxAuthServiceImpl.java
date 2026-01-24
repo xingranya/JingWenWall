@@ -66,8 +66,8 @@ public class WxAuthServiceImpl implements WxAuthService {
         // 1. 检查code是否已使用（防止重放攻击）
         String code = wxLoginDTO.getCode();
         String cacheKey = "wx:login:code:" + code;
-        Boolean isUsed = redisCache.getCacheObject(cacheKey);
-        if (isUsed != null && isUsed) {
+        String isUsed = redisCache.getCacheObject(cacheKey);
+        if ("true".equals(isUsed)) {
             log.warn("微信登录code已使用: {}", code);
             throw new ServiceException("code已使用，请重新获取");
         }
@@ -98,7 +98,7 @@ public class WxAuthServiceImpl implements WxAuthService {
         }
 
         // 3. 标记code已使用（5分钟过期，与微信code有效期一致）
-        redisCache.setCacheObject(cacheKey, true, 5, TimeUnit.MINUTES);
+        redisCache.setCacheObject(cacheKey, "true", 5, TimeUnit.MINUTES);
         log.info("微信登录成功, openid: {}", openid);
 
         // 4. 查询是否已存在学生信息

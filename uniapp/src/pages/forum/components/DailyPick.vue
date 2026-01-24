@@ -63,7 +63,8 @@ export default {
   },
   methods: {
     handleClick() {
-      // TODO: 跳转详情
+      // 触发点击事件，传递数据对象给父组件
+      this.$emit('click', this.data);
     }
   }
 };

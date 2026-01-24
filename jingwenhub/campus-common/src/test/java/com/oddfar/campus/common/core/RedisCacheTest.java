@@ -2,8 +2,15 @@ package com.oddfar.campus.common.core;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -17,8 +24,22 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author test
  */
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = { RedisCacheTest.TestConfig.class, com.oddfar.campus.common.config.RedisConfig.class, RedisCache.class })
 public class RedisCacheTest {
+
+    @Configuration
+    static class TestConfig {
+        @Bean
+        public RedisConnectionFactory redisConnectionFactory() {
+            return new LettuceConnectionFactory("127.0.0.1", 6379);
+        }
+
+        @Bean
+        public CacheManager cacheManager() {
+            return new ConcurrentMapCacheManager();
+        }
+    }
 
     @Autowired
     private RedisCache redisCache;

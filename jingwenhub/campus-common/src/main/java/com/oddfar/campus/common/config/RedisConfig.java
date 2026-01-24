@@ -4,11 +4,11 @@ import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.lang.NonNull;
 
 /**
  * redis配置
@@ -18,21 +18,43 @@ import org.springframework.lang.NonNull;
 @Configuration
 @EnableCaching
 public class RedisConfig extends CachingConfigurerSupport {
+
+    /**
+     * RedisTemplate<Object, Object> - 用于 RedisCache（使用JSON序列化）
+     */
     @Bean
-    @SuppressWarnings(value = {"unchecked", "rawtypes"})
-    public RedisTemplate<Object, Object> redisTemplate(@NonNull RedisConnectionFactory connectionFactory) {
+    @Primary
+    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        FastJson2JsonRedisSerializer serializer = new FastJson2JsonRedisSerializer(Object.class);
-
-        // 使用StringRedisSerializer来序列化和反序列化redis的key值
+        // 使用 StringRedisSerializer 来序列化和反序列化 redis 的 key 值
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(serializer);
-
-        // Hash的key也采用StringRedisSerializer的序列化方式
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(serializer);
+
+        // 使用 FastJson2JsonRedisSerializer 来序列化和反序列化 redis 的 value 值
+        // 使用 Object.class 作为泛型类型，支持任意对象
+        FastJson2JsonRedisSerializer<Object> jsonSerializer = new FastJson2JsonRedisSerializer<>(Object.class);
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    /**
+     * RedisTemplate<String, Object> - 用于 ViewCountService（使用String序列化）
+     */
+    @Bean("redisStringObjectTemplate")
+    public RedisTemplate<String, Object> redisStringObjectTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        // 全部使用 StringRedisSerializer（用于简单的字符串存储）
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
 
         template.afterPropertiesSet();
         return template;
@@ -49,7 +71,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     /**
      * 限流脚本
      */
-    private @NonNull String limitScriptText() {
+    private String limitScriptText() {
         return "local key = KEYS[1]\n" +
                 "local count = tonumber(ARGV[1])\n" +
                 "local time = tonumber(ARGV[2])\n" +

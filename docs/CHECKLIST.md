@@ -8,13 +8,13 @@
 
 ## 📋 快速概览
 
-| 类别 | 状态 | 说明 |
-|------|------|------|
-| **后端编译** | ✅ 通过 | 313个源文件编译成功 |
-| **后端测试** | ⚠️ 部分失败 | OrderStatusTest: 36个测试，10个失败 |
-| **前端代码** | ✅ 良好 | 依赖正常，无语法错误 |
-| **数据库脚本** | ✅ 完整 | 10个SQL脚本 |
-| **配置文件** | ⚠️ 需调整 | 版本号不一致 |
+| 类别                 | 状态          | 说明                                |
+| -------------------- | ------------- | ----------------------------------- |
+| **后端编译**   | ✅ 通过       | 313个源文件编译成功                 |
+| **后端测试**   | ⚠️ 部分失败 | OrderStatusTest: 36个测试，10个失败 |
+| **前端代码**   | ✅ 良好       | 依赖正常，无语法错误                |
+| **数据库脚本** | ✅ 完整       | 10个SQL脚本                         |
+| **配置文件**   | ⚠️ 需调整   | 版本号不一致                        |
 
 **总体评估**: 🟢 **良好** - 可以运行，但建议修复列出的问题
 
@@ -38,12 +38,14 @@ mvn clean compile
 ```
 
 **检查项**:
+
 - [ ] campus-common 编译通过
 - [ ] campus-framework 编译通过
 - [ ] campus-admin 编译通过
 - [ ] campus-modular 编译通过
 
 **如果失败**:
+
 - 检查 JDK 版本（需要 JDK 8+）
 - 检查 Maven 配置
 - 查看错误日志定位问题
@@ -66,6 +68,7 @@ mvn clean package -DskipTests
 ```
 
 **检查项**:
+
 - [ ] 所有模块打包成功
 - [ ] jar 文件大小合理（通常 10-50MB）
 
@@ -89,6 +92,7 @@ pnpm build:mp-weixin
 ```
 
 **检查项**:
+
 - [ ] 无编译错误
 - [ ] 无 import 路径错误
 - [ ] dist 目录生成成功
@@ -125,11 +129,12 @@ mvn test -Dtest=OrderStatusTest
 **修复步骤**:
 
 1. **检查状态机定义**:
+
    ```bash
    code jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/errand/domain/enums/OrderStatus.java
    ```
-
 2. **定位问题** (第 128-141 行):
+
    ```java
    private enum Transition {
        ACCEPT(WAITING, ACCEPTED),     // ✅ 检查这个映射
@@ -139,17 +144,18 @@ mvn test -Dtest=OrderStatusTest
        COMPLETE(CONFIRMING, COMPLETED), // ✅ 检查这个映射
        CANCEL(WAITING, CANCELLED);      // ✅ 检查这个映射
    ```
-
 3. **确认 Transition 枚举定义**:
+
    - 每个 Transition 应该是 `(from, to)` 格式
    - 确保状态转换逻辑正确
-
 4. **重新运行测试**:
+
    ```bash
    mvn test -Dtest=OrderStatusTest
    ```
 
 **检查项**:
+
 - [ ] 所有 36 个测试通过
 - [ ] 无失败，无错误
 
@@ -178,11 +184,13 @@ java -jar target/campus-modular-1.1.5.jar
 ```
 
 **检查项**:
+
 - [ ] 服务启动成功
 - [ ] 监听端口 8001
 - [ ] 无异常日志
 
 **访问测试**:
+
 ```bash
 # 测试健康检查
 curl http://localhost:8001/actuator/health
@@ -200,6 +208,7 @@ curl http://localhost:8001/actuator/health
 ### 3.2 数据库连接测试
 
 **检查 application.yml 配置**:
+
 ```yaml
 spring:
   datasource:
@@ -209,12 +218,14 @@ spring:
 ```
 
 **检查项**:
+
 - [ ] 数据库服务运行中
 - [ ] 数据库 jingwen_campus 存在
 - [ ] 用户名密码正确
 - [ ] 后端日志无连接错误
 
 **手动测试数据库连接**:
+
 ```bash
 mysql -u root -p
 use jingwen_campus;
@@ -240,6 +251,7 @@ pnpm dev:mp-weixin
 ```
 
 **检查项**:
+
 - [ ] 小程序编译成功
 - [ ] 微信开发者工具打开项目
 - [ ] 首页正常显示
@@ -250,6 +262,7 @@ pnpm dev:mp-weixin
 ### 3.4 API 联调测试
 
 **测试登录功能**:
+
 ```bash
 # 1. 打开小程序登录页
 路径: pages/person/getPhone
@@ -267,6 +280,7 @@ Storage: token, userInfo
 ```
 
 **测试论坛功能**:
+
 ```bash
 # 1. 查看帖子列表
 路径: pages/index/index
@@ -285,6 +299,7 @@ Storage: token, userInfo
 ```
 
 **测试跑腿功能**:
+
 ```bash
 # 1. 查看跑腿订单
 路径: pages/order/order
@@ -299,6 +314,7 @@ Storage: token, userInfo
 ```
 
 **测试二手市场**:
+
 ```bash
 # 1. 查看商品列表
 路径: pages/market/index
@@ -323,11 +339,13 @@ Storage: token, userInfo
 **问题**: 发现 11 处直接使用 `uni.request`，未使用统一的 `request.js`
 
 **影响**:
+
 - ❌ 错误处理不统一
 - ❌ Token 过期无法自动跳转
 - ❌ 无法统一拦截和重试
 
 **修复清单**:
+
 - [ ] `api/comment.js` - 6处 (优先级最高)
 - [ ] `pages/transition/agreement.vue` - 1处
 - [ ] `pages/topic/view.vue` - 1处
@@ -336,6 +354,7 @@ Storage: token, userInfo
 - [ ] `pages/person/authentication.vue` - 1处
 
 **修复示例**:
+
 ```javascript
 // ❌ 错误 - 直接使用 uni.request
 export const fetchComments = (postId) => {
@@ -361,10 +380,12 @@ export const getPostComments = (postId, pageNum, pageSize) => {
 **问题**: 发现 31 处 console 日志残留
 
 **保留** (合理使用):
+
 - ✅ `utils/request.js` - 错误日志
 - ✅ 测试文件中的日志
 
 **清理清单** (调试日志):
+
 - [ ] `pages/transition/agreement.vue` - 10处
 - [ ] `pages/topic/view.vue` - 8处
 - [ ] `pages/person/person.vue` - 4处
@@ -373,6 +394,7 @@ export const getPostComments = (postId, pageNum, pageSize) => {
 - [ ] 其他页面 - 3处
 
 **清理原则**:
+
 ```javascript
 // ❌ 删除 - 调试日志
 console.log('请求结果:', data);
@@ -399,6 +421,7 @@ application.yml:         1.1.7  ⚠️ 不一致
 ```
 
 **修复步骤**:
+
 ```bash
 # 1. 编辑 application.yml
 cd E:\wxxcx\JingWenWall\jingwenhub\campus-modular\src\main\resources
@@ -413,6 +436,7 @@ mvn clean compile
 ```
 
 **检查项**:
+
 - [ ] application.yml 版本改为 1.1.5
 - [ ] 重新编译成功
 
@@ -423,6 +447,7 @@ mvn clean compile
 ### 5.1 安全检查
 
 **检查项**:
+
 - [ ] SQL 注入防护 - 使用 MyBatis-Plus 参数绑定
 - [ ] XSS 防护 - 前端输入验证
 - [ ] CSRF 防护 - Token 验证
@@ -431,6 +456,7 @@ mvn clean compile
 - [ ] 敏感配置 - 环境变量支持 (已实现 ✅)
 
 **快速验证**:
+
 ```bash
 # 检查 JWT 配置
 grep -n "jwt" application.yml
@@ -449,6 +475,7 @@ grep -n "\${JWT_SECRET" application.yml
 ### 5.2 性能检查
 
 **检查项**:
+
 - [ ] 数据库索引 - 已执行 Phase1 & Phase2 索引
 - [ ] 唯一约束 - 已执行
 - [ ] 分页查询 - 已实现
@@ -456,6 +483,7 @@ grep -n "\${JWT_SECRET" application.yml
 - [ ] 缓存 - Redis 配置正常
 
 **索引验证**:
+
 ```sql
 -- 连接数据库
 mysql -u root -p jingwen_campus
@@ -479,11 +507,13 @@ SHOW INDEX FROM bus_errand_order;
 ### 问题1: 后端启动失败
 
 **症状**:
+
 ```
 Error creating bean with name 'dataSource'
 ```
 
 **排查**:
+
 ```bash
 # 1. 检查数据库是否运行
 mysql -u root -p -e "SELECT 1"
@@ -503,11 +533,13 @@ cat application.yml | grep -A 5 "datasource"
 ### 问题2: 小程序请求失败
 
 **症状**:
+
 ```
 request:fail
 ```
 
 **排查**:
+
 ```bash
 # 1. 检查后端是否运行
 curl http://localhost:8001/actuator/health
@@ -529,16 +561,19 @@ cat uniapp/src/utils/env.js
 ### 问题3: Token 过期问题
 
 **症状**:
+
 ```
 登录已过期，请重新登录
 ```
 
 **已实现功能**:
+
 - ✅ 自动检测 Token 过期 (401错误)
 - ✅ 自动跳转登录页 (`/pages/person/getPhone`)
 - ✅ 显示友好提示
 
 **验证**:
+
 ```javascript
 // 1. 手动删除 Token
 uni.removeStorageSync('token')
@@ -557,13 +592,15 @@ uni.removeStorageSync('token')
 ### 7.1 配置检查
 
 **生产环境配置**:
+
 - [ ] 修改 `PROD_BASE_URL` 为生产域名
+
   ```javascript
   // uniapp/src/utils/env.js
   export const PROD_BASE_URL = 'https://your-domain.com';
   ```
-
 - [ ] 配置微信小程序 AppID 和 AppSecret
+
   ```yaml
   # application.yml
   wechat:
@@ -571,8 +608,8 @@ uni.removeStorageSync('token')
       appId: your-appid        # 改为真实的 AppID
       appSecret: your-secret    # 改为真实的 AppSecret
   ```
-
 - [ ] 设置环境变量
+
   ```bash
   export DB_PASSWORD=your-production-password
   export JWT_SECRET=your-production-secret
@@ -584,6 +621,7 @@ uni.removeStorageSync('token')
 ### 7.2 数据库检查
 
 **生产数据库**:
+
 - [ ] 创建生产数据库
 - [ ] 执行初始化脚本 `jingwen_campus.sql`
 - [ ] 执行优化脚本
@@ -598,6 +636,7 @@ uni.removeStorageSync('token')
 ### 7.3 日志配置
 
 **生产环境日志**:
+
 ```yaml
 # application.yml
 logging:
@@ -611,6 +650,7 @@ logging:
 ```
 
 **检查项**:
+
 - [ ] 日志路径可写
 - [ ] 日志级别合适
 - [ ] 日志轮转配置正确
@@ -620,6 +660,7 @@ logging:
 ### 7.4 安全检查
 
 **生产环境安全**:
+
 - [ ] 修改默认密码
 - [ ] 配置防火墙
 - [ ] 启用 HTTPS
@@ -637,18 +678,18 @@ logging:
 
 ### 测试记录表
 
-| 测试项 | 测试时间 | 测试人 | 结果 | 备注 |
-|--------|---------|--------|------|------|
-| 后端编译 | 2026-01-16 | | ✅ 通过 | |
-| 后端单元测试 | 2026-01-16 | | ⚠️ 失败 | OrderStatusTest: 10个失败 |
-| 前端编译 | 2026-01-16 | | ✅ 通过 | |
-| 后端启动 | 2026-01-16 | | | 待测试 |
-| 小程序运行 | 2026-01-16 | | | 待测试 |
-| API 联调 | 2026-01-16 | | | 待测试 |
-| 登录功能 | 2026-01-16 | | | 待测试 |
-| 论坛功能 | 2026-01-16 | | | 待测试 |
-| 跑腿功能 | 2026-01-16 | | | 待测试 |
-| 二手市场 | 2026-01-16 | | | 待测试 |
+| 测试项       | 测试时间   | 测试人 | 结果      | 备注                      |
+| ------------ | ---------- | ------ | --------- | ------------------------- |
+| 后端编译     | 2026-01-16 |        | ✅ 通过   |                           |
+| 后端单元测试 | 2026-01-16 |        | ⚠️ 失败 | OrderStatusTest: 10个失败 |
+| 前端编译     | 2026-01-16 |        | ✅ 通过   |                           |
+| 后端启动     | 2026-01-16 |        |           | 待测试                    |
+| 小程序运行   | 2026-01-16 |        |           | 待测试                    |
+| API 联调     | 2026-01-16 |        |           | 待测试                    |
+| 登录功能     | 2026-01-16 |        |           | 待测试                    |
+| 论坛功能     | 2026-01-16 |        |           | 待测试                    |
+| 跑腿功能     | 2026-01-16 |        |           | 待测试                    |
+| 二手市场     | 2026-01-16 |        |           | 待测试                    |
 
 ---
 
@@ -721,6 +762,7 @@ SELECT COUNT(*) FROM bus_errand_order;
 ## 🏁 总结
 
 ### 必做测试 (5分钟)
+
 1. ✅ 后端编译 - `mvn clean compile`
 2. ✅ 前端编译 - `pnpm dev:mp-weixin`
 3. ✅ 后端启动 - `mvn spring-boot:run`
@@ -728,12 +770,14 @@ SELECT COUNT(*) FROM bus_errand_order;
 5. ✅ API 联调 - 登录 + 查看 + 发布
 
 ### 建议修复 (3小时)
+
 1. ⚠️ OrderStatus 测试修复 (30分钟)
 2. ⚠️ 前端 API 统一化 (2小时)
 3. ⚠️ 版本号统一 (5分钟)
 4. ⚠️ Console 日志清理 (1小时)
 
 ### 上线前检查 (1小时)
+
 1. 🔴 生产配置修改
 2. 🔴 数据库初始化
 3. 🔴 安全检查

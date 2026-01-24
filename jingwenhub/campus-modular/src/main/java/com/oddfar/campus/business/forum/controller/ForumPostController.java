@@ -43,7 +43,19 @@ public class ForumPostController {
         PageResult<ForumPostVO> result = forumPostService.hotList(pageNum, pageSize);
         return R.ok().put(result);
     }
-    
+
+    @Anonymous
+    @ApiOperation("搜索帖子")
+    @GetMapping("/search")
+    public R search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageResult<ForumPostVO> result = forumPostService.searchPosts(keyword, categoryId, pageNum, pageSize);
+        return R.ok().put(result);
+    }
+
     @Anonymous
     @ApiOperation("分类帖子列表")
     @GetMapping("/category/{categoryId}")

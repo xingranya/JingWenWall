@@ -99,6 +99,21 @@
         ORDER BY (p.like_count * 2 + p.comment_count + p.view_count * 0.1) DESC, p.create_time DESC
     </select>
 
+    <!-- 搜索帖子（根据关键词搜索标题和内容） -->
+    <select id="selectSearchPosts" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        AND p.is_draft = 0
+        AND p.status = 0
+        <if test="keyword != null and keyword != ''">
+            AND (p.title LIKE CONCAT('%', #{keyword}, '%')
+                 OR p.content LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="categoryId != null">
+            AND p.category_id = #{categoryId}
+        </if>
+        ORDER BY p.create_time DESC
+    </select>
+
     <!-- 查询用户发布的帖子 -->
     <select id="selectPostsByUserId" resultMap="PostVoResultMap">
         <include refid="selectPostVo"/>
@@ -134,6 +149,16 @@
           AND del_flag = 0
     </update>
 
+    <!-- 批量更新浏览次数 -->
+    <update id="batchUpdateViewCount">
+        <foreach collection="updates.entrySet()" item="value" index="key" separator=";">
+            UPDATE bus_forum_post
+            SET view_count = view_count + #{value}
+            WHERE post_id = #{key}
+              AND del_flag = 0
+        </foreach>
+    </update>
+
     <!-- 原子性增加点赞数 -->
     <update id="incrementLikeCount">
         UPDATE bus_forum_post
@@ -165,5 +190,25 @@
         WHERE post_id = #{postId}
           AND del_flag = 0
     </update>
+
+    <!-- ==================== 管理后台查询 ==================== -->
+
+    <!-- 管理后台 - 查询帖子列表（支持多条件筛选） -->
+    <select id="selectAdminPostList" resultMap="PostVoResultMap">
+        <include refid="selectPostVo"/>
+        <if test="userId != null">
+            AND p.user_id = #{userId}
+        </if>
+        <if test="categoryId != null">
+            AND p.category_id = #{categoryId}
+        </if>
+        <if test="status != null">
+            AND p.status = #{status}
+        </if>
+        <if test="title != null and title != ''">
+            AND p.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        ORDER BY p.create_time DESC
+    </select>
 
 </mapper>

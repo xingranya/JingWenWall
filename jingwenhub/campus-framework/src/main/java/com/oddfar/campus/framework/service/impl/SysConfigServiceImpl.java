@@ -11,6 +11,8 @@ import com.oddfar.campus.common.exception.ServiceException;
 import com.oddfar.campus.common.utils.StringUtils;
 import com.oddfar.campus.framework.mapper.SysConfigMapper;
 import com.oddfar.campus.framework.service.SysConfigService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,8 @@ import java.util.List;
 
 @Service
 public class SysConfigServiceImpl implements SysConfigService {
+
+    private static final Logger log = LoggerFactory.getLogger(SysConfigServiceImpl.class);
 
     @Autowired
     private SysConfigMapper configMapper;
@@ -32,7 +36,11 @@ public class SysConfigServiceImpl implements SysConfigService {
      */
     @PostConstruct
     public void init() {
-        loadingConfigCache();
+        try {
+            loadingConfigCache();
+        } catch (Exception e) {
+            log.warn("加载系统配置缓存失败", e);
+        }
     }
 
     @Override

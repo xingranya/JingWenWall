@@ -44,4 +44,21 @@ public interface ForumCommentService extends IService<BusForumCommentEntity> {
      * @param commentId 评论ID
      */
     void unlikeComment(Long commentId);
+
+    // ==================== 管理后台方法 ====================
+
+    /**
+     * 管理后台 - 获取评论列表（支持多条件筛选）
+     */
+    PageResult<ForumCommentVO> getAdminCommentList(Long postId, Long userId, Integer status, String content, Integer pageNum, Integer pageSize);
+
+    /**
+     * 管理后台 - 批量删除评论
+     */
+    void adminDeleteComments(Long[] commentIds);
+
+    /**
+     * 管理后台 - 更新评论状态
+     */
+    void updateCommentStatus(Long commentId, Integer status);
 }

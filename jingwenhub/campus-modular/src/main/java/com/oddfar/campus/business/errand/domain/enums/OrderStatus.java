@@ -2,7 +2,9 @@ package com.oddfar.campus.business.errand.domain.enums;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 跑腿订单状态枚举 (内置状态机)
@@ -15,22 +17,31 @@ import java.util.List;
  */
 public enum OrderStatus {
 
-    WAITING(1, "待接单", Arrays.asList(Transition.ACCEPT, Transition.CANCEL)),
-    ACCEPTED(2, "已接单", Arrays.asList(Transition.PICK_UP, Transition.CANCEL)),
-    PICKING(3, "取货中", Arrays.asList(Transition.DELIVER, Transition.CANCEL)),
-    DELIVERING(4, "配送中", Arrays.asList(Transition.CONFIRM, Transition.CANCEL)),
-    CONFIRMING(5, "待确认", Arrays.asList(Transition.COMPLETE)),
-    COMPLETED(6, "已完成", Collections.emptyList()),
-    CANCELLED(7, "已取消", Collections.emptyList());
+    WAITING(1, "待接单"),
+    ACCEPTED(2, "已接单"),
+    PICKING(3, "取货中"),
+    DELIVERING(4, "配送中"),
+    CONFIRMING(5, "待确认"),
+    COMPLETED(6, "已完成"),
+    CANCELLED(7, "已取消");
 
     private final Integer code;
     private final String desc;
-    private final List<Transition> allowedTransitions;
+    private static final Map<OrderStatus, List<OrderStatus>> TRANSITIONS = new EnumMap<>(OrderStatus.class);
 
-    OrderStatus(Integer code, String desc, List<Transition> allowedTransitions) {
+    static {
+        TRANSITIONS.put(WAITING, Arrays.asList(ACCEPTED, CANCELLED));
+        TRANSITIONS.put(ACCEPTED, Arrays.asList(PICKING, CANCELLED));
+        TRANSITIONS.put(PICKING, Arrays.asList(DELIVERING, CANCELLED));
+        TRANSITIONS.put(DELIVERING, Arrays.asList(CONFIRMING, CANCELLED));
+        TRANSITIONS.put(CONFIRMING, Arrays.asList(COMPLETED));
+        TRANSITIONS.put(COMPLETED, Collections.emptyList());
+        TRANSITIONS.put(CANCELLED, Collections.emptyList());
+    }
+
+    OrderStatus(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
-        this.allowedTransitions = allowedTransitions;
     }
 
     public Integer getCode() {
@@ -51,8 +62,8 @@ public enum OrderStatus {
         if (target == null) {
             return false;
         }
-        return allowedTransitions.stream()
-                .anyMatch(t -> t.targetStatus == target);
+        List<OrderStatus> allowed = TRANSITIONS.getOrDefault(this, Collections.emptyList());
+        return allowed.contains(target);
     }
 
     /**
@@ -122,21 +133,4 @@ public enum OrderStatus {
         }
     }
 
-    /**
-     * 状态转换定义
-     */
-    private enum Transition {
-        ACCEPT(ACCEPTED),       // 接单: 待接单 -> 已接单
-        PICK_UP(PICKING),       // 取货: 已接单 -> 取货中
-        DELIVER(DELIVERING),    // 配送: 取货中 -> 配送中
-        CONFIRM(CONFIRMING),    // 送达: 配送中 -> 待确认
-        COMPLETE(COMPLETED),    // 完成: 待确认 -> 已完成
-        CANCEL(CANCELLED);      // 取消: 任意状态 -> 已取消
-
-        final OrderStatus targetStatus;
-
-        Transition(OrderStatus targetStatus) {
-            this.targetStatus = targetStatus;
-        }
-    }
 }

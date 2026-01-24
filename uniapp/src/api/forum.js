@@ -23,6 +23,17 @@ export const getHotPosts = (pageNum = 1, pageSize = 10) => {
 };
 
 /**
+ * 搜索帖子列表
+ * @param {String} keyword 搜索关键词
+ * @param {Number} categoryId 分类ID（可选）
+ * @param {Number} pageNum 页码
+ * @param {Number} pageSize 每页数量
+ */
+export const searchPosts = (keyword, categoryId, pageNum = 1, pageSize = 10) => {
+    return get(`/forum/posts/search`, { keyword, categoryId, pageNum, pageSize });
+};
+
+/**
  * 根据分类获取帖子列表
  * @param {Number} categoryId 分类ID
  * @param {Number} pageNum 页码
@@ -61,12 +72,18 @@ export const saveDraft = (data) => {
     return post('/forum/posts/draft', data);
 };
 
+// 别名，用于兼容
+export const savePostDraft = saveDraft;
+
 /**
  * 获取我的草稿
  */
 export const getMyDrafts = () => {
     return get('/forum/posts/draft');
 };
+
+// 别名，用于兼容
+export const getPostDraft = getMyDrafts;
 
 /**
  * 删除帖子
@@ -189,11 +206,14 @@ export default {
     // 帖子相关
     getNewestPosts,
     getHotPosts,
+    searchPosts,
     getCategoryPosts,
     getPostDetail,
     publishPost,
     saveDraft,
+    savePostDraft,
     getMyDrafts,
+    getPostDraft,
     deletePost,
     // 点赞相关
     likePost,

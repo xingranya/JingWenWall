@@ -46,7 +46,12 @@ export default {
   methods: {
     handleSelect(index) {
       if (this.current === index) return;
-      this.$emit('change', index);
+      // 传递索引和分类类型
+      this.$emit('change', {
+        index,
+        type: this.categories[index].type,
+        name: this.categories[index].name
+      });
     }
   }
 };

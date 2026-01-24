@@ -48,4 +48,12 @@ public interface ForumCommentMapper extends BaseMapperX<BusForumCommentEntity> {
      * @return 影响行数
      */
     int incrementPostCommentCount(@Param("postId") Long postId);
+
+    /**
+     * 管理后台 - 查询评论列表（支持多条件筛选）
+     */
+    List<ForumCommentVO> selectAdminCommentList(@Param("postId") Long postId,
+                                                @Param("userId") Long userId,
+                                                @Param("status") Integer status,
+                                                @Param("content") String content);
 }

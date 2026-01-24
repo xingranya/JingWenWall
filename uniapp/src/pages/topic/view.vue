@@ -121,7 +121,7 @@
     <uni-popup ref="commentPopup" type="bottom" :safe-area="true">
       <view class="comment-popup">
         <view class="popup-header">
-          <text class="popup-title">发表评论</text>
+          <text class="popup-title">{{ replyTarget ? `回复 ${replyTarget.nickName}` : '发表评论' }}</text>
           <view class="popup-close" @click="closeCommentPopup">
             <uni-icons type="closeempty" size="20" :color="iconMutedColor" />
           </view>
@@ -132,7 +132,7 @@
             type="textarea"
             :autoHeight="true"
             maxlength="500"
-            placeholder="请输入评论内容..."
+            :placeholder="replyTarget ? `回复 ${replyTarget.nickName}...` : '请输入评论内容...'"
             :focus="true"
             class="popup-input"
           />
@@ -188,6 +188,7 @@ export default {
       likeCount: 0,
       collectCount: 0,
       commentLikeCount: 0,
+      replyTarget: null, // 回复目标：{ commentId, userId, nickName }
     };
   },
   computed: {
@@ -403,10 +404,13 @@ export default {
      * 打开评论弹窗
      */
     openCommentPopup() {
+      // 底部输入栏触发，清空回复目标
+      this.replyTarget = null;
       this.$refs.commentPopup.open();
     },
 
     closeCommentPopup() {
+      this.replyTarget = null; // 关闭时清空回复目标
       this.$refs.commentPopup.close();
     },
 
@@ -543,14 +547,27 @@ export default {
         return;
       }
       try {
-        await submitComment(this.topicRecord.postId, this.commentContent);
-        await uni.showToast({ title: "评论成功", icon: "success" });
+        // 构建评论数据
+        const commentData = {
+          postId: this.topicRecord.postId,
+          content: this.commentContent.trim()
+        };
+
+        // 如果是回复评论，添加 parentId 和 toUserId
+        if (this.replyTarget) {
+          commentData.parentId = this.replyTarget.commentId;
+          commentData.toUserId = this.replyTarget.userId;
+        }
+
+        await submitComment(commentData);
+        await uni.showToast({ title: this.replyTarget ? "回复成功" : "评论成功", icon: "success" });
         await this.refreshComments();
         this.commentContent = "";
+        this.replyTarget = null; // 清空回复目标
         this.$refs.commentPopup.close();
       } catch (error) {
         console.error("评论失败:", error);
-        await uni.showToast({ title: String(error || '评论失败') , icon: "none" });
+        await uni.showToast({ title: String(error || '评论失败'), icon: "none" });
       }
     },
 
@@ -599,8 +616,14 @@ export default {
      * 回复评论
      */
     async replyToComment(comment) {
-      // TODO: 实现回复评论功能
-      await uni.showToast({ title: "回复评论功能暂未开放", icon: "none" });
+      // 设置回复目标
+      this.replyTarget = {
+        commentId: comment.commentId || comment.id,
+        userId: comment.userId,
+        nickName: comment.nickName || '匿名用户'
+      };
+      // 打开评论弹窗
+      this.$refs.commentPopup.open();
     },
 
     /**

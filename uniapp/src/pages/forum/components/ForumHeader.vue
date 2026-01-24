@@ -28,10 +28,9 @@ export default {
   },
   methods: {
     handleSearch() {
-      // TODO: 跳转搜索页
-      uni.showToast({
-        title: '搜索功能暂未开放',
-        icon: 'none'
+      // 跳转到搜索页面
+      uni.navigateTo({
+        url: '/pages/forum/search'
       });
     }
   }

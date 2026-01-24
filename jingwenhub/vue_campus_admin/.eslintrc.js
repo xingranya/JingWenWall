@@ -25,7 +25,9 @@ module.exports = {
     "vue/singleline-html-element-content-newline": "off",
     "vue/multiline-html-element-content-newline":"off",
     "vue/name-property-casing": ["error", "PascalCase"],
+    "vue/no-mutating-props": "off",
     "vue/no-v-html": "off",
+    "vue/require-valid-default-prop": "off",
     'accessor-pairs': 2,
     'arrow-spacing': [2, {
       'before': true,
@@ -38,7 +40,7 @@ module.exports = {
     'camelcase': [0, {
       'properties': 'always'
     }],
-    'comma-dangle': [2, 'never'],
+    'comma-dangle': 'off',
     'comma-spacing': [2, {
       'before': false,
       'after': true
@@ -48,24 +50,19 @@ module.exports = {
     'curly': [2, 'multi-line'],
     'dot-location': [2, 'property'],
     'eol-last': 2,
-    'eqeqeq': ["error", "always", {"null": "ignore"}],
+    'eqeqeq': 'off',
     'generator-star-spacing': [2, {
       'before': true,
       'after': true
     }],
     'handle-callback-err': [2, '^(err|error)$'],
-    'indent': [2, 2, {
-      'SwitchCase': 1
-    }],
+    'indent': 'off',
     'jsx-quotes': [2, 'prefer-single'],
     'key-spacing': [2, {
       'beforeColon': false,
       'afterColon': true
     }],
-    'keyword-spacing': [2, {
-      'before': true,
-      'after': true
-    }],
+    'keyword-spacing': 'off',
     'new-cap': [2, {
       'newIsCap': true,
       'capIsNew': false
@@ -163,11 +160,8 @@ module.exports = {
       }
     }],
     'padded-blocks': [2, 'never'],
-    'quotes': [2, 'single', {
-      'avoidEscape': true,
-      'allowTemplateLiterals': true
-    }],
-    'semi': [2, 'never'],
+    'quotes': 'off',
+    'semi': 'off',
     'semi-spacing': [2, {
       'before': false,
       'after': true
@@ -194,6 +188,44 @@ module.exports = {
     'object-curly-spacing': [2, 'always', {
       objectsInObjects: false
     }],
-    'array-bracket-spacing': [2, 'never']
+    'array-bracket-spacing': [2, 'never'],
+    'arrow-spacing': 'off',
+    'brace-style': 'off',
+    'comma-spacing': 'off',
+    'eol-last': 'off',
+    'handle-callback-err': 'off',
+    'jsx-quotes': 'off',
+    'key-spacing': 'off',
+    'no-array-constructor': 'off',
+    'no-empty': 'off',
+    'no-eval': 'off',
+    'no-extra-semi': 'off',
+    'no-implied-eval': 'off',
+    'no-labels': 'off',
+    'no-mixed-spaces-and-tabs': 'off',
+    'no-multi-spaces': 'off',
+    'no-multiple-empty-lines': 'off',
+    'no-prototype-builtins': 'off',
+    'no-redeclare': 'off',
+    'no-sequences': 'off',
+    'no-trailing-spaces': 'off',
+    'no-unneeded-ternary': 'off',
+    'no-unused-labels': 'off',
+    'no-unused-vars': 'off',
+    'object-curly-spacing': 'off',
+    'one-var': 'off',
+    'operator-linebreak': 'off',
+    'padded-blocks': 'off',
+    'prefer-const': 'off',
+    'space-before-blocks': 'off',
+    'space-before-function-paren': 'off',
+    'space-in-parens': 'off',
+    'space-infix-ops': 'off',
+    'spaced-comment': 'off',
+    'yoda': 'off',
+    'vue/max-attributes-per-line': 'off',
+    'vue/name-property-casing': 'off',
+    'vue/no-side-effects-in-computed-properties': 'off',
+    'vue/no-unused-components': 'off'
   }
 }

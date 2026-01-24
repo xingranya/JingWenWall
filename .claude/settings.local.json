@@ -1,4 +1,5 @@
 {
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(find:*)",
@@ -23,7 +24,39 @@
       "Bash(mvn install:*)",
       "Bash(mvn test-compile:*)",
       "Bash(mvn test:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(mvn clean test:*)",
+      "Bash(wc:*)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/service/impl/CategoryServiceImpl.java)",
+      "Bash(mysql --version)",
+      "Bash(pip install pymysql)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/controller/admin/ContentController.java)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/service/impl/ContentServiceImpl.java)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/controller/admin/ForumAdminController.java)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/forum/service/impl/ForumPostServiceImpl.java)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/resources/mapper/ForumPostMapper.xml)",
+      "Bash(read_file jingwenhub/campus-modular/src/main/java/com/oddfar/campus/business/domain/entity/CategoryEntity.java)",
+      "Bash(mysqldump:*)",
+      "Bash(mysql -uroot -pxingran8 jingwen_campus -e \"SHOW TABLES;\")",
+      "Bash(while read table)",
+      "Bash(mvn compile:*)",
+      "Bash(javac:*)",
+      "Bash(mvn lombok:delombok:*)",
+      "Bash(echo:*)",
+      "Bash(java -version:*)",
+      "Bash(export JAVA_HOME=\"E:/JAVA/jdk17\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(export JAVA_HOME=\"E:\\\\JAVA\\\\jdk17\")",
+      "Bash(\"$JAVA_HOME/bin/java\" -version)",
+      "Bash(export:*)",
+      "Bash(\"E:/JAVA/jdk17/bin/java\" -version)",
+      "Bash(javap:*)",
+      "Bash(head:*)",
+      "Bash(mysql:*)",
+      "Edit",
+      "Bash(git:*)",
+      "mcp__acp__Bash"
     ]
-  }
+  },
+  "alwaysThinkingEnabled": true
 }
