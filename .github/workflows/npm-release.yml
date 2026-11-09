@@ -2,11 +2,6 @@ name: Node.js Package Release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'admin/package.json'
 
 jobs:
 
